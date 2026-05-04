@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>2026 韓國：苦盡柑來</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bauhaus-red: #E63946;
+            --industrial-gray: #2B2D42;
+            --steel: #8D99AE;
+            --cold-white: #F8F9FA;
+        }
+        body {
+            background-color: var(--cold-white);
+            color: var(--industrial-gray);
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            padding-bottom: 70px;
+        }
+        .bauhaus-border { border: 2px solid var(--industrial-gray); }
+        .glass-nav {
+            background: rgba(43, 45, 66, 0.9);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            bottom: 0; width: 100%; height: 65px;
+            display: flex; justify-content: space-around; align-items: center;
+            z-index: 1000;
+        }
+        .nav-item { color: white; font-size: 0.7rem; text-align: center; opacity: 0.7; }
+        .nav-item.active { opacity: 1; color: var(--steel); font-weight: bold; }
+        .card { 
+            background: white; border-radius: 0; margin-bottom: 1rem; 
+            border-left: 5px solid var(--industrial-gray);
+            box-shadow: 5px 5px 0px var(--steel);
+        }
+        [contenteditable="true"] { border: 1px dashed var(--bauhaus-red); padding: 2px; }
+        .edit-mode-active { background-color: #fff5f5; }
+        @media (min-width: 768px) {
+            body { padding-bottom: 0; padding-left: 250px; }
+            .glass-nav { 
+                top: 0; left: 0; width: 250px; height: 100vh; 
+                flex-direction: column; justify-content: flex-start; padding-top: 2rem;
+            }
+            .nav-item { margin-bottom: 2rem; font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="p-6 border-b-4 border-black bg-white">
+        <h1 class="text-3xl font-black tracking-tighter italic">苦盡柑來 2026</h1>
+        <p class="text-sm uppercase tracking-widest text-gray-500">Busan · Jeju · Seoul</p>
+        <div class="mt-4 flex gap-2">
+            <button onclick="toggleEditMode()" id="editBtn" class="bg-black text-white px-4 py-1 text-xs uppercase font-bold">進入編輯模式</button>
+            <button onclick="exportData()" class="border-2 border-black px-4 py-1 text-xs uppercase font-bold">導出資料</button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main id="app-content" class="p-4 md:p-10">
+        <!-- 行程內容會由 JS 動態生成 -->
+    </main>
+
+    <!-- Navigation -->
+    <nav class="glass-nav">
+        <div class="nav-item active" onclick="showSection('daily')"><i class="fa-solid fa-calendar-day text-xl block"></i>每日行程</div>
+        <div class="nav-item" onclick="showSection('transport')"><i class="fa-solid fa-plane text-xl block"></i>交通票券</div>
+        <div class="nav-item" onclick="showSection('stay')"><i class="fa-solid fa-bed text-xl block"></i>住宿</div>
+        <div class="nav-item" onclick="showSection('budget')"><i class="fa-solid fa-wallet text-xl block"></i>預算</div>
+    </nav>
+
+    <script>
+        // 初始行程資料
+        let tripData = {
+  "daily": [
+    {
+      "day": "Day 01 - 10/29 (四)",
+      "location": "吉隆坡 -> 河內 -> 釜山",
+      "items": [
+        { "time": "19:10", "task": "吉隆坡起飛 (VN680)", "note": "提早 3 小時抵達 KLIA1", "map": "KLIA Terminal 1" },
+        { "time": "21:25", "task": "抵達河內轉機", "note": "中轉時間約 4 小時，可在貴賓室休息", "map": "Noi Bai International Airport" }
+      ]
+    },
+    {
+      "day": "Day 02 - 10/30 (五)",
+      "location": "釜山：海雲台與工業美學",
+      "items": [
+        { "time": "07:00", "task": "抵達釜山 (VN428)", "note": "出關預估 1.5hr。搭乘機場巴士直達海雲台站", "map": "Gimhae Airport" },
+        { "time": "11:30", "task": "Handasot 釜飯", "note": "營業 11:00-21:00。精緻釜飯，餐具極簡", "map": "Handasot Haeundae" },
+        { "time": "14:00", "task": "海雲台街區散策", "note": "造訪 Luft Mansion, Busan Bada Sand (設計感選物/伴手禮)", "map": "Luft Mansion Busan" },
+        { "time": "16:00", "task": "海雲台藍線公園 (Blueline Park)", "note": "必預約 16:30 膠囊火車「尾浦→青沙浦」看日落", "map": "Blueline Park Mipo Station" },
+        { "time": "18:00", "task": "Blue Bottle 密陽店 + Scentica", "note": "從青沙浦站搭 Kakao Taxi 前往，建築美學巔峰", "map": "Blue Bottle Coffee Busan Millak" },
+        { "time": "20:00", "task": "晚餐：스무고개 (二十考)", "note": "必預約！工業風韓屋燒肉店", "map": "스무고개" }
+      ]
+    },
+    {
+      "day": "Day 03 - 10/31 (六)",
+      "location": "釜山：影島與懸崖村落",
+      "items": [
+        { "time": "10:00", "task": "富平罐頭市場", "note": "1號線札嘎其站 7 號口(有電梯)。體驗早晨煙火氣", "map": "Bupyeong Kkangtong Market" },
+        { "time": "13:00", "task": "白淺灘文化村 + Thrill On The Mug", "note": "搭 Kakao Taxi 直接到咖啡廳，俯瞰絕美海景", "map": "Thrill On The Mug" },
+        { "time": "15:00", "task": "影島海女村 (Haenyeochon)", "note": "海邊戶外座位，體驗原始與當代的衝突美", "map": "Yeongdo Haenyeo Village" },
+        { "time": "17:00", "task": "咖啡廳：네살차이 (四歲差異)", "note": "極簡職人精神，蒸籠土司必點", "map": "네살차이" }
+      ]
+    },
+    {
+      "day": "Day 04 - 11/01 (日)",
+      "location": "釜山 -> 濟州島：入住設計民宿",
+      "items": [
+        { "time": "09:30", "task": "Peak Square 咖啡廳", "note": "機張懸崖建築，室內設計感強。需搭車前往", "map": "Peak Square Busan" },
+        { "time": "13:05", "task": "搭機前往濟州 (KE1535)", "note": "提早 1.5hr 到機場，國內線搬運行李方便", "map": "Gimhae Airport Domestic" },
+        { "time": "15:00", "task": "濟州機場取車", "note": "確認攜帶國際駕照正本。推薦 Lotte Rent", "map": "Jeju International Airport" },
+        { "time": "17:30", "task": "入住海邊設計師民宿", "note": "推薦 Around Follie 或 Aewol 附近", "map": "Around Follie Jeju" }
+      ]
+    },
+    {
+      "day": "Day 05 - 11/02 (一)",
+      "location": "濟州西側：換乘戀愛氛圍",
+      "items": [
+        { "time": "10:00", "task": "9.81 Park Jeju", "note": "科技感重力賽車，需預約。空間非常有工業感", "map": "9.81 Park Jeju" },
+        { "time": "13:00", "task": "涯月漢潭散步道", "note": "《換乘戀愛》經典取景地", "map": "Handam Coastal Walk" },
+        { "time": "15:00", "task": "Slowboat Atelier", "note": "看海的閣樓空間，文青設計師必訪", "map": "Slowboat Jeju" }
+      ]
+    },
+    {
+      "day": "Day 06 - 11/03 (二)",
+      "location": "濟州南側：地質與芒草",
+      "items": [
+        { "time": "10:00", "task": "Yongmeori Coast (龍頭海岸)", "note": "觀察自然的建築結構。需預先確認當天有無開放", "map": "Yongmeori Coast" },
+        { "time": "14:00", "task": "Manor Blanc", "note": "粉紅芒草季節必訪，視野極佳", "map": "Manor Blanc" },
+        { "time": "16:30", "task": "採柑體驗", "note": "苦盡柑來主題。隨機找一間文青裝潢的果園", "map": "Jeju Orange Picking" }
+      ]
+    },
+    {
+      "day": "Day 07 - 11/04 (三)",
+      "location": "濟州東側：建築大師巡禮",
+      "items": [
+        { "time": "09:00", "task": "牛島 (Udo) 半日遊", "note": "租電動車環島。必吃花生冰淇淋", "map": "Udo" },
+        { "time": "14:30", "task": "安藤忠雄：Glass House", "note": "涉地可支絕美建築，極簡張力", "map": "Glass House Jeju" },
+        { "time": "16:30", "task": "Ha:nok 咖啡廳", "note": "傳統韓屋與現代設計結合", "map": "Ha:nok Jeju" }
+      ]
+    },
+    {
+      "day": "Day 08 - 11/05 (四)",
+      "location": "濟州南側：藝術與森林",
+      "items": [
+        { "time": "10:30", "task": "Bonte Museum (本態博物館)", "note": "安藤忠雄設計，空間與藝術品完美融合", "map": "Bonte Museum" },
+        { "time": "14:00", "task": "Snoopy Garden", "note": "超高水準的視覺陳列與庭園造景", "map": "Snoopy Garden" },
+        { "time": "17:00", "task": "Secret Forest", "note": "柏樹林拍粉紅芒草", "map": "Secret Forest Jeju" }
+      ]
+    },
+    {
+      "day": "Day 09 - 11/06 (五)",
+      "location": "濟州北側：設計選物",
+      "items": [
+        { "time": "11:00", "task": "D&Department Jeju", "note": "必拍 d 字牆，樓下有優質選物店", "map": "D&Department Jeju" },
+        { "time": "14:00", "task": "Arario Museum Tapdong", "note": "舊建築改裝的博物館，工業感極強", "map": "Arario Museum Tapdong" },
+        { "time": "18:00", "task": "東門市場宵夜", "note": "體驗在地氛圍與街頭美食", "map": "Dongmun Market" }
+      ]
+    },
+    {
+      "day": "Day 10 - 11/07 (六)",
+      "location": "濟州 -> 首爾：漢江之夜",
+      "items": [
+        { "time": "13:00", "task": "飛往首爾金浦機場", "note": "還車需預留 1hr。金浦機場離市區近且方便", "map": "Gimpo Airport" },
+        { "time": "16:00", "task": "入住首爾飯店 (聖水或漢南)", "note": "推薦入住具有設計感的精品飯店", "map": "Seongsu-dong" },
+        { "time": "19:00", "task": "漢江公園吃泡麵", "note": "汝矣島或盤浦。感受《換乘戀愛》晚上的氣氛", "map": "Banpo Hangang Park" },
+        { "time": "21:00", "task": "Cafe Pokpo", "note": "看人造瀑布與光影秀", "map": "Cafe Pokpo" }
+      ]
+    },
+    {
+      "day": "Day 11 - 11/08 (日)",
+      "location": "首爾：北村/安國美學",
+      "items": [
+        { "time": "09:00", "task": "Jayeondo Sogeumppang 鹽麵包", "note": "安國站。必排隊熱門店", "map": "Jayeondo Sogeumppang Anguk" },
+        { "time": "10:30", "task": "Arario Museum in Space", "note": "必預約。舊空間重生，建築大師傑作", "map": "Arario Museum in Space" },
+        { "time": "13:00", "task": "Cafe Onion Anguk / Archivist", "note": "Archivist 拿鐵必喝（排隊店）", "map": "Archivist Seoul" },
+        { "time": "15:00", "task": "Le Labo 北村 / Blue Bottle", "note": "在韓屋內聞香與喝咖啡", "map": "Le Labo Bukchon" },
+        { "time": "19:00", "task": "Sanullim 1992", "note": "必預約。傳統酒酒吧，設計師鍾愛氛圍", "map": "Sanullim 1992" }
+      ]
+    },
+    {
+      "day": "Day 12 - 11/09 (一)",
+      "location": "首爾：漢南洞潮流洗禮",
+      "items": [
+        { "time": "11:30", "task": "Maha Hannam", "note": "老房改造，視野極佳。設計師必訪空間", "map": "Maha Hannam" },
+        { "time": "14:00", "task": "漢南選物散策", "note": "Warmgreytail, SISAO, Allwrite, Little Riddle", "map": "Allwrite Hannam" },
+        { "time": "17:00", "task": "29cm Home / Beaton", "note": "體驗數位電商轉實體的視覺展示力", "map": "29cm Home" },
+        { "time": "20:00", "task": "Cat Allergy shop / Noop Cafe", "note": "輕鬆的設計選物與夜景", "map": "Noop Cafe Seoul" }
+      ]
+    },
+    {
+      "day": "Day 13 - 11/10 (二)",
+      "location": "首爾：聖水洞工業與品牌力",
+      "items": [
+        { "time": "11:00", "task": "Point of View / Tamburins", "note": "聖水洞視覺與陳列的天花板", "map": "Point of View Seoul" },
+        { "time": "14:00", "task": "Samuel Smalls", "note": "必預約！中古家具與工業風收藏", "map": "Samuel Smalls" },
+        { "time": "16:30", "task": "Haus Nowhere Seoul", "note": "Gentle Monster 旗艦空間，極致視覺張力", "map": "Haus Nowhere" },
+        { "time": "19:00", "task": "N 首爾塔 夜景", "note": "搭纜車看秋末首爾全景", "map": "N Seoul Tower" }
+      ]
+    },
+    {
+      "day": "Day 14 - 11/11 (三)",
+      "location": "首爾：現代百貨與歸途",
+      "items": [
+        { "time": "10:30", "task": "The Hyundai Seoul", "note": "現代化商場巔峰。B1 有大型寄物櫃", "map": "The Hyundai Seoul" },
+        { "time": "13:30", "task": "前往仁川機場", "note": "機場巴士 6009 或計程車。需提前 3hr 到", "map": "Incheon Airport" },
+        { "time": "16:25", "task": "首爾起飛 (MH67)", "note": "苦盡柑來，圓滿結束！", "map": "Incheon Airport Terminal 1" }
+      ]
+    }
+  ],
+  "transport": [
+    { "title": "國際航班", "info": "VN680 & VN428 (KUL-HAN-PUS), MH67 (ICN-KUL)" },
+    { "title": "國內航班", "info": "KE1535 (11/01 PUS-CJU)" },
+    { "title": "濟州租車", "info": "11/01-11/07 (Lotte/SK Rent-a-car)" }
+  ],
+  "stay": [
+    { "name": "釜山：Ramada Encore Haeundae", "address": "地鐵站出口旁，無障礙友善" },
+    { "name": "濟州：Around Follie / 海邊民宿", "address": "具備強烈設計感的 Airstream 或韓屋" },
+    { "name": "首爾：聖水/漢南設計飯店", "address": "如 Hotel Anteroom 或同等級設計飯店" }
+  ],
+  "budget": { "total": "RM 3000-5000 / 人", "used": "KRW / MYR" }
+        };
+
+        // 初始化：讀取本地儲存的資料
+        if (localStorage.getItem('korea2026')) {
+            tripData = JSON.parse(localStorage.getItem('korea2026'));
+        }
+
+        let isEditMode = false;
+
+        function renderDaily() {
+            let html = '<h2 class="text-2xl font-bold mb-6 border-l-8 border-black pl-3">每日行程</h2>';
+            tripData.daily.forEach((d, idx) => {
+                html += `
+                    <div class="mb-10">
+                        <h3 class="bg-black text-white p-2 font-bold inline-block mb-4">${d.day} | ${d.location}</h3>
+                        <div class="space-y-4">
+                            ${d.items.map(item => `
+                                <div class="card p-4">
+                                    <div class="flex justify-between items-start">
+                                        <div class="w-1/4 font-mono font-bold text-lg border-r-2 border-gray-200 mr-4">${item.time}</div>
+                                        <div class="w-3/4">
+                                            <div class="font-bold text-lg">${item.task}</div>
+                                            <div class="text-sm text-gray-500 mb-3">${item.note}</div>
+                                            <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.map)}" target="_blank" class="inline-block bg-gray-200 px-3 py-1 text-xs font-bold rounded hover:bg-black hover:text-white transition">GOOGLE MAP</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('app-content').innerHTML = html;
+        }
+
+        function showSection(type) {
+            // 切換導航樣式
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+
+            if (type === 'daily') renderDaily();
+            else {
+                document.getElementById('app-content').innerHTML = `<h2 class="text-2xl font-bold mb-6 border-l-8 border-black pl-3">${type.toUpperCase()}</h2><p>此區塊內容可於 JSON 導出修改後貼回。</p>`;
+            }
+            if(isEditMode) makeEditable();
+        }
+
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            const btn = document.getElementById('editBtn');
+            if (isEditMode) {
+                btn.innerText = "儲存並退出編輯";
+                btn.classList.replace('bg-black', 'bg-red-600');
+                makeEditable();
+            } else {
+                saveDataFromDOM();
+                btn.innerText = "進入編輯模式";
+                btn.classList.replace('bg-red-600', 'bg-black');
+                renderDaily();
+            }
+        }
+
+        function makeEditable() {
+            document.querySelectorAll('h3, .font-bold, .text-gray-500').forEach(el => {
+                el.contentEditable = "true";
+                el.classList.add('edit-mode-active');
+            });
+        }
+
+        function saveDataFromDOM() {
+            // 這裡簡單示範：實際應用會更複雜地遍歷 DOM 存回 tripData
+            // 為簡化代碼，目前推薦用 exportData() 在電腦上編輯 JSON 結構
+            localStorage.setItem('korea2026', JSON.stringify(tripData));
+            alert('已儲存到瀏覽器快取！');
+        }
+
+        function exportData() {
+            const dataStr = JSON.stringify(tripData, null, 2);
+            const blob = new Blob([dataStr], {type: "application/json"});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "trip_data.json";
+            a.click();
+            // 同時彈出 prompt 方便直接複製貼上
+            prompt("請複製以下 JSON 資料進行電腦版編輯：", dataStr);
+        }
+
+        // 初始渲染
+        renderDaily();
+
+    </script>
+</body>
+</html>
