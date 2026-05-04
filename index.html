@@ -10,11 +10,11 @@
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700&family=Noto+Sans+KR:wght@300;400;700&display=swap');
         
         :root {
-            --kr-cream: #F8F6F0; /* 低飽和奶油白 */
+            --kr-cream: #F8F6F0;
             --kr-text: #4A4641;
-            --kr-accent: #A39B8B; /* 灰綠/奶茶色調 */
-            --kr-glass: rgba(255, 255, 255, 0.45);
-            --kr-glass-border: rgba(255, 255, 255, 0.6);
+            --kr-accent: #A39B8B;
+            --kr-glass: rgba(255, 255, 255, 0.55);
+            --kr-glass-border: rgba(255, 255, 255, 0.7);
             --kr-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.06);
         }
 
@@ -22,38 +22,25 @@
             background-color: var(--kr-cream);
             color: var(--kr-text);
             font-family: 'Noto Sans TC', sans-serif;
-            padding-bottom: 100px;
-            background-image: radial-gradient(circle at 50% 0%, #ffffff 0%, transparent 70%);
+            padding-bottom: 110px;
+            background-image: radial-gradient(circle at 50% 0%, #ffffff 0%, transparent 80%);
             background-attachment: fixed;
         }
         .kr-text { font-family: 'Noto Sans KR', sans-serif; }
 
-        /* iOS Liquid Glass Effect */
+        /* Liquid Glass Effect */
         .liquid-glass {
             background: var(--kr-glass);
-            backdrop-filter: saturate(180%) blur(20px);
-            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            backdrop-filter: saturate(180%) blur(25px);
+            -webkit-backdrop-filter: saturate(180%) blur(25px);
             border: 1px solid var(--kr-glass-border);
             box-shadow: var(--kr-shadow);
-            border-radius: 24px;
+            border-radius: 20px;
         }
 
         .section { display: none; animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         .section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* 景點 Header 圖片 (可替換) */
-        .item-header {
-            position: relative; width: 100%; height: 120px;
-            border-radius: 20px 20px 0 0; overflow: hidden; background: #eee;
-        }
-        .item-header img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; }
-        .item-header .edit-img-btn {
-            position: absolute; bottom: 10px; right: 10px;
-            background: rgba(0,0,0,0.4); color: white; border-radius: 50%;
-            width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; backdrop-filter: blur(5px);
-        }
 
         /* 導航列 */
         .bottom-nav {
@@ -63,63 +50,58 @@
             -webkit-backdrop-filter: saturate(180%) blur(25px);
             border-top: 1px solid rgba(255,255,255,0.5);
             display: flex; justify-content: space-around;
-            padding: 15px 0 25px 0; z-index: 1000;
+            padding: 12px 0 25px 0; z-index: 1000;
         }
         .nav-item { color: #B0ABA3; transition: 0.3s; }
         .nav-item.active { color: var(--kr-text); transform: translateY(-3px); font-weight: bold; }
 
-        /* 天氣卷軸 */
-        .weather-scroll { display: flex; overflow-x: auto; gap: 15px; padding-bottom: 5px; scrollbar-width: none; }
-        .weather-scroll::-webkit-scrollbar { display: none; }
-
-        /* 隱藏/展開內容 */
-        .expand-content { display: none; margin-top: 15px; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 15px; }
-        .expanded .expand-content { display: block; animation: fadeIn 0.3s ease; }
-        .expand-btn i { transition: 0.3s; }
-        .expanded .expand-btn i { transform: rotate(180deg); }
-
-        /* 縮圖網格 */
-        .thumb-grid { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
-        .thumb-box { width: 60px; height: 60px; border-radius: 10px; object-fit: cover; cursor: pointer; border: 1px solid #ddd; }
-
-        /* Lightbox */
-        #lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; justify-content: center; align-items: center; }
-        #lightbox img { max-width: 90%; max-height: 90%; border-radius: 12px; }
-        #lightbox .close { position: absolute; top: 20px; right: 20px; color: white; font-size: 30px; cursor: pointer; }
-
-        /* 交通連接線 */
-        .transit-node {
-            display: flex; flex-direction: column; align-items: center;
-            margin: -5px 0; position: relative; z-index: 0;
-        }
-        .transit-line { width: 2px; height: 30px; background: repeating-linear-gradient(to bottom, #ccc 0, #ccc 4px, transparent 4px, transparent 8px); }
-        .transit-info {
-            background: white; border: 1px solid #eee; border-radius: 20px; padding: 4px 12px;
-            font-size: 0.7rem; color: #888; display: flex; align-items: center; gap: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02); margin: 5px 0;
-        }
+        /* 橫向卷軸 (日期 & 24小時天氣) */
+        .h-scroll { display: flex; overflow-x: auto; gap: 8px; padding-bottom: 8px; scroll-snap-type: x mandatory; scrollbar-width: none; }
+        .h-scroll::-webkit-scrollbar { display: none; }
         
-        textarea { width: 100%; background: rgba(255,255,255,0.5); border: 1px solid #ddd; border-radius: 12px; padding: 12px; font-size: 0.85rem; resize: none; color: #555; }
-        input[type="file"] { display: none; }
-        .file-label { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; background: white; border: 1px solid #eee; border-radius: 8px; font-size: 0.75rem; color: #666; cursor: pointer; }
+        .day-btn {
+            flex: 0 0 calc((100% - 40px) / 5.5); /* 畫面剛好顯示 5.5 天暗示可滑動 */
+            scroll-snap-align: start;
+            padding: 10px 0; border-radius: 16px;
+            background: rgba(255,255,255,0.7); border: 1px solid #fff;
+            color: #888; text-align: center; font-size: 0.8rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03); transition: 0.3s; cursor: pointer;
+        }
+        .day-btn.active { background: var(--kr-accent); color: #fff; border-color: var(--kr-accent); box-shadow: 0 4px 12px rgba(163, 155, 139, 0.3); transform: scale(1.05); }
 
-        /* 拖曳視覺 */
+        .hourly-item { flex: 0 0 50px; text-align: center; font-size: 0.75rem; border-right: 1px solid rgba(0,0,0,0.05); }
+        .hourly-item:last-child { border: none; }
+
+        /* 卡片設計 */
+        .item-header { position: relative; width: 100%; height: 140px; border-radius: 20px 20px 0 0; overflow: hidden; background: #eee; }
+        .item-header img { width: 100%; height: 100%; object-fit: cover; }
+        .edit-img-btn { position: absolute; bottom: 10px; right: 10px; background: rgba(255,255,255,0.8); color: var(--kr-text); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(5px); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+
+        .expand-content { display: none; margin-top: 15px; border-top: 1px dashed rgba(0,0,0,0.1); padding-top: 15px; }
+        .expanded .expand-content { display: block; animation: fadeIn 0.3s ease; }
+        
+        /* 拖曳與排序視覺 */
         .draggable { cursor: grab; }
-        .dragging { opacity: 0.5; border: 2px dashed var(--kr-accent); }
+        .dragging { opacity: 0.4; border: 2px dashed var(--kr-accent); transform: scale(0.98); }
+        .order-btns button { background: rgba(0,0,0,0.05); border-radius: 6px; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; margin-left: 4px; color: #666; }
+
+        input, textarea, select { width: 100%; background: rgba(255,255,255,0.6); border: 1px solid #ddd; border-radius: 10px; padding: 10px; font-size: 0.85rem; color: #4A4641; }
+        textarea { resize: none; }
+        .btn-primary { background: var(--kr-accent); color: white; padding: 8px 16px; border-radius: 10px; font-size: 0.8rem; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <header class="p-6 text-center sticky top-0 z-50 liquid-glass rounded-none border-t-0 border-l-0 border-r-0 pb-4 mb-4">
-        <h1 class="text-2xl font-bold tracking-widest">2026 苦盡柑來 🍊</h1>
+        <h1 class="text-xl font-bold tracking-widest">2026 苦盡柑來 🍊</h1>
     </header>
 
     <main class="max-w-md mx-auto px-4">
         
         <!-- SECTION 1: 行程 -->
         <div id="daily" class="section active">
-            <!-- 橫向日期選擇器 -->
-            <div class="weather-scroll mb-4" id="day-selector"></div>
+            <!-- 橫向日期選擇器 (一次顯示約 5.5 個按鈕) -->
+            <div class="h-scroll mb-4" id="day-selector"></div>
             
             <!-- 進階天氣區塊 -->
             <div id="weather-banner" class="liquid-glass p-5 mb-6"></div>
@@ -145,9 +127,15 @@
             <h2 class="text-xl font-bold mb-4">必備清單 Checklist</h2>
             <div class="liquid-glass p-5 mb-6">
                 <div class="flex gap-2 mb-4">
-                    <input type="text" id="packCategory" placeholder="副標題 (如: 衣物)" class="w-1/3 p-2 rounded-lg text-sm border">
-                    <input type="text" id="newPrep" placeholder="物品名稱..." class="flex-1 p-2 rounded-lg text-sm border">
-                    <button onclick="addPackItem()" class="bg-[#A39B8B] text-white px-3 rounded-lg"><i class="fa-solid fa-plus"></i></button>
+                    <select id="packCategory" class="w-1/3">
+                        <option value="🧳 衣物配件">🧳 衣物</option>
+                        <option value="📄 重要證件">📄 證件</option>
+                        <option value="🔌 3C電子">🔌 電子</option>
+                        <option value="💊 藥品保養">💊 藥保</option>
+                        <option value="🛍️ 其他">🛍️ 其他</option>
+                    </select>
+                    <input type="text" id="newPrep" placeholder="物品名稱..." class="flex-1">
+                    <button onclick="addPackItem()" class="btn-primary"><i class="fa-solid fa-plus"></i></button>
                 </div>
                 <div id="prep-list"></div>
             </div>
@@ -158,10 +146,10 @@
             <h2 class="text-xl font-bold mb-4 text-center">即時翻譯 🗣️</h2>
             <div class="liquid-glass p-5 space-y-4">
                 <textarea id="transInput" rows="3" placeholder="請輸入中文 / 英文"></textarea>
-                <button onclick="translateText()" class="w-full bg-[#A39B8B] text-white py-3 rounded-xl font-bold">翻譯</button>
+                <button onclick="translateText()" class="w-full btn-primary py-3 text-lg">翻譯</button>
                 <div class="relative">
-                    <textarea id="transOutput" rows="3" class="kr-text text-lg font-bold bg-white" readonly></textarea>
-                    <button onclick="speakKorean()" class="absolute bottom-3 right-3 bg-gray-100 p-2 rounded-full text-gray-600"><i class="fa-solid fa-volume-high"></i></button>
+                    <textarea id="transOutput" rows="3" class="kr-text text-lg font-bold bg-white border-0 shadow-inner" readonly></textarea>
+                    <button onclick="speakKorean()" class="absolute bottom-3 right-3 bg-gray-100 p-3 rounded-full text-gray-600 shadow-sm"><i class="fa-solid fa-volume-high"></i></button>
                 </div>
             </div>
         </div>
@@ -172,22 +160,22 @@
             <div class="liquid-glass p-6 text-sm space-y-5 leading-relaxed">
                 <div>
                     <h3 class="font-bold text-base mb-2"><i class="fa-solid fa-money-bill-wave text-green-600 mr-1"></i> 退稅與支付</h3>
-                    <p class="text-gray-600">單筆滿 30,000 韓元即可退稅。多數便利商店與超市支援「即時退稅 (Immediate Tax Refund)」，結帳時出示護照即可扣除稅額。<br>準備 <b>WOWPASS</b> 卡，可綁定 App 查看餘額並兼具 T-money 交通卡功能。</p>
+                    <p class="text-gray-600">單筆滿 30,000 韓元可退稅。必備 <b>WOWPASS</b> 卡，綁定 App 直接儲值馬幣轉韓元，兼具 T-money 交通功能。</p>
                 </div>
                 <hr class="border-gray-200">
                 <div>
                     <h3 class="font-bold text-base mb-2"><i class="fa-solid fa-plug text-gray-500 mr-1"></i> 插座與電壓</h3>
-                    <p class="text-gray-600">韓國電壓為 220V。插座為<b>雙圓孔 (豬鼻)</b>。馬來西亞插頭需準備轉換器 (Type C 或 Type F)。</p>
+                    <p class="text-gray-600">220V 電壓。插座為<b>雙圓孔 (豬鼻)</b>。大馬插頭需準備轉換器 (Type C 或 Type F)。</p>
                 </div>
                 <hr class="border-gray-200">
                 <div>
                     <h3 class="font-bold text-base mb-2"><i class="fa-solid fa-map-location-dot text-blue-500 mr-1"></i> 導航與叫車</h3>
-                    <p class="text-gray-600">Google Map 在韓國無法提供精確步行導航，請務必下載 <b>Naver Map</b>。叫車唯一推薦 <b>Kakao T (Kakao Taxi)</b>，可綁定海外信用卡，免現金溝通。</p>
+                    <p class="text-gray-600">Google Map 步行無法使用，務必下載 <b>Naver Map</b>。叫車推薦 <b>Kakao T</b>，綁定海外信用卡免付現。</p>
                 </div>
                 <hr class="border-gray-200">
                 <div>
                     <h3 class="font-bold text-base mb-2"><i class="fa-solid fa-phone text-red-500 mr-1"></i> 緊急聯絡</h3>
-                    <p class="text-gray-600">報警：112 | 救護/消防：119<br>大馬駐首爾大使館：+82-2-2077-8600<br>旅遊申訴與翻譯：1330</p>
+                    <p class="text-gray-600">報警：112 | 救護：119<br>大馬駐首爾大使館：+82-2-2077-8600</p>
                 </div>
             </div>
         </div>
@@ -203,16 +191,9 @@
         <button class="nav-item flex flex-col items-center" onclick="changeSection('budget', this)"><i class="fa-solid fa-circle-info text-xl"></i><span class="text-[10px] mt-1">資訊</span></button>
     </nav>
 
-    <!-- 圖片放大 Lightbox -->
-    <div id="lightbox" onclick="this.style.display='none'">
-        <span class="close">&times;</span>
-        <img id="lightbox-img" src="">
-    </div>
-
-    <!-- JavaScript Data & Logic -->
+    <!-- IndexedDB & App Logic -->
     <script>
-        // IndexedDB 封裝 (解決離線無網路與 localStorage 5MB 限制)
-        const dbName = "KoreaTrip2026DB";
+        const dbName = "KoreaTrip2026DB_v2";
         let db;
         const initDB = new Promise((resolve) => {
             const req = indexedDB.open(dbName, 1);
@@ -223,25 +204,10 @@
             req.onsuccess = (e) => { db = e.target.result; resolve(); };
         });
 
-        async function saveToDB(id, data) {
-            await initDB;
-            return new Promise(resolve => {
-                const tx = db.transaction('userFiles', 'readwrite');
-                tx.objectStore('userFiles').put({ id, data });
-                tx.oncomplete = resolve;
-            });
-        }
+        async function saveToDB(id, data) { await initDB; return new Promise(r => { const tx = db.transaction('userFiles', 'readwrite'); tx.objectStore('userFiles').put({ id, data }); tx.oncomplete = r; }); }
+        async function getFromDB(id) { await initDB; return new Promise(r => { const tx = db.transaction('userFiles', 'readonly'); const req = tx.objectStore('userFiles').get(id); req.onsuccess = () => r(req.result ? req.result.data : null); }); }
 
-        async function getFromDB(id) {
-            await initDB;
-            return new Promise(resolve => {
-                const tx = db.transaction('userFiles', 'readonly');
-                const req = tx.objectStore('userFiles').get(id);
-                req.onsuccess = () => resolve(req.result ? req.result.data : null);
-            });
-        }
-
-        // ================= 核心 JSON 數據 (14天) =================
+        // ================= 14 天完整 JSON =================
         const HOME_ADDR = "352, Jalan Burung Garuda, Taman Bukit Maluri, Kepong 52100 Kuala Lumpur";
         
         let initialTripData = {
@@ -254,160 +220,56 @@
             stays: [
                 { name: "Ramada Encore Haeundae", date: "10/30 - 11/01", img: "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=500&q=80", addr: "海雲台站 3 號出口旁", map: "Ramada Encore Haeundae" },
                 { name: "Around Follie", date: "11/01 - 11/07", img: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=80", addr: "濟州島自駕區", map: "Around Follie Jeju" },
-                { name: "設計精品飯店", date: "11/07 - 11/11", img: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=500&q=80", addr: "首爾聖水/漢南洞", map: "Seongsu-dong" }
+                { name: "首爾設計精品飯店", date: "11/07 - 11/11", img: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=500&q=80", addr: "首爾聖水/漢南洞", map: "Seongsu-dong" }
             ],
             daily: [
-                {
-                    day: "Day 1", date: "10/29", weather: { high: 28, low: 24, pop: 10, feel: 30, hum: 75, uv: 6, hourly: [{t:"12 PM", temp:28, ic:"☀️"}, {t:"03 PM", temp:29, ic:"⛅"}, {t:"06 PM", temp:27, ic:"☁️"}] },
-                    items: [
-                        { time: "03:00 PM", task: "從住家出發", loc: HOME_ADDR, krName: "집에서 출발", desc: "準備行李，出發前往機場", img: "https://images.unsplash.com/photo-1556012018-50c5c0da73bf?w=500&q=80" },
-                        { time: "04:00 PM", task: "抵達 KLIA T1", loc: "KLIA Terminal 1", krName: "쿠알라룸푸르 공항", desc: "辦理 VN680 登機手續，托運行李", img: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=500&q=80" }
-                    ]
-                },
-                {
-                    day: "Day 2", date: "10/30", weather: { high: 18, low: 11, pop: 0, feel: 16, hum: 45, uv: 4, hourly: [{t:"08 AM", temp:12, ic:"☀️"}, {t:"12 PM", temp:18, ic:"☀️"}, {t:"06 PM", temp:14, ic:"🌙"}] },
-                    items: [
-                        { time: "08:30 AM", task: "抵達釜山前往飯店", loc: "Gimhae Airport", krName: "김해공항", desc: "搭機場巴士1號線", img: "https://images.unsplash.com/photo-1620078028308-3ab514107567?w=500&q=80" },
-                        { time: "10:30 AM", task: "寄放行李", loc: "Ramada Encore Haeundae", krName: "호텔 짐 보관", desc: "Ramada Encore", img: "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=500&q=80" },
-                        { time: "11:30 AM", task: "Handasot 釜飯", loc: "Handasot Haeundae", krName: "한다솥", desc: "簡約設計釜飯", img: "https://images.unsplash.com/photo-1580651315530-69c8e0026377?w=500&q=80", menu: [{n:"鮑魚釜飯", p:"KRW 22,000"}, {n:"牛肉釜飯", p:"KRW 20,000"}] },
-                        { time: "02:00 PM", task: "Luft Mansion", loc: "Luft Mansion", krName: "러프트맨션", desc: "海雲台選物店", img: "https://images.unsplash.com/photo-1605814589253-1aa8573229b4?w=500&q=80" },
-                        { time: "04:30 PM", task: "藍線公園膠囊火車", loc: "Blueline Park Mipo", krName: "블루라인파크", desc: "尾浦出發看日落", img: "https://images.unsplash.com/photo-1681283626245-0678d49a7122?w=500&q=80" },
-                        { time: "07:30 PM", task: "스무고개 燒肉", loc: "Seumugogae Busan", krName: "스무고개", desc: "韓屋工業風", img: "https://images.unsplash.com/photo-1544025162-d76694265947?w=500&q=80", menu: [{n:"韓牛套餐", p:"KRW 95,000"}] },
-                        { time: "09:30 PM", task: "返回飯店", loc: "Ramada Encore Haeundae", krName: "호텔 복귀", desc: "休息", img: "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=500&q=80" }
-                    ]
-                },
-                {
-                    day: "Day 3", date: "10/31", weather: { high: 19, low: 12, pop: 10, feel: 18, hum: 50, uv: 5, hourly: [{t:"09 AM", temp:14, ic:"🌤️"}, {t:"01 PM", temp:19, ic:"☀️"}, {t:"07 PM", temp:15, ic:"☁️"}] },
-                    items: [
-                        { time: "09:00 AM", task: "從飯店出發", loc: "Ramada Encore Haeundae", krName: "호텔 출발", desc: "搭乘地鐵", img: "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=500&q=80" },
-                        { time: "10:00 AM", task: "富平罐頭市場", loc: "Bupyeong Market", krName: "부평깡통시장", desc: "在地小吃", img: "https://images.unsplash.com/photo-1568652077598-afab24fbc266?w=500&q=80" },
-                        { time: "12:30 PM", task: "白淺灘 Thrill On The Mug", loc: "Thrill On The Mug", krName: "흰여울문화마을", desc: "懸崖海景咖啡", img: "https://images.unsplash.com/photo-1616422285623-14bf51a2e7c4?w=500&q=80" },
-                        { time: "03:00 PM", task: "影島海女村", loc: "Yeongdo Haenyeochon", krName: "영도 해녀촌", desc: "岩石海鮮體驗", img: "https://images.unsplash.com/photo-1596700685514-498c199ecb91?w=500&q=80" },
-                        { time: "05:30 PM", task: "네살차이", loc: "네살차이 부산", krName: "네살차이", desc: "極簡蒸籠土司", img: "https://images.unsplash.com/photo-1497935586351-b67a49e012bf?w=500&q=80" },
-                        { time: "08:00 PM", task: "Blue Bottle Millak", loc: "Blue Bottle Busan Millak", krName: "블루보틀", desc: "廣安里夜景", img: "https://images.unsplash.com/photo-1619448378809-548773950fb4?w=500&q=80" },
-                        { time: "10:00 PM", task: "返回飯店", loc: "Ramada Encore Haeundae", krName: "호텔 복귀", desc: "休息", img: "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=500&q=80" }
-                    ]
-                },
-                {
-                    day: "Day 4", date: "11/01", weather: { high: 17, low: 10, pop: 0, feel: 16, hum: 40, uv: 4, hourly: [{t:"09 AM", temp:12, ic:"☀️"}, {t:"01 PM", temp:17, ic:"☀️"}, {t:"05 PM", temp:14, ic:"☀️"}] },
-                    items: [
-                        { time: "09:00 AM", task: "退房出發", loc: "Ramada Encore Haeundae", krName: "체크아웃", desc: "前往機張", img: "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=500&q=80" },
-                        { time: "09:30 AM", task: "Peak Square", loc: "Peak Square Busan", krName: "피크스퀘어", desc: "海邊建築", img: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=500&q=80" },
-                        { time: "11:30 AM", task: "抵達金海機場", loc: "Gimhae Airport", krName: "김해공항", desc: "KE1535", img: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=500&q=80" },
-                        { time: "03:00 PM", task: "抵達濟州&取車", loc: "Jeju Airport", krName: "제주공항 렌터카", desc: "開啟自駕", img: "https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?w=500&q=80" },
-                        { time: "05:00 PM", task: "入住 Around Follie", loc: "Around Follie Jeju", krName: "어라운드 폴리", desc: "野奢民宿", img: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=80" }
-                    ]
-                },
-                // (Days 5-10 Compressed structurally to fit limits, but fully functional)
-                {
-                    day: "Day 5", date: "11/02", weather: { high: 16, low: 9, pop: 10, feel: 15, hum: 55, uv: 4, hourly: [{t:"10 AM", temp:13, ic:"⛅"}] },
-                    items: [
-                        { time: "09:30 AM", task: "從民宿出發", loc: "Around Follie Jeju", krName: "숙소 출발", desc: "", img: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=80" },
-                        { time: "10:30 AM", task: "9.81 Park", loc: "9.81 Park Jeju", krName: "9.81 파크", desc: "科技賽車", img: "https://images.unsplash.com/photo-1511994298241-608e28f14fde?w=500&q=80" },
-                        { time: "02:00 PM", task: "涯月海邊 (Slowboat)", loc: "Slowboat Jeju", krName: "슬로보트", desc: "閣樓海景", img: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=500&q=80" },
-                        { time: "06:00 PM", task: "返回民宿", loc: "Around Follie Jeju", krName: "숙소 복귀", desc: "", img: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=80" }
-                    ]
-                },
-                {
-                    day: "Day 6", date: "11/03", weather: { high: 15, low: 8, pop: 0, feel: 14, hum: 40, uv: 5, hourly: [{t:"10 AM", temp:12, ic:"☀️"}] },
-                    items: [
-                        { time: "09:30 AM", task: "出發", loc: "Around Follie Jeju", krName: "출발", desc: "", img: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=80" },
-                        { time: "10:30 AM", task: "龍頭海岸", loc: "Yongmeori Coast", krName: "용머리해안", desc: "地質建築", img: "https://images.unsplash.com/photo-1544025162-d76694265947?w=500&q=80" },
-                        { time: "02:00 PM", task: "Manor Blanc / 採柑", loc: "Manor Blanc Jeju", krName: "마노르블랑", desc: "粉紅芒草", img: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=500&q=80" },
-                        { time: "06:00 PM", task: "返回", loc: "Around Follie Jeju", krName: "복귀", desc: "", img: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=80" }
-                    ]
-                },
-                {
-                    day: "Day 7", date: "11/04", weather: { high: 16, low: 10, pop: 20, feel: 15, hum: 60, uv: 3, hourly: [{t:"10 AM", temp:14, ic:"🌥️"}] },
-                    items: [
-                        { time: "09:00 AM", task: "出發", loc: "Around Follie Jeju", krName: "출발", desc: "", img: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=80" },
-                        { time: "09:30 AM", task: "牛島", loc: "Udo Jeju", krName: "우도", desc: "電動車環島", img: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=80" },
-                        { time: "03:00 PM", task: "Ha:nok 咖啡", loc: "Ha:nok Jeju", krName: "하녹", desc: "現代韓屋", img: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=500&q=80" },
-                        { time: "06:00 PM", task: "返回", loc: "Around Follie Jeju", krName: "복귀", desc: "", img: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=80" }
-                    ]
-                },
-                {
-                    day: "Day 8", date: "11/05", weather: { high: 15, low: 9, pop: 0, feel: 14, hum: 45, uv: 5, hourly: [{t:"11 AM", temp:13, ic:"☀️"}] },
-                    items: [
-                        { time: "10:00 AM", task: "出發", loc: "Around Follie Jeju", krName: "출발", desc: "", img: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=80" },
-                        { time: "10:30 AM", task: "Bonte Museum", loc: "Bonte Museum", krName: "본태박물관", desc: "安藤忠雄", img: "https://images.unsplash.com/photo-1601362840469-51e4d8d58785?w=500&q=80" },
-                        { time: "02:30 PM", task: "Glass House", loc: "Glass House Jeju", krName: "글라스하우스", desc: "涉地可支", img: "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=500&q=80" },
-                        { time: "06:00 PM", task: "返回", loc: "Around Follie Jeju", krName: "복귀", desc: "", img: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=80" }
-                    ]
-                },
-                {
-                    day: "Day 9", date: "11/06", weather: { high: 14, low: 8, pop: 10, feel: 13, hum: 50, uv: 4, hourly: [{t:"11 AM", temp:12, ic:"🌤️"}] },
-                    items: [
-                        { time: "09:30 AM", task: "出發", loc: "Around Follie Jeju", krName: "출발", desc: "", img: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=80" },
-                        { time: "10:00 AM", task: "Snoopy Garden", loc: "Snoopy Garden Jeju", krName: "스누피가든", desc: "視覺陳列", img: "https://images.unsplash.com/photo-1616422285623-14bf51a2e7c4?w=500&q=80" },
-                        { time: "03:00 PM", task: "Secret Forest", loc: "Secret Forest Jeju", krName: "비밀의숲", desc: "迷幻柏樹", img: "https://images.unsplash.com/photo-1497935586351-b67a49e012bf?w=500&q=80" },
-                        { time: "06:00 PM", task: "返回", loc: "Around Follie Jeju", krName: "복귀", desc: "", img: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=80" }
-                    ]
-                },
-                {
-                    day: "Day 10", date: "11/07", weather: { high: 12, low: 4, pop: 0, feel: 10, hum: 35, uv: 4, hourly: [{t:"11 AM", temp:10, ic:"☀️"}] },
-                    items: [
-                        { time: "09:30 AM", task: "退房出發", loc: "Around Follie Jeju", krName: "체크아웃", desc: "", img: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=80" },
-                        { time: "11:00 AM", task: "Arario Tapdong", loc: "Arario Museum Tapdong", krName: "아라리오뮤지엄", desc: "工業廢墟", img: "https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?w=500&q=80" },
-                        { time: "03:00 PM", task: "抵達首爾入住", loc: "Seongsu Hotel", krName: "호텔 체크인", desc: "搭機至金浦", img: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=500&q=80" },
-                        { time: "08:00 PM", task: "漢江公園泡麵", loc: "Banpo Hangang Park", krName: "한강공원", desc: "Cafe Pokpo", img: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=500&q=80" },
-                        { time: "10:30 PM", task: "返回飯店", loc: "Seongsu Hotel", krName: "호텔 복귀", desc: "", img: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=500&q=80" }
-                    ]
-                },
-                {
-                    day: "Day 11", date: "11/08", weather: { high: 11, low: 3, pop: 0, feel: 9, hum: 40, uv: 3, hourly: [{t:"09 AM", temp:5, ic:"☀️"}, {t:"01 PM", temp:11, ic:"☀️"}, {t:"07 PM", temp:6, ic:"🌙"}] },
-                    items: [
-                        { time: "09:00 AM", task: "從飯店出發", loc: "Seongsu Hotel", krName: "호텔 출발", desc: "前往安國", img: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=500&q=80" },
-                        { time: "09:30 AM", task: "Jayeondo 鹽麵包", loc: "Anguk Station", krName: "자연도소금빵", desc: "安國站排隊店", img: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=500&q=80", menu: [{n:"鹽麵包套組", p:"KRW 12,000"}] },
-                        { time: "11:00 AM", task: "Arario in Space", loc: "Arario Museum in Space", krName: "아라리오뮤지엄", desc: "金壽根傑作", img: "https://images.unsplash.com/photo-1601362840469-51e4d8d58785?w=500&q=80" },
-                        { time: "02:00 PM", task: "Archivist 拿鐵", loc: "Archivist Seoul", krName: "아키비스트", desc: "首爾神級拿鐵", img: "https://images.unsplash.com/photo-1481833761820-0509d3217039?w=500&q=80" },
-                        { time: "07:00 PM", task: "Sanullim 1992", loc: "Sanullim 1992", krName: "산울림1992", desc: "傳統酒空間", img: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=500&q=80", menu: [{n:"傳統酒品拼盤", p:"KRW 35,000"}] },
-                        { time: "10:00 PM", task: "返回飯店", loc: "Seongsu Hotel", krName: "호텔 복귀", desc: "休息", img: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=500&q=80" }
-                    ]
-                },
-                {
-                    day: "Day 12", date: "11/09", weather: { high: 10, low: 2, pop: 0, feel: 8, hum: 35, uv: 4, hourly: [{t:"11 AM", temp:6, ic:"☀️"}, {t:"02 PM", temp:10, ic:"☀️"}, {t:"08 PM", temp:4, ic:"🌙"}] },
-                    items: [
-                        { time: "10:30 AM", task: "從飯店出發", loc: "Seongsu Hotel", krName: "호텔 출발", desc: "前往漢南", img: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=500&q=80" },
-                        { time: "11:30 AM", task: "Maha Hannam", loc: "Maha Hannam", krName: "마하 한남", desc: "老房複合空間", img: "https://images.unsplash.com/photo-1616422285623-14bf51a2e7c4?w=500&q=80" },
-                        { time: "02:00 PM", task: "Allwrite", loc: "Allwrite Hannam", krName: "올라이트", desc: "文具選物", img: "https://images.unsplash.com/photo-1585314062340-f1a5a7c9328d?w=500&q=80" },
-                        { time: "04:30 PM", task: "29cm Home", loc: "29cm Home Hannam", krName: "이십구센티미터", desc: "設計電商實體", img: "https://images.unsplash.com/photo-1605814589253-1aa8573229b4?w=500&q=80" },
-                        { time: "08:00 PM", task: "返回飯店", loc: "Seongsu Hotel", krName: "호텔 복귀", desc: "休息", img: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=500&q=80" }
-                    ]
-                },
-                {
-                    day: "Day 13", date: "11/10", weather: { high: 9, low: 1, pop: 10, feel: 7, hum: 45, uv: 3, hourly: [{t:"11 AM", temp:5, ic:"☁️"}, {t:"03 PM", temp:9, ic:"☁️"}, {t:"08 PM", temp:3, ic:"🌙"}] },
-                    items: [
-                        { time: "10:30 AM", task: "從飯店出發", loc: "Seongsu Hotel", krName: "호텔 출발", desc: "探索聖水洞", img: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=500&q=80" },
-                        { time: "11:00 AM", task: "Point of View", loc: "Point of View Seoul", krName: "포인트오브뷰", desc: "陳列天花板", img: "https://images.unsplash.com/photo-1585314062340-f1a5a7c9328d?w=500&q=80" },
-                        { time: "02:00 PM", task: "Samuel Smalls", loc: "Samuel Smalls Seoul", krName: "사무엘스몰즈", desc: "中古家具寶庫", img: "https://images.unsplash.com/photo-1596079890744-c1a0462d0975?w=500&q=80" },
-                        { time: "04:30 PM", task: "Haus Nowhere", loc: "Haus Nowhere Seoul", krName: "하우스 도산", desc: "空間張力", img: "https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?w=500&q=80" },
-                        { time: "09:00 PM", task: "返回飯店", loc: "Seongsu Hotel", krName: "호텔 복귀", desc: "整理行李", img: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=500&q=80" }
-                    ]
-                },
-                {
-                    day: "Day 14", date: "11/11", weather: { high: 8, low: 0, pop: 0, feel: 5, hum: 30, uv: 3, hourly: [{t:"10 AM", temp:4, ic:"❄️"}] },
-                    items: [
-                        { time: "09:30 AM", task: "退房出發", loc: "Seongsu Hotel", krName: "체크아웃", desc: "前往汝矣島", img: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=500&q=80" },
-                        { time: "10:30 AM", task: "The Hyundai Seoul", loc: "The Hyundai Seoul", krName: "더현대 서울", desc: "商場巔峰之作", img: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=500&q=80" },
-                        { time: "01:30 PM", task: "前往仁川機場", loc: "Incheon Airport T1", krName: "인천공항 이동", desc: "搭乘 MH67 賦歸", img: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=500&q=80" },
-                        { time: "10:15 PM", task: "抵達溫暖的家", loc: HOME_ADDR, krName: "집으로", desc: "苦盡柑來圓滿結束！", img: "https://images.unsplash.com/photo-1556012018-50c5c0da73bf?w=500&q=80" }
-                    ]
-                }
+                { day: "Day 1", date: "10/29", weather: { high: 28, low: 24, icon: "🌤️" }, items: [ { time: "03:00 PM", task: "從住家出發", loc: HOME_ADDR, krName: "집에서 출발", desc: "準備行李出發", img: "https://images.unsplash.com/photo-1556012018-50c5c0da73bf?w=500&q=80" }, { time: "04:00 PM", task: "抵達 KLIA T1", loc: "KLIA Terminal 1", krName: "쿠알라룸푸르 공항", desc: "辦理 VN680 登機", img: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=500&q=80" } ] },
+                { day: "Day 2", date: "10/30", weather: { high: 18, low: 11, icon: "☀️" }, items: [ { time: "08:30 AM", task: "抵達釜山前往飯店", loc: "Gimhae Airport", krName: "김해공항", desc: "機場巴士1號線", img: "https://images.unsplash.com/photo-1620078028308-3ab514107567?w=500&q=80" }, { time: "10:30 AM", task: "寄放行李", loc: "Ramada Encore Haeundae", krName: "호텔 짐 보관", desc: "Ramada Encore", img: "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=500&q=80" }, { time: "11:30 AM", task: "Handasot 釜飯", loc: "Handasot Haeundae", krName: "한다솥", desc: "簡約設計釜飯", img: "https://images.unsplash.com/photo-1580651315530-69c8e0026377?w=500&q=80" }, { time: "02:00 PM", task: "Luft Mansion", loc: "Luft Mansion", krName: "러프트맨션", desc: "海雲台選物店", img: "https://images.unsplash.com/photo-1605814589253-1aa8573229b4?w=500&q=80" }, { time: "04:30 PM", task: "藍線公園膠囊火車", loc: "Blueline Park Mipo", krName: "블루라인파크", desc: "尾浦看日落", img: "https://images.unsplash.com/photo-1681283626245-0678d49a7122?w=500&q=80" }, { time: "07:30 PM", task: "스무고개 燒肉", loc: "Seumugogae Busan", krName: "스무고개", desc: "韓屋工業風", img: "https://images.unsplash.com/photo-1544025162-d76694265947?w=500&q=80" }, { time: "09:30 PM", task: "返回飯店", loc: "Ramada Encore Haeundae", krName: "호텔 복귀", desc: "休息", img: "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=500&q=80" } ] },
+                { day: "Day 3", date: "10/31", weather: { high: 19, low: 12, icon: "🌤️" }, items: [ { time: "09:00 AM", task: "從飯店出發", loc: "Ramada Encore Haeundae", krName: "호텔 출발", desc: "搭地鐵", img: "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=500&q=80" }, { time: "10:00 AM", task: "富平罐頭市場", loc: "Bupyeong Market", krName: "부평깡통시장", desc: "小吃", img: "https://images.unsplash.com/photo-1568652077598-afab24fbc266?w=500&q=80" }, { time: "12:30 PM", task: "Thrill On The Mug", loc: "Thrill On The Mug", krName: "흰여울문화마을", desc: "懸崖海景咖啡", img: "https://images.unsplash.com/photo-1616422285623-14bf51a2e7c4?w=500&q=80" }, { time: "03:00 PM", task: "影島海女村", loc: "Yeongdo Haenyeochon", krName: "영도 해녀촌", desc: "海鮮體驗", img: "https://images.unsplash.com/photo-1596700685514-498c199ecb91?w=500&q=80" }, { time: "05:30 PM", task: "네살차이", loc: "네살차이 부산", krName: "네살차이", desc: "極簡蒸籠土司", img: "https://images.unsplash.com/photo-1497935586351-b67a49e012bf?w=500&q=80" }, { time: "08:00 PM", task: "Blue Bottle Millak", loc: "Blue Bottle Busan Millak", krName: "블루보틀", desc: "廣安里夜景", img: "https://images.unsplash.com/photo-1619448378809-548773950fb4?w=500&q=80" }, { time: "10:00 PM", task: "返回飯店", loc: "Ramada Encore Haeundae", krName: "호텔 복귀", desc: "休息", img: "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=500&q=80" } ] },
+                { day: "Day 4", date: "11/01", weather: { high: 17, low: 10, icon: "☀️" }, items: [ { time: "09:00 AM", task: "退房出發", loc: "Ramada Encore Haeundae", krName: "체크아웃", desc: "前往機張", img: "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=500&q=80" }, { time: "09:30 AM", task: "Peak Square", loc: "Peak Square Busan", krName: "피크스퀘어", desc: "海邊建築", img: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=500&q=80" }, { time: "11:30 AM", task: "金海機場", loc: "Gimhae Airport", krName: "김해공항", desc: "搭 KE1535", img: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=500&q=80" }, { time: "03:00 PM", task: "抵達濟州&取車", loc: "Jeju Airport", krName: "제주 렌터카", desc: "自駕開啟", img: "https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?w=500&q=80" }, { time: "05:00 PM", task: "入住 Around Follie", loc: "Around Follie Jeju", krName: "어라운드 폴리", desc: "野奢民宿", img: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=80" } ] },
+                { day: "Day 5", date: "11/02", weather: { high: 16, low: 9, icon: "⛅" }, items: [ { time: "09:30 AM", task: "出發", loc: "Around Follie Jeju", krName: "출발", desc: "", img: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=80" }, { time: "10:30 AM", task: "9.81 Park", loc: "9.81 Park Jeju", krName: "9.81 파크", desc: "科技賽車", img: "https://images.unsplash.com/photo-1511994298241-608e28f14fde?w=500&q=80" }, { time: "02:00 PM", task: "涯月海邊 (Slowboat)", loc: "Slowboat Jeju", krName: "슬로보트", desc: "閣樓海景", img: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=500&q=80" }, { time: "06:00 PM", task: "返回民宿", loc: "Around Follie Jeju", krName: "숙소 복귀", desc: "", img: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=80" } ] },
+                { day: "Day 6", date: "11/03", weather: { high: 15, low: 8, icon: "☀️" }, items: [ { time: "09:30 AM", task: "出發", loc: "Around Follie Jeju", krName: "출발", desc: "", img: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=80" }, { time: "10:30 AM", task: "龍頭海岸", loc: "Yongmeori Coast", krName: "용머리해안", desc: "地質建築", img: "https://images.unsplash.com/photo-1544025162-d76694265947?w=500&q=80" }, { time: "02:00 PM", task: "Manor Blanc / 採柑", loc: "Manor Blanc Jeju", krName: "마노르블랑", desc: "粉紅芒草", img: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=500&q=80" }, { time: "06:00 PM", task: "返回民宿", loc: "Around Follie Jeju", krName: "복귀", desc: "", img: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=80" } ] },
+                { day: "Day 7", date: "11/04", weather: { high: 16, low: 10, icon: "🌥️" }, items: [ { time: "09:00 AM", task: "出發", loc: "Around Follie Jeju", krName: "출발", desc: "", img: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=80" }, { time: "09:30 AM", task: "牛島", loc: "Udo Jeju", krName: "우도", desc: "電動車環島", img: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=80" }, { time: "03:00 PM", task: "Ha:nok 咖啡", loc: "Ha:nok Jeju", krName: "하녹", desc: "現代韓屋", img: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=500&q=80" }, { time: "06:00 PM", task: "返回民宿", loc: "Around Follie Jeju", krName: "복귀", desc: "", img: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=80" } ] },
+                { day: "Day 8", date: "11/05", weather: { high: 15, low: 9, icon: "☀️" }, items: [ { time: "10:00 AM", task: "出發", loc: "Around Follie Jeju", krName: "출발", desc: "", img: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=80" }, { time: "10:30 AM", task: "Bonte Museum", loc: "Bonte Museum", krName: "본태박물관", desc: "安藤忠雄", img: "https://images.unsplash.com/photo-1601362840469-51e4d8d58785?w=500&q=80" }, { time: "02:30 PM", task: "Glass House", loc: "Glass House Jeju", krName: "글라스하우스", desc: "涉地可支", img: "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=500&q=80" }, { time: "06:00 PM", task: "返回民宿", loc: "Around Follie Jeju", krName: "복귀", desc: "", img: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=80" } ] },
+                { day: "Day 9", date: "11/06", weather: { high: 14, low: 8, icon: "🌤️" }, items: [ { time: "09:30 AM", task: "出發", loc: "Around Follie Jeju", krName: "출발", desc: "", img: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=80" }, { time: "10:00 AM", task: "Snoopy Garden", loc: "Snoopy Garden Jeju", krName: "스누피가든", desc: "視覺陳列", img: "https://images.unsplash.com/photo-1616422285623-14bf51a2e7c4?w=500&q=80" }, { time: "03:00 PM", task: "Secret Forest", loc: "Secret Forest Jeju", krName: "비밀의숲", desc: "迷幻柏樹", img: "https://images.unsplash.com/photo-1497935586351-b67a49e012bf?w=500&q=80" }, { time: "06:00 PM", task: "返回民宿", loc: "Around Follie Jeju", krName: "복귀", desc: "", img: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=80" } ] },
+                { day: "Day 10", date: "11/07", weather: { high: 12, low: 4, icon: "☀️" }, items: [ { time: "09:30 AM", task: "退房出發", loc: "Around Follie Jeju", krName: "체크아웃", desc: "", img: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=80" }, { time: "11:00 AM", task: "Arario Tapdong", loc: "Arario Museum Tapdong", krName: "아라리오뮤지엄", desc: "工業廢墟", img: "https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?w=500&q=80" }, { time: "03:00 PM", task: "首爾入住", loc: "Seongsu Hotel", krName: "호텔 체크인", desc: "搭機至首爾", img: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=500&q=80" }, { time: "08:00 PM", task: "漢江泡麵", loc: "Banpo Hangang Park", krName: "한강공원", desc: "Cafe Pokpo", img: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=500&q=80" }, { time: "10:30 PM", task: "返回飯店", loc: "Seongsu Hotel", krName: "호텔 복귀", desc: "", img: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=500&q=80" } ] },
+                { day: "Day 11", date: "11/08", weather: { high: 11, low: 3, icon: "☀️" }, items: [ { time: "09:00 AM", task: "出發", loc: "Seongsu Hotel", krName: "호텔 출발", desc: "前往安國", img: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=500&q=80" }, { time: "09:30 AM", task: "Jayeondo 鹽麵包", loc: "Anguk Station", krName: "자연도소금빵", desc: "排隊名店", img: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=500&q=80" }, { time: "11:00 AM", task: "Arario in Space", loc: "Arario Museum in Space", krName: "아라리오", desc: "金壽根傑作", img: "https://images.unsplash.com/photo-1601362840469-51e4d8d58785?w=500&q=80" }, { time: "02:00 PM", task: "Archivist 拿鐵", loc: "Archivist Seoul", krName: "아키비스트", desc: "神級拿鐵", img: "https://images.unsplash.com/photo-1481833761820-0509d3217039?w=500&q=80" }, { time: "07:00 PM", task: "Sanullim 1992", loc: "Sanullim 1992", krName: "산울림1992", desc: "傳統酒空間", img: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=500&q=80" }, { time: "10:00 PM", task: "返回飯店", loc: "Seongsu Hotel", krName: "호텔 복귀", desc: "", img: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=500&q=80" } ] },
+                { day: "Day 12", date: "11/09", weather: { high: 10, low: 2, icon: "☀️" }, items: [ { time: "10:30 AM", task: "出發", loc: "Seongsu Hotel", krName: "호텔 출발", desc: "前往漢南", img: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=500&q=80" }, { time: "11:30 AM", task: "Maha Hannam", loc: "Maha Hannam", krName: "마하 한남", desc: "老房複合", img: "https://images.unsplash.com/photo-1616422285623-14bf51a2e7c4?w=500&q=80" }, { time: "02:00 PM", task: "Allwrite", loc: "Allwrite Hannam", krName: "올라이트", desc: "文具選物", img: "https://images.unsplash.com/photo-1585314062340-f1a5a7c9328d?w=500&q=80" }, { time: "04:30 PM", task: "29cm Home", loc: "29cm Home Hannam", krName: "이십구센티미터", desc: "設計電商", img: "https://images.unsplash.com/photo-1605814589253-1aa8573229b4?w=500&q=80" }, { time: "08:00 PM", task: "返回飯店", loc: "Seongsu Hotel", krName: "호텔 복귀", desc: "", img: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=500&q=80" } ] },
+                { day: "Day 13", date: "11/10", weather: { high: 9, low: 1, icon: "☁️" }, items: [ { time: "10:30 AM", task: "出發", loc: "Seongsu Hotel", krName: "호텔 출발", desc: "探索聖水洞", img: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=500&q=80" }, { time: "11:00 AM", task: "Point of View", loc: "Point of View Seoul", krName: "포인트오브뷰", desc: "陳列天花板", img: "https://images.unsplash.com/photo-1585314062340-f1a5a7c9328d?w=500&q=80" }, { time: "02:00 PM", task: "Samuel Smalls", loc: "Samuel Smalls Seoul", krName: "사무엘스몰즈", desc: "中古家具", img: "https://images.unsplash.com/photo-1596079890744-c1a0462d0975?w=500&q=80" }, { time: "04:30 PM", task: "Haus Nowhere", loc: "Haus Nowhere Seoul", krName: "하우스 도산", desc: "空間張力", img: "https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?w=500&q=80" }, { time: "09:00 PM", task: "返回飯店", loc: "Seongsu Hotel", krName: "호텔 복귀", desc: "整理行李", img: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=500&q=80" } ] },
+                { day: "Day 14", date: "11/11", weather: { high: 8, low: 0, icon: "❄️" }, items: [ { time: "09:30 AM", task: "退房出發", loc: "Seongsu Hotel", krName: "체크아웃", desc: "往汝矣島", img: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=500&q=80" }, { time: "10:30 AM", task: "The Hyundai Seoul", loc: "The Hyundai Seoul", krName: "더현대 서울", desc: "商場巔峰", img: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=500&q=80" }, { time: "01:30 PM", task: "前往仁川機場", loc: "Incheon Airport T1", krName: "인천공항 이동", desc: "搭 MH67", img: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=500&q=80" }, { time: "10:15 PM", task: "抵達家", loc: HOME_ADDR, krName: "집으로", desc: "圓滿結束", img: "https://images.unsplash.com/photo-1556012018-50c5c0da73bf?w=500&q=80" } ] }
             ]
         };
 
-        // 狀態管理
         let tripData = initialTripData; 
         let currentDayIdx = 0;
-        let packItems = JSON.parse(localStorage.getItem('kr_pack')) || [{c:"衣物", n:"發熱衣"}, {c:"證件", n:"護照"}];
+        let packItems = JSON.parse(localStorage.getItem('kr_pack_v2')) || [{c:"🧳 衣物配件", n:"發熱衣"}, {c:"📄 重要證件", n:"護照"}];
 
-        // 啟動
+        // 假資料產生器：自動產生 24 小時天氣曲線
+        function generate24hWeather(high, low, icon) {
+            let res = [];
+            for(let i=0; i<24; i++) {
+                let ampm = i < 12 ? 'AM' : 'PM';
+                let hr = i % 12 === 0 ? 12 : i % 12;
+                let temp = Math.round(low + (high - low) * Math.sin((i / 23) * Math.PI));
+                res.push({t: `${hr} ${ampm}`, temp, ic: icon});
+            }
+            return res;
+        }
+
         async function init() {
             await initDB;
             let savedTrip = await getFromDB('tripState');
             if(savedTrip) tripData = savedTrip;
             
+            // 補齊動態天氣數據
+            tripData.daily.forEach(d => {
+                d.weather.pop = d.weather.pop || Math.floor(Math.random()*30);
+                d.weather.feel = Math.round((d.weather.high + d.weather.low)/2 - 1);
+                d.weather.hum = 40 + Math.floor(Math.random()*20);
+                d.weather.uv = 3 + Math.floor(Math.random()*4);
+                d.weather.hourly = generate24hWeather(d.weather.high, d.weather.low, d.weather.icon);
+            });
+
             renderDayNav();
             renderDaily(currentDayIdx);
             renderFlights();
@@ -415,58 +277,89 @@
             renderLists();
         }
 
-        async function saveTripState() {
-            await saveToDB('tripState', tripData);
-        }
-
-        // ================= UI 渲染邏輯 =================
+        async function saveTripState() { await saveToDB('tripState', tripData); }
 
         function renderDayNav() {
             const nav = document.getElementById('day-selector');
             nav.innerHTML = tripData.daily.map((d, i) => `
-                <button class="day-btn ${i === currentDayIdx ? 'active' : ''}" onclick="selectDay(${i})">
+                <div class="day-btn ${i === currentDayIdx ? 'active' : ''}" onclick="selectDay(${i})">
                     <span class="font-bold">${d.day}</span><br><span class="text-[10px]">${d.date}</span>
-                </button>
+                </div>
             `).join('');
         }
 
-        function selectDay(i) {
-            currentDayIdx = i;
-            renderDayNav();
-            renderDaily(i);
-        }
+        function selectDay(i) { currentDayIdx = i; renderDayNav(); renderDaily(i); }
 
         function renderDaily(idx) {
             const d = tripData.daily[idx];
             const w = d.weather;
             
-            // 進階天氣
-            let wHtml = `
-                <div class="flex justify-between items-center border-b border-gray-100 pb-3 mb-3">
-                    <div class="font-bold text-lg">${w.icon} ${w.high}° / ${w.low}° <span class="text-xs font-normal text-gray-400">體感 ${w.feel}°</span></div>
-                    <div class="text-xs text-right text-gray-500">降雨 ${w.pop}% <br>濕度 ${w.hum}% | UV ${w.uv}</div>
+            document.getElementById('weather-banner').innerHTML = `
+                <div class="flex justify-between items-center border-b border-gray-200 pb-3 mb-3">
+                    <div class="font-bold text-xl">${w.icon} ${w.high}° / ${w.low}° <span class="text-xs font-normal text-gray-500 ml-2">體感 ${w.feel}°</span></div>
+                    <div class="text-[10px] text-right text-gray-400 leading-tight">降雨 ${w.pop}%<br>濕度 ${w.hum}% | UV ${w.uv}</div>
                 </div>
-                <div class="flex justify-between text-center text-xs">
-                    ${w.hourly.map(h => `<div><div class="mb-1">${h.t}</div><div>${h.ic} ${h.temp}°</div></div>`).join('')}
+                <div class="h-scroll">
+                    ${w.hourly.map(h => `<div class="hourly-item"><div class="mb-1 opacity-70">${h.t}</div><div>${h.ic} ${h.temp}°</div></div>`).join('')}
                 </div>
             `;
-            document.getElementById('weather-banner').innerHTML = wHtml;
 
-            // 行程節點
             let html = '';
             d.items.forEach((item, i) => {
-                const isLast = i === d.items.length - 1;
-                html += renderItemCard(idx, i, item);
-                if(!isLast) {
+                const uid = `${idx}_${i}`;
+                html += `
+                <div class="liquid-glass mb-0 draggable" id="card_${uid}" draggable="true" ondragstart="drag(event, ${idx}, ${i})" ondragover="allowDrop(event)" ondrop="drop(event, ${idx}, ${i})">
+                    <div class="item-header">
+                        <img id="img_${uid}" src="${item.img}">
+                        <label class="edit-img-btn"><input type="file" accept="image/*" onchange="updateHeaderImg(this, ${idx}, ${i})"><i class="fa-solid fa-image"></i></label>
+                    </div>
+                    <div class="p-5" id="wrap_${uid}">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-sm font-black font-mono text-[#A39B8B] bg-white px-2 py-0.5 rounded shadow-sm">${item.time}</span>
+                            <div class="order-btns">
+                                <button onclick="moveOrder(${idx}, ${i}, -1)"><i class="fa-solid fa-arrow-up"></i></button>
+                                <button onclick="moveOrder(${idx}, ${i}, 1)"><i class="fa-solid fa-arrow-down"></i></button>
+                            </div>
+                        </div>
+                        <h4 class="text-lg font-bold mt-1 text-gray-800">${item.task} <span class="kr-text text-xs font-normal text-[#A39B8B] ml-1 bg-[#F8F6F0] px-1 rounded">${item.krName}</span></h4>
+                        <p class="text-xs text-gray-500 mt-1"><i class="fa-solid fa-location-dot mr-1"></i>${item.loc}</p>
+                        
+                        <button class="w-full text-center mt-3 py-1.5 bg-[rgba(0,0,0,0.03)] rounded-lg text-gray-400 text-xs font-bold" onclick="toggleExpand('${uid}')"><i class="fa-solid fa-chevron-down"></i> 展開詳細</button>
+                        
+                        <div class="expand-content">
+                            <div id="display_info_${uid}">
+                                <p class="text-sm text-gray-600 mb-3">${item.desc}</p>
+                                <button class="btn-primary text-[10px] px-2 py-1 mb-3" onclick="toggleEdit('${uid}')"><i class="fa-solid fa-pen"></i> 編輯資訊</button>
+                            </div>
+                            
+                            <!-- 編輯表單 (預設隱藏) -->
+                            <div id="edit_form_${uid}" class="hidden space-y-2 mb-3 bg-white p-3 rounded-xl border">
+                                <input id="edit_task_${uid}" value="${item.task}" placeholder="主標題">
+                                <input id="edit_kr_${uid}" value="${item.krName}" placeholder="韓文名稱">
+                                <input id="edit_loc_${uid}" value="${item.loc}" placeholder="Google 定位點">
+                                <textarea id="edit_desc_${uid}" rows="2">${item.desc}</textarea>
+                                <button class="btn-primary w-full" onclick="saveItemEdit(${idx}, ${i}, '${uid}')">儲存</button>
+                            </div>
+
+                            <div class="pt-3 border-t border-gray-100">
+                                <label class="text-xs font-bold text-[#A39B8B] block mb-2">【添加筆記】</label>
+                                <textarea id="note_${uid}" rows="2" placeholder="紀錄花費或排隊時間..." onchange="saveNote(${idx}, ${i}, this.value)"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+                
+                // 動態 A 到 B 導航連接線
+                if(i < d.items.length - 1) {
                     const nextLoc = d.items[i+1].loc;
                     html += `
-                        <div class="transit-node">
-                            <div class="transit-line"></div>
-                            <div class="transit-info z-10">
-                                <i class="fa-solid fa-car-side"></i> 移動
-                                <a href="https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(item.loc)}&destination=${encodeURIComponent(nextLoc)}&travelmode=driving" target="_blank" class="bg-[#A39B8B] text-white px-2 py-1 rounded text-[10px] ml-2 font-bold"><i class="fa-solid fa-location-arrow"></i> 一鍵導航路線</a>
+                        <div class="flex flex-col items-center my-[-5px] relative z-0">
+                            <div class="w-[2px] h-[30px]" style="background: repeating-linear-gradient(to bottom, #ccc 0, #ccc 4px, transparent 4px, transparent 8px);"></div>
+                            <div class="bg-white border border-gray-200 rounded-full px-3 py-1 shadow-sm text-xs text-gray-500 z-10 flex items-center">
+                                <i class="fa-solid fa-car-side mr-2"></i>
+                                <a href="https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(item.loc)}&destination=${encodeURIComponent(nextLoc)}&travelmode=driving" target="_blank" class="bg-[#A39B8B] text-white px-2 py-0.5 rounded ml-1 font-bold"><i class="fa-solid fa-location-arrow mr-1"></i>導航至下個點</a>
                             </div>
-                            <div class="transit-line"></div>
+                            <div class="w-[2px] h-[30px]" style="background: repeating-linear-gradient(to bottom, #ccc 0, #ccc 4px, transparent 4px, transparent 8px);"></div>
                         </div>
                     `;
                 }
@@ -474,257 +367,92 @@
             document.getElementById('daily-content').innerHTML = html;
         }
 
-        function renderItemCard(dIdx, iIdx, item) {
-            const uid = `${dIdx}_${iIdx}`;
-            
-            // 菜單邏輯
-            let menuHtml = '';
-            if(item.menu) {
-                menuHtml = `<div class="mt-3 bg-gray-50 p-3 rounded-xl border"><p class="text-xs font-bold mb-2">🍽️ 參考菜單</p>` + 
-                           item.menu.map(m => `<div class="flex justify-between text-xs text-gray-600 border-b border-gray-100 pb-1 mb-1"><span>${m.n}</span><span>${m.p}</span></div>`).join('') + `</div>`;
-            }
-
-            return `
-                <div class="liquid-glass mb-0" id="card_${uid}" draggable="true" ondragstart="drag(event, ${dIdx}, ${iIdx})" ondragover="allowDrop(event)" ondrop="drop(event, ${dIdx}, ${iIdx})">
-                    <div class="item-header draggable">
-                        <img id="img_${uid}" src="${item.img}" alt="${item.task}">
-                        <label class="edit-img-btn"><input type="file" accept="image/*" onchange="updateHeaderImg(this, ${dIdx}, ${iIdx})"><i class="fa-solid fa-camera text-sm"></i></label>
-                    </div>
-                    <div class="p-5" id="wrap_${uid}">
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="text-sm font-black text-gray-800 font-mono"><i class="fa-regular fa-clock text-xs text-gray-400 mr-1"></i>${item.time}</span>
-                            <span class="text-[10px] bg-white px-2 py-1 border rounded text-gray-500">${item.loc}</span>
-                        </div>
-                        <h4 class="text-lg font-bold mt-2 text-gray-800">${item.task}</h4>
-                        <button class="expand-btn w-full text-center mt-3 py-1 bg-gray-50 rounded-lg text-gray-400 text-xs" onclick="toggleExpand('${uid}')"><i class="fa-solid fa-chevron-down"></i> 展開詳細</button>
-                        
-                        <div class="expand-content">
-                            <p class="kr-text text-sm font-bold mb-2 text-[#A39B8B]">${item.krName}</p>
-                            <p class="text-sm text-gray-600">${item.desc}</p>
-                            ${menuHtml}
-                            
-                            <div class="mt-4 pt-3 border-t border-gray-100">
-                                <label class="text-xs font-bold text-gray-400 block mb-2">【添加笔记】</label>
-                                <textarea id="note_${uid}" rows="2" placeholder="..." onchange="saveNote(${dIdx}, ${iIdx}, this.value)"></textarea>
-                                
-                                <div class="mt-3 flex gap-2">
-                                    <label class="file-label"><input type="file" accept="image/*" multiple onchange="addPhotos(this, ${dIdx}, ${iIdx})"><i class="fa-solid fa-images"></i> + 照片 (最多5張)</label>
-                                    <label class="file-label"><input type="file" accept=".pdf" onchange="addFile(this, ${dIdx}, ${iIdx})"><i class="fa-solid fa-file-pdf"></i> + 檔案</label>
-                                </div>
-                                <div id="thumb_wrap_${uid}" class="thumb-grid"></div>
-                                <div id="file_wrap_${uid}" class="mt-2 text-xs text-blue-500"></div>
-
-                                <div class="mt-4 flex justify-end">
-                                    <select class="text-xs border p-1 rounded" onchange="moveToDay(${dIdx}, ${iIdx}, this.value)">
-                                        <option value="">移動至其他天...</option>
-                                        ${tripData.daily.map((d, nIdx) => `<option value="${nIdx}">移至 ${d.day}</option>`).join('')}
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        // ================= 互動功能 =================
-
+        // --- 互動與編輯邏輯 ---
         function toggleExpand(uid) {
             const wrap = document.getElementById(`wrap_${uid}`);
             wrap.classList.toggle('expanded');
             if(wrap.classList.contains('expanded')) loadUserData(uid.split('_')[0], uid.split('_')[1]);
         }
 
-        // --- 拖曳排序與跨日 ---
-        let dragSrcInfo = null;
-        function drag(ev, dIdx, iIdx) {
-            dragSrcInfo = { dIdx, iIdx };
-            ev.currentTarget.classList.add('dragging');
-            ev.dataTransfer.effectAllowed = 'move';
+        function toggleEdit(uid) {
+            document.getElementById(`display_info_${uid}`).classList.toggle('hidden');
+            document.getElementById(`edit_form_${uid}`).classList.toggle('hidden');
         }
+
+        function saveItemEdit(dIdx, iIdx, uid) {
+            tripData.daily[dIdx].items[iIdx].task = document.getElementById(`edit_task_${uid}`).value;
+            tripData.daily[dIdx].items[iIdx].krName = document.getElementById(`edit_kr_${uid}`).value;
+            tripData.daily[dIdx].items[iIdx].loc = document.getElementById(`edit_loc_${uid}`).value;
+            tripData.daily[dIdx].items[iIdx].desc = document.getElementById(`edit_desc_${uid}`).value;
+            saveTripState();
+            renderDaily(currentDayIdx);
+        }
+
+        // --- 原生拖曳與排序 ---
+        let dragSrc = null;
+        function drag(ev, d, i) { dragSrc = {d, i}; ev.currentTarget.classList.add('dragging'); }
         function allowDrop(ev) { ev.preventDefault(); }
-        function drop(ev, t_dIdx, t_iIdx) {
+        function drop(ev, t_d, t_i) {
             ev.preventDefault();
             document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
-            if (!dragSrcInfo || (dragSrcInfo.dIdx === t_dIdx && dragSrcInfo.iIdx === t_iIdx)) return;
-            
-            const item = tripData.daily[dragSrcInfo.dIdx].items.splice(dragSrcInfo.iIdx, 1)[0];
-            tripData.daily[t_dIdx].items.splice(t_iIdx, 0, item);
-            saveTripState();
-            renderDaily(currentDayIdx);
+            if (!dragSrc || dragSrc.i === t_i) return;
+            const item = tripData.daily[dragSrc.d].items.splice(dragSrc.i, 1)[0];
+            tripData.daily[t_d].items.splice(t_i, 0, item);
+            saveTripState(); renderDaily(currentDayIdx);
         }
-        function moveToDay(fromD, fromI, toD) {
-            if(!toD) return;
-            const item = tripData.daily[fromD].items.splice(fromI, 1)[0];
-            tripData.daily[toD].items.push(item);
-            saveTripState();
-            renderDaily(currentDayIdx);
-            alert("移動成功！");
+        function moveOrder(dIdx, iIdx, dir) {
+            const arr = tripData.daily[dIdx].items;
+            if(iIdx + dir < 0 || iIdx + dir >= arr.length) return;
+            const temp = arr[iIdx];
+            arr[iIdx] = arr[iIdx + dir];
+            arr[iIdx + dir] = temp;
+            saveTripState(); renderDaily(currentDayIdx);
         }
 
-        // --- 離線照片與檔案 (IndexedDB) ---
+        // --- 圖片與本機資料 ---
         async function updateHeaderImg(input, d, i) {
             if (!input.files[0]) return;
-            const base64 = await toBase64(input.files[0]);
-            tripData.daily[d].items[i].img = base64;
-            document.getElementById(`img_${d}_${i}`).src = base64;
+            const b64 = await toBase64(input.files[0]);
+            tripData.daily[d].items[i].img = b64;
+            document.getElementById(`img_${d}_${i}`).src = b64;
             saveTripState();
         }
-
-        async function saveNote(d, i, val) {
-            await saveToDB(`note_${d}_${i}`, val);
-        }
-
-        async function addPhotos(input, d, i) {
-            if (!input.files.length) return;
-            const key = `photos_${d}_${i}`;
-            let existing = await getFromDB(key) || [];
-            
-            for(let f of input.files) {
-                if(existing.length >= 5) break;
-                existing.push(await toBase64(f));
-            }
-            await saveToDB(key, existing);
-            renderUserData(d, i);
-        }
-
-        async function addFile(input, d, i) {
-            if (!input.files[0]) return;
-            const key = `pdf_${d}_${i}`;
-            const file = input.files[0];
-            await saveToDB(key, { name: file.name, data: await toBase64(file) });
-            renderUserData(d, i);
-        }
-
+        async function saveNote(d, i, val) { await saveToDB(`note_${d}_${i}`, val); }
         async function loadUserData(d, i) {
             const note = await getFromDB(`note_${d}_${i}`);
             if(note) document.getElementById(`note_${d}_${i}`).value = note;
-            renderUserData(d, i);
         }
+        function toBase64(file) { return new Promise((r, j) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => r(reader.result); }); }
 
-        async function renderUserData(d, i) {
-            const photos = await getFromDB(`photos_${d}_${i}`);
-            if(photos) {
-                document.getElementById(`thumb_wrap_${d}_${i}`).innerHTML = photos.map(p => `<img src="${p}" class="thumb-box" onclick="showLightbox('${p}')">`).join('');
-            }
-            const pdf = await getFromDB(`pdf_${d}_${i}`);
-            if(pdf) {
-                document.getElementById(`file_wrap_${d}_${i}`).innerHTML = `<a href="${pdf.data}" download="${pdf.name}"><i class="fa-solid fa-paperclip"></i> ${pdf.name}</a>`;
-            }
-        }
-
-        function showLightbox(src) {
-            document.getElementById('lightbox-img').src = src;
-            document.getElementById('lightbox').style.display = 'flex';
-        }
-
-        function toBase64(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = error => reject(error);
-            });
-        }
-
-        // --- 其他 Tab 渲染 ---
-        function renderFlights() {
-            document.getElementById('flight-content').innerHTML = tripData.flights.map(f => `
-                <div class="liquid-glass p-5 mb-4">
-                    <p class="text-xs font-bold text-gray-400">${f.title}</p>
-                    <div class="flex items-center my-2">
-                        <i class="fa-solid ${f.airlineIcon} text-2xl mr-3 text-[#A39B8B]"></i>
-                        <div>
-                            <p class="font-bold text-lg">${f.route} <span class="text-sm bg-white border px-1 rounded ml-1">${f.flight}</span></p>
-                            <p class="text-xs text-gray-500 font-mono">${f.time}</p>
-                        </div>
-                    </div>
-                    <p class="text-sm text-gray-600 bg-[rgba(255,255,255,0.5)] p-2 rounded">${f.term}：${f.desc}</p>
-                </div>
-            `).join('');
-        }
-
-        function renderStays() {
-            document.getElementById('stay-content').innerHTML = tripData.stays.map(s => `
-                <div class="liquid-glass pb-5 mb-5">
-                    <img src="${s.img}" class="w-full h-[150px] object-cover rounded-t-[24px]">
-                    <div class="px-5 pt-4">
-                        <span class="text-[10px] bg-[#A39B8B] text-white px-2 py-1 rounded-full">${s.date}</span>
-                        <h3 class="font-bold text-lg mt-2">${s.name}</h3>
-                        <p class="text-sm text-gray-500 mb-2"><i class="fa-solid fa-location-dot"></i> ${s.addr}</p>
-                        <iframe class="w-full h-[120px] rounded-xl border-0 mt-2" src="https://maps.google.com/maps?q=${encodeURIComponent(s.map)}&t=&z=14&ie=UTF8&iwloc=&output=embed"></iframe>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // --- 行李與翻譯 ---
+        // --- 靜態渲染 ---
+        function renderFlights() { document.getElementById('flight-content').innerHTML = tripData.flights.map(f => `<div class="liquid-glass p-5 mb-4"><p class="text-xs font-bold text-[#A39B8B]">${f.title}</p><div class="flex items-center my-2"><i class="fa-solid ${f.airlineIcon} text-2xl mr-3 text-gray-400"></i><div><p class="font-bold text-lg">${f.route} <span class="text-sm bg-white border px-1 rounded ml-1">${f.flight}</span></p><p class="text-xs text-gray-500 font-mono">${f.time}</p></div></div><p class="text-sm text-gray-600 bg-white p-2 rounded-xl mt-3">${f.term}：${f.desc}</p></div>`).join(''); }
+        function renderStays() { document.getElementById('stay-content').innerHTML = tripData.stays.map(s => `<div class="liquid-glass pb-5 mb-5"><img src="${s.img}" class="w-full h-[140px] object-cover rounded-t-[20px]"><div class="px-5 pt-4"><span class="text-[10px] bg-[#A39B8B] text-white px-2 py-1 rounded-full">${s.date}</span><h3 class="font-bold text-lg mt-2">${s.name}</h3><p class="text-sm text-gray-500 mb-2"><i class="fa-solid fa-location-dot"></i> ${s.addr}</p></div></div>`).join(''); }
+        
         function renderLists() {
-            // Group by category
             let groups = {};
-            packItems.forEach((item, i) => {
-                if(!groups[item.c]) groups[item.c] = [];
-                groups[item.c].push({n: item.n, idx: i});
-            });
+            packItems.forEach((item, i) => { if(!groups[item.c]) groups[item.c] = []; groups[item.c].push({n: item.n, idx: i}); });
             let html = '';
             for(let cat in groups) {
-                html += `<div class="mb-3"><div class="text-xs font-bold text-gray-400 mb-2 border-b pb-1">${cat}</div>`;
-                groups[cat].forEach(itm => {
-                    html += `
-                        <div class="flex items-center gap-3 mb-2">
-                            <input type="checkbox" class="w-4 h-4 accent-[#A39B8B]">
-                            <span class="text-sm">${itm.n}</span>
-                            <button onclick="delPack(${itm.idx})" class="ml-auto text-gray-300 hover:text-red-400"><i class="fa-solid fa-xmark"></i></button>
-                        </div>`;
-                });
+                html += `<div class="mb-4 bg-white p-3 rounded-xl border border-gray-100 shadow-sm"><div class="text-xs font-bold text-[#A39B8B] mb-2 border-b pb-1">${cat}</div>`;
+                groups[cat].forEach(itm => { html += `<div class="flex items-center gap-3 mb-2"><input type="checkbox" class="w-4 h-4 accent-[#A39B8B]"><span class="text-sm">${itm.n}</span><button onclick="delPack(${itm.idx})" class="ml-auto text-gray-300"><i class="fa-solid fa-xmark"></i></button></div>`; });
                 html += `</div>`;
             }
             document.getElementById('prep-list').innerHTML = html;
         }
+        function addPackItem() { const c = document.getElementById('packCategory').value; const n = document.getElementById('newPrep').value; if(n) { packItems.push({c, n}); document.getElementById('newPrep').value = ''; localStorage.setItem('kr_pack_v2', JSON.stringify(packItems)); renderLists(); } }
+        function delPack(i) { packItems.splice(i, 1); localStorage.setItem('kr_pack_v2', JSON.stringify(packItems)); renderLists(); }
 
-        function addPackItem() {
-            const cat = document.getElementById('packCategory').value || '一般';
-            const name = document.getElementById('newPrep').value;
-            if(name) {
-                packItems.push({c: cat, n: name});
-                document.getElementById('newPrep').value = '';
-                localStorage.setItem('kr_pack', JSON.stringify(packItems));
-                renderLists();
-            }
-        }
-        function delPack(i) {
-            packItems.splice(i, 1);
-            localStorage.setItem('kr_pack', JSON.stringify(packItems));
-            renderLists();
-        }
-
+        // --- 翻譯 API ---
         async function translateText() {
             const input = document.getElementById('transInput').value;
             const outNode = document.getElementById('transOutput');
-            if(!input) return;
-            outNode.value = "翻譯中...";
-            try {
-                const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(input)}&langpair=zh|ko`);
-                const data = await res.json();
-                outNode.value = data.responseData.translatedText;
-            } catch(e) { outNode.value = "失敗，請檢查網路。"; }
+            if(!input) return; outNode.value = "翻譯中...";
+            try { const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(input)}&langpair=zh|ko`); const data = await res.json(); outNode.value = data.responseData.translatedText; } 
+            catch(e) { outNode.value = "失敗，請檢查網路。"; }
         }
+        function speakKorean() { const text = document.getElementById('transOutput').value; if(!text) return; const u = new SpeechSynthesisUtterance(text); u.lang = 'ko-KR'; window.speechSynthesis.speak(u); }
 
-        function speakKorean() {
-            const text = document.getElementById('transOutput').value;
-            if(!text) return;
-            const u = new SpeechSynthesisUtterance(text);
-            u.lang = 'ko-KR';
-            window.speechSynthesis.speak(u);
-        }
-
-        function changeSection(id, btn) {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            btn.classList.add('active');
-            window.scrollTo(0, 0);
-        }
+        function changeSection(id, btn) { document.querySelectorAll('.section').forEach(s => s.classList.remove('active')); document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active')); document.getElementById(id).classList.add('active'); btn.classList.add('active'); window.scrollTo(0, 0); }
 
         window.onload = init;
     </script>
