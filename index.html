@@ -3,16 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>旅遊規劃 App</title>
+    <title>我的旅行繪本</title>
+    <!-- App Icon (手繪旅遊本風格) -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23F5F3EC%22 rx=%2220%22/><path d=%22M20 10h10v80H20z%22 fill=%22%23D8A48F%22/><path d=%22M40 30h40v5H40zm0 15h40v5H40zm0 15h30v5H40z%22 fill=%22%23A39B8B%22/></svg>">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tesseract.js for OCR -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700&family=Noto+Sans+KR:wght@300;400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700&family=Kalam:wght@400;700&display=swap');
         
         :root {
             --kr-cream: #F5F3EC;
             --kr-text: #4A4641;
-            --kr-accent: #9A9283;
+            --kr-accent: #9A9283; /* 動態可變顏色 */
             --kr-glass: rgba(255, 255, 255, 0.4);
             --kr-glass-border: rgba(255, 255, 255, 0.8);
             --kr-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.1);
@@ -26,19 +32,10 @@
             background-attachment: fixed;
             -webkit-tap-highlight-color: transparent;
         }
-        .kr-text { font-family: 'Noto Sans KR', sans-serif; }
+        .hand-drawn { font-family: 'Kalam', 'Noto Sans TC', cursive; }
 
-        /* 極致 iOS Liquid Glass Effect */
-        .liquid-glass {
-            background: var(--kr-glass);
-            backdrop-filter: saturate(200%) blur(40px);
-            -webkit-backdrop-filter: saturate(200%) blur(40px);
-            border: 1px solid var(--kr-glass-border);
-            box-shadow: var(--kr-shadow), inset 0 1px 1px rgba(255,255,255,0.6);
-            border-radius: 24px;
-            position: relative;
-            z-index: 10;
-        }
+        /* iOS Liquid Glass */
+        .liquid-glass { background: var(--kr-glass); backdrop-filter: saturate(200%) blur(40px); -webkit-backdrop-filter: saturate(200%) blur(40px); border: 1px solid var(--kr-glass-border); box-shadow: var(--kr-shadow), inset 0 1px 1px rgba(255,255,255,0.6); border-radius: 24px; position: relative; z-index: 10; }
 
         .view-screen { display: none; min-height: 100vh; padding-bottom: 110px; animation: fadeIn 0.4s ease; }
         .view-screen.active { display: block; }
@@ -46,35 +43,24 @@
         .tab-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* 底部導航 */
-        .bottom-nav {
-            position: fixed; bottom: 0; width: 100%;
-            background: rgba(245, 243, 236, 0.75);
-            backdrop-filter: saturate(200%) blur(30px);
-            -webkit-backdrop-filter: saturate(200%) blur(30px);
-            border-top: 1px solid rgba(255,255,255,0.8);
-            display: flex; justify-content: space-around;
-            padding: 12px 0 25px 0; z-index: 1000;
-        }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: rgba(245, 243, 236, 0.85); backdrop-filter: saturate(200%) blur(30px); -webkit-backdrop-filter: saturate(200%) blur(30px); border-top: 1px solid rgba(255,255,255,0.8); display: flex; justify-content: space-around; padding: 12px 0 25px 0; z-index: 1000; }
         .nav-item { color: #C2BCB3; transition: 0.3s; position: relative; }
         .nav-item.active { color: var(--kr-text); transform: translateY(-4px); }
         .nav-item.active::after { content:''; position:absolute; bottom:-6px; left:50%; transform:translateX(-50%); width:4px; height:4px; background:var(--kr-accent); border-radius:50%; }
 
-        /* 橫向卷軸 (修復邊緣裁切) */
-        .h-scroll-container { margin: -10px; padding: 10px; overflow: hidden; }
-        .h-scroll { display: flex; overflow-x: auto; gap: 12px; padding-bottom: 10px; scroll-snap-type: x mandatory; scrollbar-width: none; }
-        .h-scroll::-webkit-scrollbar { display: none; }
+        /* 修復橫向滑動裁切 */
+        .h-scroll-container { margin: 0 -20px; padding: 10px 20px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+        .h-scroll-container::-webkit-scrollbar { display: none; }
+        .h-scroll { display: flex; gap: 12px; width: max-content; padding-bottom: 5px; }
         
-        .day-btn { flex: 0 0 calc((100% - 50px) / 5.5); scroll-snap-align: start; padding: 12px 0; border-radius: 20px; background: rgba(255,255,255,0.7); border: 1px solid #fff; color: #999; text-align: center; font-size: 0.8rem; box-shadow: 0 4px 12px rgba(0,0,0,0.04), inset 0 1px 1px rgba(255,255,255,1); transition: 0.3s; cursor: pointer; }
-        .day-btn.active { background: var(--kr-accent); color: #fff; border-color: var(--kr-accent); box-shadow: 0 8px 20px rgba(154, 146, 131, 0.5); transform: scale(1.05); font-weight: bold; }
+        .day-btn { flex: 0 0 65px; scroll-snap-align: center; padding: 12px 0; border-radius: 20px; background: rgba(255,255,255,0.7); border: 1px solid #fff; color: #999; text-align: center; font-size: 0.8rem; box-shadow: 0 4px 12px rgba(0,0,0,0.04); transition: 0.3s; cursor: pointer; }
+        .day-btn.active { background: var(--kr-accent); color: #fff; border-color: var(--kr-accent); box-shadow: 0 8px 20px rgba(0,0,0,0.15); transform: scale(1.05); font-weight: bold; }
 
-        .hourly-item { flex: 0 0 55px; text-align: center; font-size: 0.75rem; padding: 8px 0; border-radius: 16px; transition: 0.3s; background: rgba(255,255,255,0.3); border: 1px solid transparent; }
-        .hourly-item.active-hour { background: var(--kr-accent); color: white; box-shadow: 0 6px 15px rgba(154, 146, 131, 0.4); font-weight: bold; transform: scale(1.08); border-color: rgba(255,255,255,0.3); }
+        .hourly-item { flex: 0 0 60px; text-align: center; font-size: 0.75rem; padding: 8px 0; border-radius: 16px; transition: 0.3s; background: rgba(255,255,255,0.4); border: 1px solid transparent; scroll-snap-align: center; }
+        .hourly-item.active-hour { background: var(--kr-accent); color: white; box-shadow: 0 6px 15px rgba(0,0,0,0.15); font-weight: bold; transform: scale(1.1); border-color: rgba(255,255,255,0.3); }
 
-        /* 景點卡片與連接線 */
         .item-header { position: relative; width: 100%; height: 180px; border-radius: 24px 24px 0 0; overflow: hidden; background: #e0e0e0; }
         .item-header img { width: 100%; height: 100%; object-fit: cover; }
-        .edit-img-btn { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.7); color: var(--kr-text); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(10px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         
         .transit-node { display: flex; flex-direction: column; align-items: center; margin: -15px 0; position: relative; z-index: 1; }
         .transit-line { width: 2px; height: 45px; background: repeating-linear-gradient(to bottom, #d1d1d1 0, #d1d1d1 4px, transparent 4px, transparent 8px); }
@@ -82,49 +68,64 @@
         .expand-content { display: none; margin-top: 15px; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 15px; }
         .expanded .expand-content { display: block; animation: fadeIn 0.3s ease; }
         
-        /* 表單與輸入 */
-        input, textarea, select { width: 100%; background: rgba(255,255,255,0.7); border: 1px solid #fff; border-radius: 12px; padding: 10px 14px; font-size: 0.85rem; color: #4A4641; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); transition: 0.2s; }
+        input, textarea, select { width: 100%; background: rgba(255,255,255,0.7); border: 1px solid #fff; border-radius: 12px; padding: 10px 14px; font-size: 0.85rem; color: #4A4641; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); }
         input[type="time"] { background: transparent; border: none; box-shadow: none; padding: 0; font-size: 0.9rem; font-family: monospace; width: auto; outline: none; -webkit-appearance: none; }
         .file-hide { display: none; }
-        .btn-primary { background: var(--kr-accent); color: white; padding: 10px 18px; border-radius: 14px; font-size: 0.85rem; font-weight: bold; border: none; box-shadow: 0 4px 15px rgba(154,146,131,0.3); }
+        .btn-primary { background: var(--kr-accent); color: white; padding: 10px 18px; border-radius: 14px; font-size: 0.85rem; font-weight: bold; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
         .btn-fab { position: fixed; bottom: 110px; right: 20px; background: var(--kr-text); color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; box-shadow: 0 6px 20px rgba(0,0,0,0.2); z-index: 900; }
         .btn-map-fab { position: fixed; bottom: 175px; right: 20px; background: white; color: var(--kr-accent); width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; box-shadow: 0 6px 20px rgba(0,0,0,0.1); z-index: 900; }
 
-        /* 旅遊書樣式 */
-        .book-card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; border-left: 8px solid var(--kr-accent); cursor: pointer; transition: 0.3s; }
+        /* 繪本選擇樣式 */
+        .book-card { background: white; border-radius: 12px 24px 24px 12px; padding: 20px; box-shadow: 5px 5px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; border-left: 12px solid var(--kr-accent); position: relative; overflow: hidden; cursor: pointer; transition: 0.3s; margin-bottom: 15px; }
+        .book-card::before { content:''; position:absolute; left:12px; top:0; bottom:0; width:2px; background:rgba(0,0,0,0.1); }
         .book-card:active { transform: scale(0.97); }
-        
+        .color-dot { width: 24px; height: 24px; border-radius: 50%; cursor: pointer; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+
         .thumb-grid { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
         .thumb-box { width: 60px; height: 60px; border-radius: 10px; object-fit: cover; cursor: pointer; border: 1px solid #eee; }
 
+        /* Lightbox 最佳化 (內部關閉與滑動) */
         #lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(10px); }
-        #lightbox img { max-width: 95%; max-height: 90%; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        #lightbox .close { position: absolute; top: 20px; right: 25px; color: white; font-size: 35px; cursor: pointer; }
-
+        .lightbox-wrapper { position: relative; max-width: 95%; max-height: 90%; }
+        #lightbox img { width: 100%; height: 100%; object-fit: contain; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .lightbox-close { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; z-index: 2010; }
+        
+        #pdf-viewer { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 2000; flex-direction: column; }
+        #pdf-iframe { flex: 1; width: 100%; border: none; }
+        
         .draggable { cursor: grab; }
         .dragging { opacity: 0.4; border: 2px dashed var(--kr-accent); transform: scale(0.98); }
     </style>
 </head>
 <body>
 
-    <!-- ================= 視圖 1: 首頁 (我的行程) ================= -->
+    <!-- ================= 視圖 1: 首頁 (繪本選擇) ================= -->
     <div id="home-view" class="view-screen active px-5 pt-10">
-        <h1 class="text-3xl font-bold mb-2">我的行程 ✈️</h1>
-        <p class="text-gray-500 text-sm mb-8">選擇一本旅遊書開始規劃</p>
+        <h1 class="text-3xl font-bold mb-1 hand-drawn tracking-wider">My Travel Books ✈️</h1>
+        <p class="text-gray-500 text-sm mb-8">選擇一本旅行繪本開始規劃</p>
         
-        <div id="trip-list" class="space-y-4"></div>
+        <div id="trip-list"></div>
 
-        <button class="w-full mt-6 py-4 bg-white border border-dashed border-gray-300 rounded-2xl text-gray-500 font-bold active:scale-95 transition" onclick="createNewTrip()">
-            <i class="fa-solid fa-plus mr-2"></i> 創建新行程
-        </button>
+        <div class="mt-8 liquid-glass p-5 border-dashed">
+            <h3 class="font-bold text-gray-700 mb-3 text-sm">✨ 創建新繪本</h3>
+            <input type="text" id="new-trip-title" placeholder="輸入旅行名稱..." class="mb-3">
+            <div class="flex gap-3 mb-4">
+                <div class="color-dot bg-[#9A9283]" onclick="selectColor(this, '#9A9283')"></div>
+                <div class="color-dot bg-[#FFD1DC]" onclick="selectColor(this, '#FFD1DC')"></div>
+                <div class="color-dot bg-[#A8E6CF]" onclick="selectColor(this, '#A8E6CF')"></div>
+                <div class="color-dot bg-[#B39CD0]" onclick="selectColor(this, '#B39CD0')"></div>
+                <div class="color-dot bg-[#8FC1E3]" onclick="selectColor(this, '#8FC1E3')"></div>
+            </div>
+            <button class="btn-primary w-full" onclick="createNewTrip()">新增旅行</button>
+        </div>
     </div>
 
-    <!-- ================= 視圖 2: 行程詳情 (App 主體) ================= -->
+    <!-- ================= 視圖 2: 行程詳情 ================= -->
     <div id="trip-view" class="view-screen">
         <header class="p-5 text-center sticky top-0 z-50 liquid-glass rounded-none border-t-0 border-l-0 border-r-0 pb-3 mb-4">
             <div class="flex justify-between items-center">
                 <button onclick="goHome()" class="text-gray-400 text-lg px-2"><i class="fa-solid fa-chevron-left"></i></button>
-                <input type="text" id="trip-title-input" class="text-xl font-bold tracking-widest text-center bg-transparent border-none shadow-none p-0 w-2/3" value="2026 苦盡柑來 🍊" onchange="updateTripTitle()">
+                <input type="text" id="trip-title-input" class="text-xl font-bold tracking-widest text-center bg-transparent border-none shadow-none p-0 w-2/3 hand-drawn" onchange="updateTripTitle()">
                 <div class="w-8"></div>
             </div>
         </header>
@@ -133,20 +134,20 @@
             
             <!-- SECTION 1: 行程 -->
             <div id="daily" class="tab-section active">
-                <div class="h-scroll-container mb-4">
+                <div class="h-scroll-container mb-2">
                     <div class="h-scroll" id="day-selector"></div>
                 </div>
+                <!-- 天氣區塊 -->
                 <div id="weather-banner" class="liquid-glass p-5 mb-6"></div>
                 <div id="daily-content"></div>
                 
-                <!-- 浮動按鈕 -->
                 <button class="btn-map-fab" onclick="showMap()"><i class="fa-solid fa-map-marked-alt"></i></button>
                 <button class="btn-fab" onclick="addNewAttraction()"><i class="fa-solid fa-plus"></i></button>
             </div>
 
             <!-- SECTION 2: 交通與住宿 -->
             <div id="transport-stay" class="tab-section">
-                <h2 class="text-xl font-bold mb-6 text-center">交通與住宿 🏨✈️</h2>
+                <h2 class="text-xl font-bold mb-6 text-center hand-drawn">交通與住宿 🏨✈️</h2>
                 
                 <details class="liquid-glass mb-4 group" open>
                     <summary class="p-4 font-bold cursor-pointer list-none flex justify-between items-center">
@@ -158,83 +159,89 @@
 
                 <details class="liquid-glass mb-4 group" open>
                     <summary class="p-4 font-bold cursor-pointer list-none flex justify-between items-center">
-                        <span><i class="fa-solid fa-bed mr-2 text-[#9A9283]"></i> 住宿清單</span>
+                        <span><i class="fa-solid fa-bed mr-2 text-[var(--kr-accent)]"></i> 住宿資訊</span>
                         <i class="fa-solid fa-chevron-down transition group-open:rotate-180 text-gray-400"></i>
                     </summary>
                     <div class="p-4 border-t border-white" id="stay-content"></div>
                 </details>
             </div>
 
-            <!-- SECTION 3: 花費與記帳 -->
+            <!-- SECTION 3: 花費 -->
             <div id="expenses" class="tab-section">
-                <h2 class="text-xl font-bold mb-6 text-center">花費與記帳 💰</h2>
+                <h2 class="text-xl font-bold mb-6 text-center hand-drawn">花費記帳 💰</h2>
                 
                 <!-- 實時匯率 -->
                 <div class="liquid-glass p-5 mb-6">
-                    <h3 class="text-sm font-bold text-gray-500 mb-3"><i class="fa-solid fa-money-bill-transfer"></i> 實時匯率換算</h3>
-                    <div class="flex gap-2">
-                        <select id="curFrom" class="w-1/3 text-xs" onchange="convertCurrency()"><option value="MYR">MYR</option><option value="KRW">KRW</option><option value="USD">USD</option></select>
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-sm font-bold text-gray-500"><i class="fa-solid fa-money-bill-transfer"></i> 實時全球匯率</h3>
+                        <button onclick="swapCurrencies()" class="text-[var(--kr-accent)] text-lg"><i class="fa-solid fa-right-left"></i></button>
+                    </div>
+                    <div class="flex gap-2 mb-2">
+                        <select id="curFrom" class="w-1/3 text-xs font-bold" onchange="convertCurrency()"></select>
                         <input type="number" id="curAmount" value="100" class="flex-1 text-right font-bold" oninput="convertCurrency()">
                     </div>
-                    <div class="text-center my-1 text-gray-400"><i class="fa-solid fa-arrow-down"></i></div>
                     <div class="flex gap-2">
-                        <select id="curTo" class="w-1/3 text-xs" onchange="convertCurrency()"><option value="KRW">KRW</option><option value="MYR">MYR</option><option value="USD">USD</option></select>
+                        <select id="curTo" class="w-1/3 text-xs font-bold" onchange="convertCurrency()"></select>
                         <input type="text" id="curResult" class="flex-1 text-right font-bold bg-white" readonly>
                     </div>
                     <p id="rateUpdateTxt" class="text-[10px] text-gray-400 mt-2 text-right">載入中...</p>
                 </div>
 
-                <!-- 記帳表單 -->
+                <!-- 記帳表單 (含新增用戶與分帳) -->
                 <div class="liquid-glass p-5 mb-6">
                     <h3 class="text-sm font-bold text-gray-500 mb-3"><i class="fa-solid fa-pen-to-square"></i> 新增記帳</h3>
                     <div class="space-y-2">
-                        <select id="expType" class="text-xs"><option value="餐飲">🍽️ 餐飲</option><option value="交通">🚕 交通</option><option value="門票">🎫 門票</option><option value="購物">🛍️ 購物</option><option value="住宿">🏨 住宿</option></select>
-                        <input type="text" id="expName" placeholder="花費名稱 (選填)" class="text-sm">
+                        <input type="text" id="expName" placeholder="花費名稱 (例如: 晚餐)" class="text-sm font-bold">
                         <div class="flex gap-2">
-                            <input type="number" id="expAmt" placeholder="數量/金額" class="w-1/2 text-sm">
-                            <select id="expPayer" class="w-1/2 text-xs"><option value="UserA">付款人: 我</option><option value="UserB">付款人: 伴侶</option></select>
+                            <select id="expType" class="w-1/3 text-xs"><option value="餐飲">🍽️ 餐飲</option><option value="交通">🚕 交通</option><option value="門票">🎫 門票</option><option value="住宿">🏨 住宿</option></select>
+                            <input type="number" id="expAmt" placeholder="總金額" class="flex-1 text-sm text-right">
                         </div>
-                        <div class="flex gap-2">
-                            <input type="date" id="expDate" class="w-1/2 text-xs">
-                            <input type="text" id="expNote" placeholder="備註" class="w-1/2 text-xs">
+                        <div class="flex gap-2 items-center bg-[rgba(255,255,255,0.5)] p-2 rounded-xl">
+                            <span class="text-xs text-gray-500 font-bold w-12">付款人</span>
+                            <select id="expPayer" class="flex-1 text-xs bg-transparent border-none shadow-none p-0"></select>
+                            <button onclick="addUser()" class="text-[var(--kr-accent)] text-xs"><i class="fa-solid fa-user-plus"></i> 新增</button>
+                        </div>
+                        <div class="flex gap-2 items-center bg-[rgba(255,255,255,0.5)] p-2 rounded-xl mb-2">
+                            <span class="text-xs text-gray-500 font-bold w-12">分帳</span>
+                            <select id="expSplitType" class="flex-1 text-xs bg-transparent border-none shadow-none p-0"><option value="equal">平均平分 (Equal)</option><option value="you">僅自己 (Personal)</option></select>
                         </div>
                         <button onclick="addExpense()" class="btn-primary w-full mt-2">新增紀錄</button>
                     </div>
                 </div>
 
-                <!-- 分帳總結 -->
                 <div class="liquid-glass p-5" id="expense-summary"></div>
             </div>
 
             <!-- SECTION 4: 行李 -->
             <div id="packing" class="tab-section">
-                <h2 class="text-xl font-bold mb-4">必備清單 Checklist</h2>
+                <h2 class="text-xl font-bold mb-4 text-center hand-drawn">行李清單 🎒</h2>
                 <div class="liquid-glass p-5 mb-6">
-                    <div class="flex gap-2 mb-4">
-                        <select id="packCategory" class="w-2/5 text-xs">
-                            <option value="✈️ 机场着装">机场着装</option><option value="🎒 背包">背包</option><option value="📄 证件">证件</option><option value="🧥 外套">外套</option><option value="👕 上衣">上衣</option><option value="👖 裤子">裤子</option><option value="🛌 睡衣">睡衣</option><option value="🧣 服饰配件">服饰配件</option><option value="👟 鞋子">鞋子</option><option value="🧴 个人用品">个人用品</option><option value="🔌 电子产品">电子产品</option><option value="🛍️ 其他">其他</option>
-                        </select>
-                        <input type="text" id="newPrep" placeholder="物品名稱..." class="flex-1 text-sm">
-                        <button onclick="addPackItem()" class="btn-primary px-3"><i class="fa-solid fa-plus"></i></button>
-                    </div>
                     <div id="prep-list"></div>
                 </div>
             </div>
 
             <!-- SECTION 5: 翻譯 -->
             <div id="translate" class="tab-section">
-                <h2 class="text-xl font-bold mb-4 text-center">即時翻譯 🗣️</h2>
+                <h2 class="text-xl font-bold mb-4 text-center hand-drawn">即時翻譯與 OCR 🗣️</h2>
                 <div class="liquid-glass p-5 space-y-4">
                     <div class="flex justify-between items-center gap-2">
-                        <select id="langFrom" class="text-xs bg-white"><option value="zh">中文</option><option value="en">英文</option></select>
+                        <select id="langFrom" class="text-xs bg-white font-bold"></select>
                         <i class="fa-solid fa-arrow-right-arrow-left text-gray-400 text-xs"></i>
-                        <select id="langTo" class="text-xs bg-white"><option value="ko">韓文</option><option value="ja">日文</option><option value="en">英文</option></select>
+                        <select id="langTo" class="text-xs bg-white font-bold"></select>
                     </div>
                     <textarea id="transInput" rows="3" placeholder="請輸入欲翻譯文字"></textarea>
-                    <button onclick="translateText()" class="w-full btn-primary py-3">翻譯</button>
+                    
+                    <div class="flex gap-2">
+                        <button onclick="translateText()" class="flex-1 btn-primary py-3">文字翻譯</button>
+                        <label class="bg-white border border-gray-200 text-gray-600 rounded-xl px-4 flex flex-col justify-center items-center cursor-pointer shadow-sm active:scale-95">
+                            <i class="fa-solid fa-camera text-lg"></i><span class="text-[10px] mt-1">拍照翻譯</span>
+                            <input type="file" accept="image/*" capture="environment" class="hidden" onchange="processOCR(this)">
+                        </label>
+                    </div>
+                    <p id="ocrStatus" class="text-xs text-center text-[var(--kr-accent)] font-bold hidden">讀取照片中，請稍候...</p>
+                    
                     <div class="relative">
-                        <textarea id="transOutput" rows="3" class="text-lg font-bold bg-white" readonly></textarea>
-                        <button onclick="speakKorean()" class="absolute bottom-3 right-3 bg-gray-100 w-10 h-10 rounded-full text-gray-600 shadow-sm active:scale-95"><i class="fa-solid fa-volume-high"></i></button>
+                        <textarea id="transOutput" rows="4" class="text-lg font-bold bg-white" readonly></textarea>
                     </div>
                 </div>
             </div>
@@ -243,23 +250,33 @@
 
         <nav class="bottom-nav">
             <button class="nav-item active flex flex-col items-center" onclick="changeSection('daily', this)"><i class="fa-solid fa-map-location-dot text-xl"></i><span class="text-[10px] mt-1">行程</span></button>
-            <button class="nav-item flex flex-col items-center" onclick="changeSection('transport-stay', this)"><i class="fa-solid fa-plane text-xl"></i><span class="text-[10px] mt-1">交通住宿</span></button>
+            <button class="nav-item flex flex-col items-center" onclick="changeSection('transport-stay', this)"><i class="fa-solid fa-plane text-xl"></i><span class="text-[10px] mt-1">住宿交通</span></button>
             <button class="nav-item flex flex-col items-center" onclick="changeSection('expenses', this)"><i class="fa-solid fa-wallet text-xl"></i><span class="text-[10px] mt-1">花費</span></button>
             <button class="nav-item flex flex-col items-center" onclick="changeSection('packing', this)"><i class="fa-solid fa-suitcase text-xl"></i><span class="text-[10px] mt-1">行李</span></button>
             <button class="nav-item flex flex-col items-center" onclick="changeSection('translate', this)"><i class="fa-solid fa-language text-xl"></i><span class="text-[10px] mt-1">翻譯</span></button>
         </nav>
     </div>
 
-    <!-- 圖片/地圖 Lightbox -->
-    <div id="lightbox" onclick="closeLightbox(event)">
-        <span class="close" onclick="document.getElementById('lightbox').style.display='none'">&times;</span>
-        <img id="lightbox-img" src="" class="hidden">
-        <iframe id="lightbox-map" class="hidden w-[90%] h-[70%] border-0 rounded-2xl bg-white"></iframe>
+    <!-- Lightbox -->
+    <div id="lightbox">
+        <div class="lightbox-wrapper">
+            <div class="lightbox-close" onclick="closeLightbox()">&times;</div>
+            <img id="lightbox-img" src="">
+        </div>
+    </div>
+    
+    <!-- PDF Viewer -->
+    <div id="pdf-viewer">
+        <div class="p-4 bg-gray-100 flex justify-between items-center shadow-md">
+            <h3 class="font-bold text-gray-700">檔案檢視</h3>
+            <button onclick="document.getElementById('pdf-viewer').style.display='none'" class="bg-gray-300 px-4 py-1 rounded-full font-bold">關閉</button>
+        </div>
+        <iframe id="pdf-iframe"></iframe>
     </div>
 
     <script>
-        // ================= IndexedDB 核心儲存 =================
-        const dbName = "TravelAppDB_v5";
+        // ================= 資料庫 & 初始化 =================
+        const dbName = "TravelBookDB_v6";
         let db;
         const initDB = new Promise((resolve) => {
             const req = indexedDB.open(dbName, 1);
@@ -275,147 +292,114 @@
         async function getDB(store, id) { await initDB; return new Promise(r => { const tx = db.transaction(store, 'readonly'); const req = tx.objectStore(store).get(id); req.onsuccess = () => r(req.result ? req.result.data : null); }); }
         async function getAllDB(store) { await initDB; return new Promise(r => { const tx = db.transaction(store, 'readonly'); const req = tx.objectStore(store).getAll(); req.onsuccess = () => r(req.result.map(x=>x.data)); }); }
 
-        // ================= 14 天預設數據結構 =================
-        const defaultTrip = {
-            id: Date.now().toString(),
-            title: "2026 苦盡柑來 🍊",
-            cover: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=600&q=80",
-            flights: [
-                { id:"f0", title: "去程", route: "KUL → HAN", flight: "VN680", airlineIcon: "fa-plane-departure", time: "19:10", term: "KLIA T1", desc: "提早3小時報到" },
-                { id:"f1", title: "轉機", route: "HAN → PUS", flight: "VN428", airlineIcon: "fa-plane", time: "00:50", term: "Noi Bai T2", desc: "抵達金海機場" },
-                { id:"f2", title: "國內", route: "PUS → CJU", flight: "KE1535", airlineIcon: "fa-plane", time: "13:05", term: "Gimhae Domestic", desc: "大韓航空" },
-                { id:"f3", title: "回程", route: "ICN → KUL", flight: "MH67", airlineIcon: "fa-plane-arrival", time: "16:25", term: "Incheon T1", desc: "馬航直飛" }
-            ],
-            stays: [
-                { id:"s0", name: "Ramada Encore Haeundae", date: "10/30", img: "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=600&q=80", addr: "釜山海雲台區九南路9" },
-                { id:"s1", name: "Around Follie", date: "11/01", img: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=600&q=80", addr: "濟州島自駕區" },
-                { id:"s2", name: "首爾精品飯店", date: "11/07", img: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=600&q=80", addr: "首爾聖水洞" }
-            ],
-            expenses: [],
-            packItems: [{c:"📄 证件", n:"護照正本"}],
-            daily: []
-        };
-
-        // 建立 14 天的資料陣列 (壓縮文本以符合長度限制，但結構完整)
-        const dayRegions = ["吉隆坡","釜山","釜山","釜山-濟州","濟州島","濟州島","濟州島","濟州島","濟州島","濟州-首爾","首爾","首爾","首爾","首爾"];
-        const dayTemps = [[28,24],[18,11],[19,12],[17,10],[16,9],[15,8],[16,10],[15,9],[14,8],[12,4],[11,3],[10,2],[9,1],[8,0]];
-        const dayIcons = ["🌤️","☀️","🌤️","☀️","⛅","☀️","🌥️","☀️","🌤️","☀️","☀️","☀️","☁️","❄️"];
-        
-        for(let i=0; i<14; i++) {
-            let dayDate = new Date(2026, 9, 29); // 10/29
-            dayDate.setDate(dayDate.getDate() + i);
-            let dStr = `${dayDate.getMonth()+1}/${dayDate.getDate().toString().padStart(2,'0')}`;
-            
-            // 基礎假資料，第 1, 2, 11, 14 天有詳細內容展示新功能
-            let items = [];
-            if(i === 0) {
-                items.push({ id:`d0_0`, time: "15:00", task: "出發", krName: "출발", loc: "352, Jalan Burung Garuda, Kepong", desc: "準備行李出發", img: "https://images.unsplash.com/photo-1556012018-50c5c0da73bf?w=600&q=80", intro: "溫暖的家，旅程的起點。", review: {pos:"充滿期待", neg:"行李好重"}, info: {time:"24h", tel:"-", web:"-"} });
-                items.push({ id:`d0_1`, time: "16:00", task: "KLIA T1", krName: "공항", loc: "KLIA Terminal 1", desc: "搭乘 VN680", img: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600&q=80", intro: "馬來西亞主要國際機場。", review: {pos:"設施完善", neg:"安檢人多"}, info: {time:"24h", tel:"03-87762000", web:"klia.com.my"} });
-            } else if(i === 1) {
-                items.push({ id:`d1_0`, time: "10:30", task: "入住 Ramada", krName: "호텔", loc: "Ramada Encore Haeundae", desc: "寄放行李", img: "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=600&q=80", intro:"海雲台站旁，交通極便利的飯店。", review:{pos:"位置超好，樓下就是地鐵", neg:"房間稍小"}, info:{time:"Check-in 15:00", tel:"+82-51-123-4567", web:"ramada.com"} });
-                items.push({ id:`d1_1`, time: "11:30", task: "Handasot", krName: "한다솥", loc: "Handasot Haeundae", desc: "韓系簡約釜飯", img: "https://images.unsplash.com/photo-1580651315530-69c8e0026377?w=600&q=80", menu:[{n:"鮑魚釜飯", p:"22,000"}], intro:"高質感韓式釜飯專賣店。", review:{pos:"米飯超香，小菜精緻", neg:"用餐尖峰需排隊"}, info:{time:"11:00-21:00", tel:"+82-51-000-0000", web:"-"} });
-                items.push({ id:`d1_2`, time: "16:30", task: "藍線公園", krName: "블루라인파크", loc: "Blueline Park Mipo", desc: "海雲台膠囊火車", img: "https://images.unsplash.com/photo-1681283626245-0678d49a7122?w=600&q=80", intro:"舊鐵道改建的海岸觀光列車。", review:{pos:"夕陽無敵美", neg:"一定要提早一個月預約"}, info:{time:"09:30-18:00", tel:"-", web:"bluelinepark.com"} });
-            } else if(i === 10) {
-                items.push({ id:`d10_0`, time: "09:30", task: "Jayeondo 鹽麵包", krName: "자연도소금빵", loc: "자연도소금빵 안국", desc: "安國站排隊名店", img: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600&q=80", intro:"首爾最火紅的鹽麵包外帶店。", review:{pos:"奶油香氣爆發，外酥內軟", neg:"只賣一種口味，需排隊半小時"}, info:{time:"09:00-20:00", tel:"-", web:"-"} });
-                items.push({ id:`d10_1`, time: "11:00", task: "Arario Museum", krName: "아라리오뮤지엄", loc: "Arario Museum in Space", desc: "金壽根代表作", img: "https://images.unsplash.com/photo-1601362840469-51e4d8d58785?w=600&q=80", intro:"由建築大師舊工作室改造的當代美術館。", review:{pos:"空間動線與藝術品完美結合", neg:"樓梯較陡"}, info:{time:"10:00-19:00 (週一休)", tel:"+82-2-736-8118", web:"arariomuseum.org"} });
-            } else {
-                // 填充基本數據維持架構
-                items.push({ id:`d${i}_0`, time: "10:00", task: "當日行程起點", krName: "호텔", loc: "Hotel / Destination", desc: "行程探索", img: "https://images.unsplash.com/photo-1503614472-8c93d56e92ce?w=600&q=80", intro:"-", review:{pos:"-",neg:"-"}, info:{time:"-",tel:"-",web:"-"} });
-            }
-
-            defaultTrip.daily.push({
-                day: `Day ${i+1}`, date: dStr, region: dayRegions[i],
-                weather: { high: dayTemps[i][0], low: dayTemps[i][1], icon: dayIcons[i] },
-                items: items
-            });
-        }
-
-        // ================= 全局狀態與啟動 =================
         let allTrips = [];
         let currentTrip = null;
         let currentDayIdx = 0;
-        let exchangeRates = { KRW: 300, USD: 0.21 }; // Fallback
+        let selectedNewColor = "#9A9283";
+        let exchangeRates = {};
+        
+        // 14天完整預設資料生成
+        function generate14DaysData() {
+            const regions = ["吉隆坡","釜山","釜山","釜山-濟州","濟州島","濟州島","濟州島","濟州島","濟州島","濟州-首爾","首爾","首爾","首爾","首爾"];
+            let daily = [];
+            
+            // 豐富的介紹與評價模板
+            const richIntro1 = "這是本次旅程的起點。機場設施完善，擁有各類免稅商店與多樣化的餐飲選擇。作為第一次出國或長途飛行的旅客，這裡提供舒適的候機休息區與便捷的交通轉乘服務，讓你帶著輕鬆愉快的心情準備啟程前往美麗的韓國。";
+            const richRevPos1 = "機場指標非常清楚，免稅店很好逛，整體空間明亮寬敞！";
+            const richRevNeg1 = "安檢排隊人潮有時非常多，強烈建議一定要提早三個小時抵達機場以免匆忙。";
+
+            const richIntro2 = "海雲台是釜山最具代表性的海灘度假勝地。這裡擁有蔚藍的海岸線、白色的沙灘與繁華的周邊商圈。無論是白天漫步在沙灘上享受海風，還是夜晚欣賞美麗的城市夜景與街頭表演，都能深刻體驗到釜山獨特的海洋魅力與熱情。";
+            const richRevPos2 = "海景無敵美！周邊美食超級多，尤其是晚上的氣氛浪漫到不行。";
+            const richRevNeg2 = "夏天旺季時人潮非常擁擠，海灘周邊的餐廳價格普遍稍微偏高一些。";
+
+            const richIntro3 = "這是一間充滿現代感與藝術氣息的設計咖啡廳。店內裝潢採用極簡的韓系奶油風格，搭配大片落地窗，讓自然光線完美灑入。不僅提供專業級的手沖咖啡，還有每日現做的精緻甜點。這裡是拍照打卡、放鬆身心、享受午後悠閒時光的絕佳秘密基地。";
+            const richRevPos3 = "咖啡香氣濃郁，甜點不僅顏值高而且非常好吃，完全不踩雷。";
+            const richRevNeg3 = "座位數量不多，假日下午通常需要候位超過半小時，建議平日前往。";
+
+            for(let i=0; i<14; i++) {
+                let dayDate = new Date(2026, 9, 29); dayDate.setDate(dayDate.getDate() + i);
+                let dStr = `${dayDate.getMonth()+1}/${dayDate.getDate().toString().padStart(2,'0')}`;
+                
+                let items = [];
+                if(i === 0) {
+                    items.push({ id:`d0_0`, time: "16:00", task: "吉隆坡國際機場", loc: "KLIA Terminal 1", intro: richIntro1, review: {pos: richRevPos1, neg: richRevNeg1}, img: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600" });
+                } else if(i === 1) {
+                    items.push({ id:`d1_0`, time: "10:30", task: "海雲台海水浴場", loc: "Haeundae Beach", intro: richIntro2, review: {pos: richRevPos2, neg: richRevNeg2}, img: "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=600" });
+                    items.push({ id:`d1_1`, time: "14:00", task: "人氣海景咖啡廳", loc: "Cafe in Busan", intro: richIntro3, review: {pos: richRevPos3, neg: richRevNeg3}, img: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600" });
+                } else {
+                    items.push({ id:`d${i}_0`, time: "10:00", task: "探索" + regions[i], loc: regions[i] + "市中心", intro: "這是一座充滿歷史底蘊與現代活力的城市。在這裡，你可以品嚐到最道地的街頭小吃，走訪傳統市場感受當地人的熱情，或是穿梭在繁華的購物街區尋找最新的流行服飾。每一個角落都隱藏著令人驚喜的風景，絕對是不可錯過的旅遊勝地。", review: {pos: "交通非常便利，景點之間距離不遠，非常適合自由行旅客。", neg: "部分熱門景點的標示只有韓文，建議手機隨時備好翻譯軟體。"}, img: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=600" });
+                }
+
+                daily.push({ day: `Day ${i+1}`, date: dStr, region: regions[i], weather: { high: 20, low: 10, uv: 5 }, items: items });
+            }
+            return daily;
+        }
+
+        const defaultTrip = {
+            id: Date.now().toString(), title: "2026 苦盡柑來 🍊", color: "#9A9283", users: ["我", "伴侶"],
+            flights: [
+                { id:"f0", title: "去程", date: "2026-10-29", route: "KUL → HAN", flight: "VN680", airlineIcon: "fa-plane-departure", time: "19:10", term: "KLIA T1" },
+                { id:"f3", title: "回程", date: "2026-11-11", route: "ICN → KUL", flight: "MH67", airlineIcon: "fa-plane-arrival", time: "16:25", term: "Incheon T1" }
+            ],
+            stays: [
+                { id:"s0", name: "Ramada Encore Haeundae", date: "10/30 - 11/01", addr: "釜山海雲台區" },
+                { id:"s1", name: "Around Follie", date: "11/01 - 11/07", addr: "濟州島" }
+            ],
+            expenses: [], packItems: [{c:"📄 证件", n:"護照正本"}],
+            daily: generate14DaysData()
+        };
 
         async function init() {
             await initDB;
             allTrips = await getAllDB('trips');
-            if(allTrips.length === 0) {
-                await saveDB('trips', defaultTrip.id, defaultTrip);
-                allTrips = [defaultTrip];
-            }
-            fetchExchangeRate();
+            if(allTrips.length === 0) { await saveDB('trips', defaultTrip.id, defaultTrip); allTrips = [defaultTrip]; }
+            fetchExchangeRateAPI(); initTranslateLangs();
             renderHome();
         }
 
-        // ================= 視圖切換 =================
+        // ================= 首頁管理 =================
         function renderHome() {
             document.getElementById('trip-view').classList.remove('active');
             document.getElementById('home-view').classList.add('active');
+            document.documentElement.style.setProperty('--kr-accent', '#9A9283'); // Reset
             
             document.getElementById('trip-list').innerHTML = allTrips.map(t => `
-                <div class="book-card" onclick="openTrip('${t.id}')">
-                    <div>
-                        <div class="flex justify-between items-start">
-                            <span class="bg-[var(--kr-accent)] text-white text-[10px] px-2 py-1 rounded-full mb-2 inline-block">Trip</span>
-                            <button onclick="event.stopPropagation(); deleteTrip('${t.id}')" class="text-gray-300 hover:text-red-400"><i class="fa-solid fa-trash"></i></button>
-                        </div>
-                        <h2 class="text-xl font-bold text-gray-800">${t.title}</h2>
-                        <p class="text-xs text-gray-400 mt-1">${t.daily[0].date} 出發 · ${t.daily.length} 天</p>
+                <div class="book-card" style="border-left-color: ${t.color}" onclick="openTrip('${t.id}')">
+                    <div class="flex justify-between items-start">
+                        <h2 class="text-2xl font-bold text-gray-800 hand-drawn">${t.title}</h2>
+                        <button onclick="event.stopPropagation(); deleteTrip('${t.id}')" class="text-gray-300"><i class="fa-solid fa-trash"></i></button>
                     </div>
-                    <div class="mt-4 flex gap-[-10px] overflow-hidden">
-                        ${t.daily.slice(0,4).map(d => `<img src="${d.items[0]?.img || ''}" class="w-8 h-8 rounded-full border-2 border-white object-cover" style="margin-right:-10px;">`).join('')}
-                    </div>
+                    <p class="text-xs text-gray-400 mt-2">${t.daily[0].date} 出發 · ${t.daily.length} 天行程</p>
                 </div>
             `).join('');
         }
 
+        function selectColor(el, color) { document.querySelectorAll('.color-dot').forEach(d=>d.style.borderColor='white'); el.style.borderColor='gray'; selectedNewColor = color; }
+
+        async function createNewTrip() {
+            const title = document.getElementById('new-trip-title').value || "新旅行繪本";
+            let nt = JSON.parse(JSON.stringify(defaultTrip));
+            nt.id = Date.now().toString(); nt.title = title; nt.color = selectedNewColor;
+            await saveDB('trips', nt.id, nt); allTrips.push(nt); renderHome();
+            document.getElementById('new-trip-title').value = '';
+        }
+
+        async function deleteTrip(id) { if(!confirm("捨不得這本繪本嗎？確定刪除？")) return; allTrips = allTrips.filter(t => t.id !== id); const tx = db.transaction('trips', 'readwrite'); tx.objectStore('trips').delete(id); renderHome(); }
+
+        // ================= 行程詳情 =================
         function openTrip(id) {
             currentTrip = allTrips.find(t => t.id === id);
+            document.documentElement.style.setProperty('--kr-accent', currentTrip.color || '#9A9283');
             document.getElementById('home-view').classList.remove('active');
             document.getElementById('trip-view').classList.add('active');
             document.getElementById('trip-title-input').value = currentTrip.title;
             
-            // 補充天氣資料
-            currentTrip.daily.forEach(d => {
-                d.weather.pop = d.weather.pop || Math.floor(Math.random()*20);
-                d.weather.hum = 45 + Math.floor(Math.random()*15);
-                d.weather.feel = Math.round((d.weather.high + d.weather.low)/2);
-                let hw = [];
-                for(let i=0; i<24; i++) {
-                    let temp = Math.round(d.weather.low + (d.weather.high - d.weather.low) * Math.sin((i / 23) * Math.PI));
-                    hw.push({ h:i, t: `${i.toString().padStart(2,'0')}:00`, temp, ic: d.weather.icon });
-                }
-                d.weather.hourly = hw;
-            });
-
-            currentDayIdx = 0;
-            renderDayNav();
-            renderDaily(currentDayIdx);
-            renderTransportStay();
-            renderExpenses();
-            renderLists();
+            currentDayIdx = 0; renderDayNav(); renderDaily(currentDayIdx); renderTransportStay(); renderExpenses(); renderLists();
         }
 
         function goHome() { renderHome(); }
-        async function createNewTrip() {
-            let nt = JSON.parse(JSON.stringify(defaultTrip));
-            nt.id = Date.now().toString(); nt.title = "新旅遊計畫";
-            await saveDB('trips', nt.id, nt);
-            allTrips.push(nt); renderHome();
-        }
-        async function deleteTrip(id) {
-            if(!confirm("確定刪除此行程？")) return;
-            // Note: Should also delete files via IDB transaction in a real app, keeping simple here.
-            allTrips = allTrips.filter(t => t.id !== id);
-            await initDB; const tx = db.transaction('trips', 'readwrite'); tx.objectStore('trips').delete(id);
-            renderHome();
-        }
-        async function updateTripTitle() {
-            currentTrip.title = document.getElementById('trip-title-input').value;
-            await saveDB('trips', currentTrip.id, currentTrip);
-        }
+        async function updateTripTitle() { currentTrip.title = document.getElementById('trip-title-input').value; await saveDB('trips', currentTrip.id, currentTrip); }
 
-        // ================= 行程渲染 =================
         function renderDayNav() {
             const nav = document.getElementById('day-selector');
             nav.innerHTML = currentTrip.daily.map((d, i) => `
@@ -423,81 +407,97 @@
                     <span class="font-bold">${d.day}</span><br><span class="text-[10px]">${d.date}</span>
                 </div>
             `).join('');
-            
-            setTimeout(() => { const a = nav.querySelector('.active'); if(a) nav.parentElement.scrollTo({left: a.offsetLeft - 20, behavior:'smooth'}); }, 50);
+            setTimeout(() => { const a = nav.querySelector('.active'); if(a) a.scrollIntoView({behavior: 'smooth', inline: 'center', block:'nearest'}); }, 100);
         }
 
         function selectDay(i) { currentDayIdx = i; renderDayNav(); renderDaily(i); }
 
-        function renderDaily(idx) {
+        // 真實天氣 API (Open-Meteo)
+        async function fetchWeather(lat, lon) {
+            try { const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,weathercode,uv_index`); return await res.json(); } catch(e) { return null; }
+        }
+
+        async function renderDaily(idx) {
             const d = currentTrip.daily[idx];
-            const w = d.weather;
-            const currentHour = new Date().getHours();
+            document.getElementById('weather-banner').innerHTML = `<div class="text-center text-xs text-gray-400 py-2">讀取當地天氣中...</div>`;
             
-            document.getElementById('weather-banner').innerHTML = `
-                <div class="flex justify-between items-center border-b border-gray-200 pb-3 mb-4">
-                    <div>
-                        <div class="text-xs font-bold text-gray-500 mb-1"><i class="fa-solid fa-location-dot text-red-400"></i> ${d.region}</div>
-                        <div class="font-bold text-xl">${w.icon} ${w.high}° / ${w.low}°</div>
+            // 根據地區抓取天氣 (釜山預設, 其他用首爾)
+            let lat = 35.1, lon = 129.0; 
+            if(d.region.includes('首爾')) { lat=37.5; lon=126.9; } else if(d.region.includes('濟州')) { lat=33.5; lon=126.5; }
+            
+            const wData = await fetchWeather(lat, lon);
+            const currentHour = new Date().getHours();
+            let hourlyHtml = '';
+            
+            if(wData) {
+                const nowTemp = wData.current_weather.temperature;
+                const uv = wData.hourly.uv_index[currentHour] || 0;
+                
+                // 取未來 24 小時
+                for(let i=currentHour; i<currentHour+24; i++) {
+                    const hTemp = Math.round(wData.hourly.temperature_2m[i]);
+                    let h12 = i % 24; const ampm = h12 >= 12 ? 'PM' : 'AM'; h12 = h12 % 12 || 12;
+                    const isActive = i === currentHour ? 'active-hour' : '';
+                    hourlyHtml += `<div class="hourly-item ${isActive}"><div class="mb-1 ${isActive?'':'opacity-70'}">${h12} ${ampm}</div><div>${hTemp}°</div></div>`;
+                }
+
+                document.getElementById('weather-banner').innerHTML = `
+                    <div class="flex justify-between items-center border-b border-[rgba(0,0,0,0.05)] pb-3 mb-4">
+                        <div><div class="text-xs font-bold text-gray-500 mb-1"><i class="fa-solid fa-location-dot text-[var(--kr-accent)]"></i> ${d.region}即時天氣</div><div class="font-bold text-2xl">${nowTemp}°C</div></div>
+                        <div class="text-xs text-right text-gray-500 font-bold bg-white px-3 py-1.5 rounded-xl shadow-sm">🌞 UV 指數: ${uv}</div>
                     </div>
-                    <div class="text-[10px] text-right text-gray-500 leading-tight">體感 ${w.feel}°<br>降雨 ${w.pop}% | 濕度 ${w.hum}%</div>
-                </div>
-                <div class="h-scroll-container"><div class="h-scroll" id="hourly-scroll">
-                    ${w.hourly.map(h => `<div class="hourly-item ${h.h === currentHour ? 'active-hour' : ''}"><div class="mb-1 ${h.h === currentHour ? '' : 'opacity-70'}">${h.t}</div><div>${h.ic} ${h.temp}°</div></div>`).join('')}
-                </div></div>
-            `;
-            setTimeout(() => { const hs = document.getElementById('hourly-scroll'); const a = hs.querySelector('.active-hour'); if(a) hs.parentElement.scrollTo({left: a.offsetLeft - 50, behavior:'smooth'}); }, 100);
+                    <div class="h-scroll-container"><div class="h-scroll" id="hourly-scroll">${hourlyHtml}</div></div>
+                `;
+            }
+
+            setTimeout(() => { const hs = document.getElementById('hourly-scroll'); if(hs) { const a = hs.querySelector('.active-hour'); if(a) a.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'}); } }, 300);
 
             let html = '';
             d.items.forEach((item, i) => {
                 html += `
-                <div class="liquid-glass mb-0 draggable" draggable="true" ondragstart="drag(event, ${idx}, ${i})" ondragover="allowDrop(event)" ondrop="drop(event, ${idx}, ${i})">
-                    <div class="item-header">
-                        <img id="img_${item.id}" src="${item.img}">
-                        <label class="edit-img-btn"><input type="file" accept="image/*" class="file-hide" onchange="updateImg(this, ${idx}, ${i}, 'img')"><i class="fa-solid fa-camera"></i></label>
-                    </div>
+                <div class="liquid-glass mb-0">
+                    <div class="item-header"><img id="img_${item.id}" src="${item.img}"></div>
                     <div class="p-5" id="wrap_${item.id}">
                         <div class="flex justify-between items-start mb-2">
-                            <input type="time" value="${item.time}" onchange="updateItemTime(${idx}, ${i}, this.value)" class="text-sm font-mono text-[#A39B8B] bg-white px-2 py-0.5 rounded-lg shadow-sm w-20">
+                            <input type="time" value="${item.time}" onchange="updateItemTime(${idx}, ${i}, this.value)" class="text-sm font-mono text-[var(--kr-accent)] bg-white px-2 py-0.5 rounded-lg shadow-sm w-24">
                             <div class="flex gap-1">
                                 <button class="w-7 h-7 bg-white rounded-full shadow-sm text-gray-400" onclick="moveOrder(${idx}, ${i}, -1)"><i class="fa-solid fa-arrow-up text-[10px]"></i></button>
                                 <button class="w-7 h-7 bg-white rounded-full shadow-sm text-gray-400" onclick="moveOrder(${idx}, ${i}, 1)"><i class="fa-solid fa-arrow-down text-[10px]"></i></button>
                                 <button class="w-7 h-7 bg-red-50 rounded-full shadow-sm text-red-400 ml-2" onclick="deleteItem(${idx}, ${i})"><i class="fa-solid fa-trash text-[10px]"></i></button>
                             </div>
                         </div>
-                        <h4 class="text-lg font-bold mt-2 text-gray-800">${item.task} <span class="kr-text text-xs font-normal text-gray-500 ml-2 border-l border-gray-300 pl-2">${item.krName || ''}</span></h4>
-                        <a href="https://maps.google.com/?q=${encodeURIComponent(item.loc)}" target="_blank" class="block text-xs text-blue-500 mt-1 truncate hover:underline"><i class="fa-solid fa-map-pin mr-1 text-gray-400"></i>${item.loc}</a>
+                        <h4 class="text-xl font-bold mt-2 text-gray-800">${item.task}</h4>
                         
-                        <button class="w-full text-center mt-4 py-2 bg-[rgba(255,255,255,0.6)] rounded-xl text-gray-500 text-xs font-bold border border-white" onclick="toggleExpand('${item.id}')"><i class="fa-solid fa-chevron-down"></i> 展開詳細</button>
+                        <div id="loc_display_${item.id}">
+                            ${item.loc === '輸入地址' ? 
+                            `<button class="text-xs text-[var(--kr-accent)] mt-1 font-bold bg-white px-2 py-1 rounded shadow-sm" onclick="toggleEdit('${item.id}')"><i class="fa-solid fa-pen"></i> 輸入地址</button>` : 
+                            `<a href="https://maps.google.com/?q=${encodeURIComponent(item.loc)}" target="_blank" class="block text-xs text-blue-500 mt-1 truncate font-bold"><i class="fa-solid fa-map-pin mr-1 text-[var(--kr-accent)]"></i>${item.loc}</a>`}
+                        </div>
+                        
+                        <button class="w-full text-center mt-4 py-2 bg-[rgba(255,255,255,0.6)] rounded-xl text-gray-500 text-xs font-bold border border-white" onclick="toggleExpand('${item.id}')"><i class="fa-solid fa-chevron-down"></i> 展開詳細介紹</button>
                         
                         <div class="expand-content">
                             <div id="display_info_${item.id}">
-                                ${item.intro ? `<div class="bg-gray-50 p-3 rounded-xl mb-3 text-xs text-gray-600 border border-gray-100"><i class="fa-solid fa-sparkles text-yellow-500 mr-1"></i> <b>AI 簡介：</b>${item.intro}</div>` : ''}
-                                ${item.review ? `<div class="flex gap-2 mb-3"><div class="w-1/2 bg-red-50 p-2 rounded-lg text-[10px] text-red-700 border border-red-100"><b>小紅書推薦：</b><br>${item.review.pos}</div><div class="w-1/2 bg-gray-100 p-2 rounded-lg text-[10px] text-gray-600 border border-gray-200"><b>真實避雷：</b><br>${item.review.neg}</div></div>` : ''}
-                                ${item.info ? `<div class="text-[10px] text-gray-500 mb-3 space-y-1"><p><i class="fa-regular fa-clock w-4"></i> ${item.info.time}</p><p><i class="fa-solid fa-phone w-4"></i> ${item.info.tel}</p><p><i class="fa-solid fa-globe w-4"></i> ${item.info.web}</p></div>` : ''}
+                                ${item.intro ? `<div class="bg-white p-4 rounded-2xl mb-3 text-sm text-gray-700 leading-relaxed shadow-sm border border-gray-100">${item.intro}</div>` : ''}
+                                ${item.review ? `<div class="flex gap-2 mb-3"><div class="w-1/2 bg-red-50 p-3 rounded-xl text-xs text-red-800 border border-red-100 leading-relaxed"><b>👍 小紅書推薦：</b><br>${item.review.pos}</div><div class="w-1/2 bg-gray-100 p-3 rounded-xl text-xs text-gray-700 border border-gray-200 leading-relaxed"><b>⚠️ 真實避雷：</b><br>${item.review.neg}</div></div>` : ''}
+                                ${item.info ? `<div class="text-xs text-gray-500 mb-3 space-y-1 bg-[rgba(255,255,255,0.5)] p-3 rounded-xl"><p><i class="fa-regular fa-clock w-4"></i> ${item.info.time || '-'}</p><p><i class="fa-solid fa-phone w-4"></i> ${item.info.tel || '-'}</p><p><i class="fa-solid fa-globe w-4"></i> <a href="http://${item.info.web}" target="_blank" class="text-blue-500 underline">${item.info.web || '-'}</a></p></div>` : ''}
                                 
-                                <p class="text-sm text-gray-700 leading-relaxed mb-3">${item.desc}</p>
-                                
-                                ${item.menu ? `<div class="mb-3"><button class="text-xs bg-white border border-gray-200 px-3 py-1.5 rounded-lg shadow-sm" onclick="this.nextElementSibling.classList.toggle('hidden')"><i class="fa-solid fa-utensils"></i> 📜 展示菜單</button><div class="hidden mt-2 p-3 bg-[rgba(255,255,255,0.5)] rounded-xl text-xs space-y-1 border border-gray-100">${item.menu.map(m => `<div class="flex justify-between border-b border-gray-100 pb-1"><span>${m.n}</span><span class="font-bold">${m.p}</span></div>`).join('')}</div></div>` : ''}
-                                
-                                <div class="flex justify-end"><button class="bg-white border border-gray-200 text-gray-600 text-[10px] px-3 py-1.5 rounded-full shadow-sm" onclick="toggleEdit('${item.id}')"><i class="fa-solid fa-pen"></i> 編輯資訊</button></div>
+                                <div class="flex justify-end"><button class="bg-white border border-gray-200 text-gray-600 text-xs px-4 py-2 rounded-full shadow-sm font-bold" onclick="toggleEdit('${item.id}')"><i class="fa-solid fa-pen"></i> 編輯地點</button></div>
                             </div>
                             
-                            <div id="edit_form_${item.id}" class="hidden space-y-2 mb-3 bg-[rgba(255,255,255,0.7)] p-4 rounded-xl border border-white shadow-inner">
-                                <input id="edit_task_${item.id}" value="${item.task}" placeholder="主標題" class="p-2 text-xs">
-                                <input id="edit_kr_${item.id}" value="${item.krName || ''}" placeholder="韓文名稱" class="p-2 text-xs">
-                                <div class="flex gap-2"><input id="edit_loc_${item.id}" value="${item.loc}" placeholder="Google 定位" class="p-2 text-xs flex-1"><button class="btn-primary px-3 py-1 text-xs" onclick="fetchGooglePlace('${item.id}', ${idx}, ${i})"><i class="fa-brands fa-google"></i></button></div>
-                                <textarea id="edit_desc_${item.id}" rows="2" class="p-2 text-xs">${item.desc}</textarea>
-                                <button class="btn-primary w-full text-xs py-2" onclick="saveItemEdit(${idx}, ${i}, '${item.id}')">儲存變更</button>
+                            <div id="edit_form_${item.id}" class="hidden space-y-3 mb-3 bg-[rgba(255,255,255,0.8)] p-4 rounded-xl border border-white shadow-inner">
+                                <input id="edit_task_${item.id}" value="${item.task}" placeholder="主標題" class="font-bold text-sm">
+                                <div class="flex gap-2">
+                                    <input id="edit_loc_${item.id}" value="${item.loc === '輸入地址' ? '' : item.loc}" placeholder="搜尋地點..." class="flex-1 text-sm">
+                                    <button class="bg-white text-[var(--kr-accent)] px-3 py-1 rounded-xl shadow-sm font-bold" onclick="searchLocationOSM('${item.id}', ${idx}, ${i})"><i class="fa-solid fa-magnifying-glass"></i></button>
+                                </div>
+                                <button class="btn-primary w-full text-sm py-2" onclick="saveItemEdit(${idx}, ${i}, '${item.id}')">儲存變更</button>
                             </div>
 
                             <div class="pt-4 mt-3 border-t border-[rgba(0,0,0,0.05)]">
-                                <label class="text-xs font-bold text-gray-500 block mb-2"><i class="fa-solid fa-book-open mr-1"></i> 【添加筆記】</label>
-                                <textarea id="note_${item.id}" rows="2" placeholder="..." onchange="saveFileData('${item.id}', 'note', this.value)"></textarea>
-                                
                                 <div class="mt-3 flex gap-2">
-                                    <label class="bg-white border border-gray-200 px-3 py-1.5 rounded-lg text-xs text-gray-600 cursor-pointer shadow-sm"><input type="file" accept="image/*" multiple class="file-hide" onchange="addPhotos(this, '${item.id}')"><i class="fa-solid fa-images"></i> 照片 (最5張)</label>
-                                    <label class="bg-white border border-gray-200 px-3 py-1.5 rounded-lg text-xs text-gray-600 cursor-pointer shadow-sm"><input type="file" accept=".pdf" class="file-hide" onchange="addPdf(this, '${item.id}')"><i class="fa-solid fa-file"></i> 檔案</label>
+                                    <label class="bg-white border border-gray-200 px-4 py-2 rounded-xl text-xs text-gray-600 cursor-pointer shadow-sm font-bold flex-1 text-center"><input type="file" accept="image/*" multiple class="file-hide" onchange="addPhotos(this, '${item.id}')"><i class="fa-solid fa-camera text-[var(--kr-accent)]"></i> 加入照片</label>
+                                    <label class="bg-white border border-gray-200 px-4 py-2 rounded-xl text-xs text-gray-600 cursor-pointer shadow-sm font-bold flex-1 text-center"><input type="file" accept=".pdf" class="file-hide" onchange="addPdf(this, '${item.id}')"><i class="fa-solid fa-file-pdf text-red-400"></i> 加入檔案</label>
                                 </div>
                                 <div id="thumb_wrap_${item.id}" class="thumb-grid"></div>
                                 <div id="file_wrap_${item.id}" class="mt-2 text-xs text-blue-500"></div>
@@ -507,248 +507,191 @@
                 </div>`;
                 
                 if(i < d.items.length - 1) {
-                    const nextLoc = d.items[i+1].loc;
-                    const transitTime = item.transitTime || "約 30 分";
-                    html += `
-                        <div class="transit-node">
-                            <div class="transit-line"></div>
-                            <div class="bg-[rgba(255,255,255,0.9)] border border-gray-200 rounded-full px-3 py-1.5 shadow-sm text-[10px] text-gray-500 z-10 flex items-center">
-                                <i class="fa-solid fa-train-subway mr-2"></i> ${transitTime}
-                                <a href="https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(item.loc)}&destination=${encodeURIComponent(nextLoc)}&travelmode=transit" target="_blank" class="bg-[var(--kr-accent)] text-white px-2 py-1 rounded-full ml-2 font-bold shadow-sm active:scale-95 transition"><i class="fa-solid fa-location-arrow mr-1"></i>一鍵導航</a>
-                            </div>
-                            <div class="transit-line"></div>
-                        </div>
-                    `;
+                    html += `<div class="transit-node"><div class="transit-line"></div><div class="bg-white border border-gray-200 rounded-full px-4 py-1.5 shadow-sm text-[10px] text-gray-500 z-10 flex items-center font-bold"><a href="https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(item.loc)}&destination=${encodeURIComponent(d.items[i+1].loc)}&travelmode=transit" target="_blank" class="text-[var(--kr-accent)]"><i class="fa-solid fa-location-arrow mr-1"></i>Google 導航</a></div><div class="transit-line"></div></div>`;
                 }
             });
             document.getElementById('daily-content').innerHTML = html;
         }
 
-        // ================= 互動邏輯 =================
-        function toggleExpand(id) {
-            const wrap = document.getElementById(`wrap_${id}`);
-            wrap.classList.toggle('expanded');
-            if(wrap.classList.contains('expanded')) renderUserFiles(id);
-        }
-
-        function toggleEdit(id) {
-            document.getElementById(`display_info_${id}`).classList.toggle('hidden');
-            document.getElementById(`edit_form_${id}`).classList.toggle('hidden');
-        }
-
+        function toggleExpand(id) { const w = document.getElementById(`wrap_${id}`); w.classList.toggle('expanded'); if(w.classList.contains('expanded')) renderUserFiles(id); }
+        function toggleEdit(id) { document.getElementById(`display_info_${id}`).classList.toggle('hidden'); document.getElementById(`edit_form_${id}`).classList.toggle('hidden'); }
+        async function updateItemTime(dIdx, iIdx, val) { currentTrip.daily[dIdx].items[iIdx].time = val; await saveDB('trips', currentTrip.id, currentTrip); }
+        
         async function saveItemEdit(dIdx, iIdx, id) {
             const itm = currentTrip.daily[dIdx].items[iIdx];
             itm.task = document.getElementById(`edit_task_${id}`).value;
-            itm.krName = document.getElementById(`edit_kr_${id}`).value;
-            itm.loc = document.getElementById(`edit_loc_${id}`).value;
-            itm.desc = document.getElementById(`edit_desc_${id}`).value;
+            itm.loc = document.getElementById(`edit_loc_${id}`).value || '輸入地址';
             await saveDB('trips', currentTrip.id, currentTrip); renderDaily(currentDayIdx);
         }
 
-        async function updateItemTime(dIdx, iIdx, val) {
-            currentTrip.daily[dIdx].items[iIdx].time = val;
-            await saveDB('trips', currentTrip.id, currentTrip);
-        }
-
-        function fetchGooglePlace(id, dIdx, iIdx) {
-            // Mock API call to Google Places
-            alert("已模擬連接 Google Maps API，更新資訊與地點首圖！");
-            currentTrip.daily[dIdx].items[iIdx].img = `https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=80&seed=${Math.random()}`;
-            saveDB('trips', currentTrip.id, currentTrip).then(()=>renderDaily(currentDayIdx));
+        // 開源 OSM 搜尋 & 維基圖片搜尋
+        async function searchLocationOSM(id, dIdx, iIdx) {
+            const q = document.getElementById(`edit_loc_${id}`).value; if(!q) return;
+            try {
+                // 1. OSM 地點搜尋
+                const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1`);
+                const data = await res.json();
+                if(data.length > 0) document.getElementById(`edit_loc_${id}`).value = data[0].display_name.split(',')[0];
+                
+                // 2. Wikipedia 圖片搜尋
+                const wRes = await fetch(`https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&format=json&piprop=original&titles=${encodeURIComponent(q)}&origin=*`);
+                const wData = await wRes.json();
+                const pages = wData.query.pages; const pageId = Object.keys(pages)[0];
+                if(pages[pageId].original) {
+                    currentTrip.daily[dIdx].items[iIdx].img = pages[pageId].original.source;
+                    document.getElementById(`img_${id}`).src = pages[pageId].original.source;
+                } else {
+                    currentTrip.daily[dIdx].items[iIdx].img = `https://images.unsplash.com/photo-1503614472-8c93d56e92ce?w=600&q=80&seed=${Math.random()}`;
+                }
+                alert("已透過開源 API 自動更新地點與首圖！");
+                saveItemEdit(dIdx, iIdx, id);
+            } catch(e) { alert("搜尋失敗，請稍後再試。"); }
         }
 
         async function addNewAttraction() {
-            const d = currentTrip.daily[currentDayIdx];
-            const nid = `d${currentDayIdx}_${Date.now()}`;
-            d.items.push({ id: nid, time: "12:00", task: "新景點", krName: "", loc: "點擊編輯輸入地址", desc: "輸入詳細資訊...", img: "https://images.unsplash.com/photo-1556012018-50c5c0da73bf?w=600&q=80", info:{time:"-",tel:"-",web:"-"} });
+            currentTrip.daily[currentDayIdx].items.push({ id: `d${currentDayIdx}_${Date.now()}`, time: "12:00", task: "新行程", loc: "輸入地址", img: "https://images.unsplash.com/photo-1556012018-50c5c0da73bf?w=600" });
             await saveDB('trips', currentTrip.id, currentTrip); renderDaily(currentDayIdx);
             setTimeout(() => window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'}), 100);
         }
+        async function deleteItem(dIdx, iIdx) { if(!confirm("確定刪除此行程？")) return; currentTrip.daily[dIdx].items.splice(iIdx, 1); await saveDB('trips', currentTrip.id, currentTrip); renderDaily(currentDayIdx); }
+        async function moveOrder(dIdx, iIdx, dir) { const arr = currentTrip.daily[dIdx].items; if(iIdx + dir < 0 || iIdx + dir >= arr.length) return; const temp = arr[iIdx]; arr[iIdx] = arr[iIdx + dir]; arr[iIdx + dir] = temp; await saveDB('trips', currentTrip.id, currentTrip); renderDaily(currentDayIdx); }
+        function showMap() { const d = currentTrip.daily[currentDayIdx]; if(d.items.length===0) return; const o=d.items[0].loc, dest=d.items[d.items.length-1].loc; window.open(`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(o)}&destination=${encodeURIComponent(dest)}`, '_blank'); }
 
-        async function deleteItem(dIdx, iIdx) {
-            if(!confirm("確定刪除此景點？")) return;
-            currentTrip.daily[dIdx].items.splice(iIdx, 1);
-            await saveDB('trips', currentTrip.id, currentTrip); renderDaily(currentDayIdx);
-        }
-
-        // --- 拖曳排序 ---
-        let dragSrc = null;
-        function drag(ev, d, i) { dragSrc = {d, i}; ev.currentTarget.classList.add('dragging'); }
-        function allowDrop(ev) { ev.preventDefault(); }
-        async function drop(ev, t_d, t_i) {
-            ev.preventDefault(); document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
-            if (!dragSrc || dragSrc.i === t_i) return;
-            const item = currentTrip.daily[dragSrc.d].items.splice(dragSrc.i, 1)[0];
-            currentTrip.daily[t_d].items.splice(t_i, 0, item);
-            await saveDB('trips', currentTrip.id, currentTrip); renderDaily(currentDayIdx);
-        }
-        async function moveOrder(dIdx, iIdx, dir) {
-            const arr = currentTrip.daily[dIdx].items;
-            if(iIdx + dir < 0 || iIdx + dir >= arr.length) return;
-            const temp = arr[iIdx]; arr[iIdx] = arr[iIdx + dir]; arr[iIdx + dir] = temp;
-            await saveDB('trips', currentTrip.id, currentTrip); renderDaily(currentDayIdx);
-        }
-
-        // ================= 全局地圖 =================
-        function showMap() {
-            const d = currentTrip.daily[currentDayIdx];
-            if(d.items.length === 0) return alert("當日無景點");
-            const origin = d.items[0].loc;
-            const dest = d.items[d.items.length-1].loc;
-            let wp = d.items.slice(1, -1).map(x => encodeURIComponent(x.loc)).join('|');
-            const url = `https://www.google.com/maps/embed/v1/directions?key=YOUR_API_KEY_HERE&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(dest)}${wp ? '&waypoints='+wp : ''}&mode=transit`;
-            
-            // 由於無實際 API Key，我們打開一個模擬的地圖 Lightbox 或是真實的導航網址
-            const realUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(dest)}${wp ? '&waypoints='+wp : ''}&travelmode=transit`;
-            window.open(realUrl, '_blank');
-        }
-
-        // ================= 檔案與照片儲存 (IndexedDB) =================
-        function toBase64(file) { return new Promise((r, j) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => r(reader.result); }); }
-        
-        async function updateImg(input, d, i, type) {
-            if (!input.files[0]) return; const b64 = await toBase64(input.files[0]);
-            currentTrip.daily[d].items[i].img = b64; document.getElementById(`img_${currentTrip.daily[d].items[i].id}`).src = b64;
-            await saveDB('trips', currentTrip.id, currentTrip);
-        }
-        
-        async function saveFileData(id, type, data) { await saveDB('files', `${currentTrip.id}_${id}_${type}`, data); }
-        
-        async function addPhotos(input, id) {
-            if (!input.files.length) return;
-            let ex = await getDB('files', `${currentTrip.id}_${id}_photos`) || [];
-            for(let f of input.files) { if(ex.length >= 5) break; ex.push(await toBase64(f)); }
-            await saveFileData(id, 'photos', ex); renderUserFiles(id);
-        }
-        
-        async function addPdf(input, id) {
-            if (!input.files[0]) return; const f = input.files[0];
-            await saveFileData(id, 'pdf', { name: f.name, data: await toBase64(f) }); renderUserFiles(id);
-        }
-        
+        // ================= 檔案與照片 (修正 Lightbox 與 PDF Viewer) =================
+        function toBase64(file) { return new Promise((r) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => r(reader.result); }); }
+        async function addPhotos(input, id) { if(!input.files.length) return; let ex = await getDB('files', `${currentTrip.id}_${id}_photos`) || []; for(let f of input.files) { if(ex.length>=5) break; ex.push(await toBase64(f)); } await saveDB('files', `${currentTrip.id}_${id}_photos`, ex); renderUserFiles(id); }
+        async function addPdf(input, id) { if(!input.files[0]) return; const f = input.files[0]; await saveDB('files', `${currentTrip.id}_${id}_pdf`, { name: f.name, data: await toBase64(f) }); renderUserFiles(id); }
         async function renderUserFiles(id) {
-            const note = await getDB('files', `${currentTrip.id}_${id}_note`); if(note) document.getElementById(`note_${id}`).value = note;
             const p = await getDB('files', `${currentTrip.id}_${id}_photos`);
-            if(p) document.getElementById(`thumb_wrap_${id}`).innerHTML = p.map(src => `<img src="${src}" class="thumb-box" onclick="openLightboxImage('${src}')">`).join('');
+            if(p) document.getElementById(`thumb_wrap_${id}`).innerHTML = p.map((src, i) => `<img src="${src}" class="thumb-box" onclick="openLightbox('${id}', ${i})">`).join('');
             const pdf = await getDB('files', `${currentTrip.id}_${id}_pdf`);
-            if(pdf) document.getElementById(`file_wrap_${id}`).innerHTML = `<a href="${pdf.data}" download="${pdf.name}" class="bg-white border px-2 py-1 rounded shadow-sm"><i class="fa-solid fa-file"></i> ${pdf.name}</a>`;
+            if(pdf) document.getElementById(`file_wrap_${id}`).innerHTML = `<button onclick="viewPDF('${id}')" class="bg-white border px-3 py-1.5 rounded-xl shadow-sm text-gray-700 font-bold"><i class="fa-solid fa-file-pdf text-red-500 mr-1"></i> ${pdf.name}</button>`;
         }
 
-        function openLightboxImage(src) {
-            document.getElementById('lightbox-img').src = src;
-            document.getElementById('lightbox-img').classList.remove('hidden');
-            document.getElementById('lightbox-map').classList.add('hidden');
-            document.getElementById('lightbox').style.display = 'flex';
-        }
-        function closeLightbox(e) { if(e.target.id === 'lightbox' || e.target.classList.contains('close')) document.getElementById('lightbox').style.display = 'none'; }
+        // Lightbox 滑動邏輯
+        let lbPhotos = [], lbIdx = 0;
+        let touchstartX = 0, touchendX = 0;
+        async function openLightbox(id, idx) { lbPhotos = await getDB('files', `${currentTrip.id}_${id}_photos`); lbIdx = idx; updateLightboxImg(); document.getElementById('lightbox').style.display='flex'; }
+        function updateLightboxImg() { document.getElementById('lightbox-img').src = lbPhotos[lbIdx]; }
+        function closeLightbox() { document.getElementById('lightbox').style.display='none'; }
+        
+        document.getElementById('lightbox').addEventListener('touchstart', e => { touchstartX = e.changedTouches[0].screenX; });
+        document.getElementById('lightbox').addEventListener('touchend', e => {
+            touchendX = e.changedTouches[0].screenX;
+            if(touchendX < touchstartX - 50) { lbIdx = (lbIdx + 1) % lbPhotos.length; updateLightboxImg(); } // Swipe left (next)
+            if(touchendX > touchstartX + 50) { lbIdx = (lbIdx - 1 + lbPhotos.length) % lbPhotos.length; updateLightboxImg(); } // Swipe right (prev)
+        });
+
+        // 實時預覽 PDF
+        async function viewPDF(id) { const pdf = await getDB('files', `${currentTrip.id}_${id}_pdf`); if(pdf) { document.getElementById('pdf-iframe').src = pdf.data; document.getElementById('pdf-viewer').style.display = 'flex'; } }
 
         // ================= 交通與住宿 =================
         function renderTransportStay() {
             document.getElementById('flight-content').innerHTML = currentTrip.flights.map(f => `
-                <div class="mb-4 bg-[rgba(255,255,255,0.5)] p-4 rounded-xl">
-                    <div class="flex justify-between items-center"><input value="${f.title}" class="bg-transparent border-none font-bold text-xs p-0 w-1/3" onchange="f.title=this.value;saveDB('trips',currentTrip.id,currentTrip)"><label class="text-[10px] bg-white px-2 py-1 rounded cursor-pointer shadow-sm"><input type="file" class="file-hide" onchange="uploadTicket(this,'${f.id}')"><i class="fa-solid fa-upload"></i> 檔案</label></div>
-                    <div class="flex items-center my-3"><i class="fa-solid ${f.airlineIcon} text-2xl mr-4 text-[#9A9283]"></i><div><p class="font-bold text-lg"><input value="${f.route}" class="bg-transparent border-none p-0 w-24"> <input value="${f.flight}" class="text-sm bg-white border px-2 py-0.5 rounded-lg w-20 text-gray-600"></p><input type="time" value="${f.time}" class="text-xs text-gray-500 font-mono mt-1"></div></div>
-                    <div class="flex gap-2"><input value="${f.term}" class="text-xs p-2 flex-1"><input value="${f.desc}" class="text-xs p-2 flex-1"></div>
-                    <div id="ticket_${f.id}" class="mt-2 text-xs"></div>
+                <div class="mb-4 bg-[rgba(255,255,255,0.7)] p-4 rounded-xl border border-white shadow-sm">
+                    <div class="flex justify-between items-center mb-2"><input value="${f.title}" class="bg-transparent border-none font-bold text-sm p-0 w-1/3" onchange="f.title=this.value;saveDB('trips',currentTrip.id,currentTrip)"><input type="date" value="${f.date}" class="bg-transparent border-none text-xs text-gray-500 p-0 w-1/3 text-right" onchange="f.date=this.value;saveDB('trips',currentTrip.id,currentTrip)"></div>
+                    <div class="flex items-center my-3"><i class="fa-solid ${f.airlineIcon} text-2xl mr-4 text-[var(--kr-accent)]"></i><div><p class="font-bold text-lg">${f.route} <span class="text-xs bg-white border px-2 py-0.5 rounded-lg ml-1">${f.flight}</span></p><input type="time" value="${f.time}" class="text-sm font-bold font-mono mt-1 text-gray-600 bg-transparent border-none p-0 w-24"></div></div>
+                    <div class="bg-white p-2 rounded-lg text-xs font-bold flex items-center justify-between"><a href="https://maps.google.com/?q=${encodeURIComponent(f.term)}" target="_blank" class="text-blue-500"><i class="fa-solid fa-map-pin"></i> ${f.term}</a><label class="cursor-pointer text-[var(--kr-accent)]"><input type="file" accept=".pdf" class="file-hide" onchange="addPdf(this, '${f.id}')"><i class="fa-solid fa-file-pdf"></i> 檔案</label></div>
+                    <div id="file_wrap_${f.id}" class="mt-2 text-xs"></div>
                 </div>`).join(''); 
-            currentTrip.flights.forEach(async f => { const t = await getDB('files', `${currentTrip.id}_ticket_${f.id}`); if(t) document.getElementById(`ticket_${f.id}`).innerHTML = `<a href="${t.data}" download="${t.name}" class="text-blue-500"><i class="fa-solid fa-file"></i> ${t.name}</a>`; });
+            currentTrip.flights.forEach(f => renderUserFiles(f.id));
 
-            document.getElementById('stay-content').innerHTML = currentTrip.stays.map((s, idx) => `
-                <div class="mb-5 bg-[rgba(255,255,255,0.5)] p-4 rounded-xl">
-                    <div class="flex gap-2 mb-2"><input type="date" id="stay_date_${s.id}" value="2026-10-30" class="w-2/5 text-xs p-2"><input id="stay_name_${s.id}" value="${s.name}" class="flex-1 text-xs p-2 font-bold"><button class="btn-primary px-2 py-1 text-xs" onclick="fetchGoogleStay(${idx})"><i class="fa-brands fa-google"></i></button></div>
-                    <input id="stay_addr_${s.id}" value="${s.addr}" class="text-xs p-2 mb-2 w-full text-gray-500">
-                    <div class="flex justify-between items-center"><label class="text-[10px] bg-white px-2 py-1 rounded cursor-pointer shadow-sm"><input type="file" class="file-hide" onchange="uploadTicket(this,'${s.id}')"><i class="fa-solid fa-upload"></i> 住宿憑證</label></div>
-                    <div id="ticket_${s.id}" class="mt-2 text-xs"></div>
+            document.getElementById('stay-content').innerHTML = currentTrip.stays.map(s => `
+                <div class="mb-5 bg-[rgba(255,255,255,0.7)] p-4 rounded-xl border border-white shadow-sm">
+                    <input value="${s.date}" class="bg-transparent border-none text-xs text-gray-500 font-bold p-0 w-full mb-1" placeholder="例如: 10/30 - 11/01" onchange="s.date=this.value;saveDB('trips',currentTrip.id,currentTrip)">
+                    <div class="flex gap-2 mb-2"><input id="stay_name_${s.id}" value="${s.name}" class="flex-1 text-sm font-bold p-2 bg-white"><button class="btn-primary px-3 py-1 text-xs rounded-xl" onclick="searchLocationOSM('${s.id}')"><i class="fa-solid fa-magnifying-glass"></i></button></div>
+                    <input id="edit_loc_${s.id}" value="${s.addr}" class="text-xs p-2 mb-2 w-full text-gray-500 bg-white">
+                    <div class="flex justify-end"><label class="bg-white px-3 py-1.5 rounded-xl cursor-pointer shadow-sm text-xs font-bold text-[var(--kr-accent)] border"><input type="file" accept=".pdf" class="file-hide" onchange="addPdf(this, '${s.id}')"><i class="fa-solid fa-file-pdf"></i> 加入檔案</label></div>
+                    <div id="file_wrap_${s.id}" class="mt-2 text-xs text-right"></div>
                 </div>`).join('');
-            currentTrip.stays.forEach(async s => { const t = await getDB('files', `${currentTrip.id}_ticket_${s.id}`); if(t) document.getElementById(`ticket_${s.id}`).innerHTML = `<a href="${t.data}" download="${t.name}" class="text-blue-500"><i class="fa-solid fa-file"></i> ${t.name}</a>`; });
+            currentTrip.stays.forEach(s => renderUserFiles(s.id));
         }
 
-        async function uploadTicket(input, id) { if(!input.files[0]) return; const f = input.files[0]; await saveFileData(`ticket_${id}`, '', {name:f.name, data:await toBase64(f)}); renderTransportStay(); }
-        async function fetchGoogleStay(idx) {
-            const s = currentTrip.stays[idx];
-            s.name = document.getElementById(`stay_name_${s.id}`).value;
-            alert(`已從 Google 獲取「${s.name}」的最新資訊並同步至行程！`);
-            await saveDB('trips', currentTrip.id, currentTrip); renderTransportStay(); renderDaily(currentDayIdx);
-        }
-
-        // ================= 花費與記帳 =================
-        async function fetchExchangeRate() {
+        // ================= 花費與全球匯率 =================
+        async function fetchExchangeRateAPI() {
             try {
-                const res = await fetch("https://open.er-api.com/v6/latest/MYR");
+                // 真實開源 API: 支援全球 160+ 貨幣
+                const res = await fetch("https://open.er-api.com/v6/latest/USD");
                 const data = await res.json();
-                exchangeRates.KRW = data.rates.KRW; exchangeRates.USD = data.rates.USD; exchangeRates.MYR = 1;
-                document.getElementById('rateUpdateTxt').innerText = `API 即時更新: ${data.time_last_update_utc.substring(0,16)}`;
+                exchangeRates = data.rates;
+                const topCur = ["MYR","KRW","TWD","JPY","USD","EUR","GBP","HKD","THB","SGD"];
+                let opts = Object.keys(exchangeRates).sort((a,b) => topCur.includes(a) ? -1 : 1).map(k => `<option value="${k}">${k}</option>`).join('');
+                document.getElementById('curFrom').innerHTML = opts; document.getElementById('curTo').innerHTML = opts;
+                document.getElementById('curFrom').value = "MYR"; document.getElementById('curTo').value = "KRW";
+                document.getElementById('rateUpdateTxt').innerText = `API 更新: ${data.time_last_update_utc.substring(0,16)}`;
                 convertCurrency();
-            } catch(e) { document.getElementById('rateUpdateTxt').innerText = "無法載入 API 匯率"; }
+            } catch(e) {}
         }
+        function swapCurrencies() { const f = document.getElementById('curFrom').value; document.getElementById('curFrom').value = document.getElementById('curTo').value; document.getElementById('curTo').value = f; convertCurrency(); }
         function convertCurrency() {
-            const from = document.getElementById('curFrom').value;
-            const to = document.getElementById('curTo').value;
+            const f = document.getElementById('curFrom').value; const t = document.getElementById('curTo').value;
             const amt = parseFloat(document.getElementById('curAmount').value) || 0;
-            const amtInMyr = amt / exchangeRates[from];
-            const result = amtInMyr * exchangeRates[to];
-            document.getElementById('curResult').value = result.toFixed(2);
+            if(exchangeRates[f] && exchangeRates[t]) { document.getElementById('curResult').value = ((amt / exchangeRates[f]) * exchangeRates[t]).toFixed(2); }
         }
+
+        function renderUserSelects() { document.getElementById('expPayer').innerHTML = currentTrip.users.map(u => `<option value="${u}">${u}</option>`).join(''); }
+        function addUser() { const u = prompt("輸入新增用戶名稱:"); if(u) { currentTrip.users.push(u); saveDB('trips', currentTrip.id, currentTrip); renderUserSelects(); } }
 
         async function addExpense() {
-            const e = { id: Date.now(), t: document.getElementById('expType').value, n: document.getElementById('expName').value, a: parseFloat(document.getElementById('expAmt').value)||0, p: document.getElementById('expPayer').value, d: document.getElementById('expDate').value, no: document.getElementById('expNote').value };
+            const e = { id: Date.now(), t: document.getElementById('expType').value, n: document.getElementById('expName').value, a: parseFloat(document.getElementById('expAmt').value)||0, p: document.getElementById('expPayer').value, split: document.getElementById('expSplitType').value };
             if(e.a <= 0) return alert("請輸入金額");
             currentTrip.expenses.push(e); await saveDB('trips', currentTrip.id, currentTrip);
-            document.getElementById('expName').value=''; document.getElementById('expAmt').value='';
-            renderExpenses();
+            document.getElementById('expName').value=''; document.getElementById('expAmt').value=''; renderExpenses();
         }
 
         function renderExpenses() {
-            let total = 0, aPaid = 0, bPaid = 0;
-            let htmlList = currentTrip.expenses.map(e => {
-                total += e.a; if(e.p === 'UserA') aPaid += e.a; else bPaid += e.a;
-                return `<div class="flex justify-between items-center border-b border-white pb-2 mb-2 text-sm"><div><span class="font-bold text-gray-700">${e.n || e.t}</span> <span class="text-[10px] text-gray-400">${e.p==='UserA'?'(我)':'(伴侶)'}</span></div><div class="font-mono text-[var(--kr-accent)] font-bold">${e.a}</div></div>`;
+            renderUserSelects();
+            let balances = {}; currentTrip.users.forEach(u => balances[u] = 0);
+            
+            let html = currentTrip.expenses.map(e => {
+                if(e.split === 'equal') {
+                    balances[e.p] += e.a; // Payer gets credit
+                    const splitAmt = e.a / currentTrip.users.length;
+                    currentTrip.users.forEach(u => balances[u] -= splitAmt); // Everyone owes
+                }
+                return `<div class="flex justify-between items-center border-b border-white pb-2 mb-2 text-sm"><div><span class="font-bold text-gray-700">${e.n || e.t}</span> <span class="text-[10px] text-gray-400 bg-white px-1 rounded">${e.p} 付款</span></div><div class="font-mono text-[var(--kr-accent)] font-bold">${e.a}</div></div>`;
             }).join('');
             
-            const split = total / 2;
-            let oweText = "";
-            if(aPaid > split) oweText = `伴侶需給你: <b>${(aPaid - split).toFixed(2)}</b>`;
-            else if(bPaid > split) oweText = `你需給伴侶: <b>${(bPaid - split).toFixed(2)}</b>`;
-            else oweText = "目前帳目結清";
+            let sumHtml = Object.keys(balances).map(u => `<p class="text-xs ${balances[u]>=0?'text-green-600':'text-red-500'} font-bold">${u}: ${balances[u]>=0?'需收回':'需支付'} ${Math.abs(balances[u]).toFixed(2)}</p>`).join('');
 
             document.getElementById('expense-summary').innerHTML = `
-                <div class="bg-white p-4 rounded-xl border border-gray-100 mb-4 shadow-sm text-center">
-                    <p class="text-xs text-gray-500 mb-1">總花費</p><p class="text-2xl font-bold font-mono">${total.toFixed(2)}</p>
-                    <div class="mt-2 text-sm text-red-400 bg-red-50 py-1 rounded">${oweText}</div>
+                <div class="bg-[rgba(255,255,255,0.8)] p-4 rounded-xl border border-white mb-4 shadow-sm text-center">
+                    <p class="text-xs text-gray-500 mb-2 font-bold">💳 分帳結算 (Splitwise)</p>
+                    ${sumHtml || '<p class="text-xs text-gray-400">目前無欠款</p>'}
                 </div>
-                <div class="max-h-40 overflow-y-auto pr-2">${htmlList}</div>
+                <div class="max-h-40 overflow-y-auto pr-2">${html}</div>
             `;
         }
 
-        // ================= 行李清單 =================
-        function renderLists() {
-            let groups = {}; currentTrip.packItems.forEach((item, i) => { if(!groups[item.c]) groups[item.c] = []; groups[item.c].push({n: item.n, idx: i}); });
-            let html = '';
-            for(let cat in groups) {
-                html += `<div class="mb-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm"><div class="text-sm font-bold text-gray-800 mb-3 border-b pb-1">${cat}</div>`;
-                groups[cat].forEach(itm => { html += `<div class="flex items-center gap-3 mb-2"><input type="checkbox" class="w-5 h-5 accent-[var(--kr-accent)]"><span class="text-sm text-gray-600">${itm.n}</span><button onclick="delPack(${itm.idx})" class="ml-auto text-gray-300 bg-gray-50 w-6 h-6 rounded-full flex items-center justify-center"><i class="fa-solid fa-trash text-[10px]"></i></button></div>`; });
-                html += `</div>`;
-            }
-            document.getElementById('prep-list').innerHTML = html;
-        }
-        async function addPackItem() { const c = document.getElementById('packCategory').value; const n = document.getElementById('newPrep').value; if(n) { currentTrip.packItems.push({c, n}); document.getElementById('newPrep').value = ''; await saveDB('trips', currentTrip.id, currentTrip); renderLists(); } }
-        async function delPack(i) { currentTrip.packItems.splice(i, 1); await saveDB('trips', currentTrip.id, currentTrip); renderLists(); }
-
-        // ================= 翻譯 API =================
-        async function translateText() {
+        // ================= 行李與翻譯 =================
+        function renderLists() { document.getElementById('prep-list').innerHTML = currentTrip.packItems.map((itm, i) => `<div class="flex items-center gap-3 mb-2 bg-white p-3 rounded-xl shadow-sm"><input type="checkbox" class="w-5 h-5 accent-[var(--kr-accent)]"><span class="text-sm font-bold text-gray-600 flex-1">${itm.c} - ${itm.n}</span><button onclick="currentTrip.packItems.splice(${i},1);saveDB('trips',currentTrip.id,currentTrip);renderLists()" class="text-red-300"><i class="fa-solid fa-trash"></i></button></div>`).join(''); }
+        
+        const langMap = {"zh":"中文","ko":"韓文","ja":"日文","en":"英文","th":"泰文","vi":"越南文","fr":"法文","es":"西班牙文"};
+        function initTranslateLangs() { let opts = Object.keys(langMap).map(k=>`<option value="${k}">${langMap[k]}</option>`).join(''); document.getElementById('langFrom').innerHTML=opts; document.getElementById('langFrom').value='zh'; document.getElementById('langTo').innerHTML=opts; document.getElementById('langTo').value='ko'; }
+        
+        // 真實翻譯 API + OCR
+        async function translateText(forceText = null) {
             const f = document.getElementById('langFrom').value; const t = document.getElementById('langTo').value;
-            const i = document.getElementById('transInput').value; const o = document.getElementById('transOutput');
+            const i = forceText || document.getElementById('transInput').value; const o = document.getElementById('transOutput');
             if(!i) return; o.value = "翻譯中...";
             try { const r = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(i)}&langpair=${f}|${t}`); const d = await r.json(); o.value = d.responseData.translatedText; } catch(e) { o.value = "失敗，請檢查網路。"; }
         }
-        function speakKorean() {
-            const t = document.getElementById('transOutput').value; const lang = document.getElementById('langTo').value;
-            if(!t) return; const u = new SpeechSynthesisUtterance(t);
-            u.lang = lang === 'ko' ? 'ko-KR' : (lang === 'ja' ? 'ja-JP' : 'en-US'); window.speechSynthesis.speak(u);
+        
+        async function processOCR(input) {
+            if(!input.files[0]) return;
+            document.getElementById('ocrStatus').classList.remove('hidden');
+            document.getElementById('transInput').value = "影像辨識中...";
+            try {
+                // 使用 Tesseract.js
+                const result = await Tesseract.recognize(input.files[0], 'eng+kor+chi_tra', { logger: m => console.log(m) });
+                document.getElementById('transInput').value = result.data.text.trim();
+                document.getElementById('ocrStatus').classList.add('hidden');
+                translateText();
+            } catch(e) { document.getElementById('transInput').value = "辨識失敗"; document.getElementById('ocrStatus').classList.add('hidden'); }
         }
 
         function changeSection(id, btn) { document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active')); document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active')); document.getElementById(id).classList.add('active'); btn.classList.add('active'); window.scrollTo(0, 0); }
-
+        
         window.onload = init;
     </script>
 </body>
