@@ -4,16 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>我的旅行繪本</title>
-    <!-- 飛機 Emoji 瀏覽器小圖標 -->
+    <!-- Favicon: 飛機 Emoji -->
     <link rel="icon" href="https://www.shutterstock.com/image-vector/airplane-vector-isolated-emoticon-emoji-600nw-2627946825.jpg">
     <link rel="apple-touch-icon" href="https://www.shutterstock.com/image-vector/airplane-vector-isolated-emoticon-emoji-600nw-2627946825.jpg">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
-    <!-- 10.0 引入 Leaflet.js -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- 11.0 全面接入 Google Maps API (請替換 YOUR_GOOGLE_MAPS_API_KEY_HERE) -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCEriFertWjrC4aDt1bx3KlvjyD8-kJ4jk&libraries=places" async defer></script>
     
     <style>
         :root {
@@ -61,7 +61,7 @@
 
         .item-header { position: relative; width: 100%; height: 180px; border-radius: 24px 24px 0 0; overflow: hidden; background: #e0e0e0; }
         .item-header img { width: 100%; height: 100%; object-fit: cover; }
-        .edit-img-btn { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.7); color: var(--kr-text); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(10px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .edit-img-btn { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.7); color: var(--kr-text); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(10px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 20; }
         
         .transit-node { display: flex; flex-direction: column; align-items: center; margin: -15px 0; position: relative; z-index: 1; }
         .transit-line { width: 2px; height: 45px; background: repeating-linear-gradient(to bottom, #d1d1d1 0, #d1d1d1 4px, transparent 4px, transparent 8px); }
@@ -74,7 +74,6 @@
         .file-hide { display: none; }
         .btn-primary { background: var(--kr-accent); color: white; padding: 10px 18px; border-radius: 14px; font-size: 0.85rem; font-weight: bold; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
         
-        /* 懸浮按鈕群 */
         .fab-container { position: fixed; bottom: 110px; right: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 900; }
         .btn-fab { background: var(--kr-text); color: white; width: 45px; height: 45px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1rem; box-shadow: 0 6px 20px rgba(0,0,0,0.2); cursor: pointer; }
         .btn-map-fab { background: white; color: var(--kr-accent); width: 45px; height: 45px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1rem; box-shadow: 0 6px 20px rgba(0,0,0,0.1); cursor: pointer; }
@@ -97,11 +96,14 @@
         #pdf-viewer { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 2000; flex-direction: column; }
         #pdf-iframe { flex: 1; width: 100%; border: none; }
         
-        #trip-map { height: 180px; width: 100%; border-radius: 20px; z-index: 5; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.8); box-shadow: var(--kr-shadow); }
+        /* 11.0 Google Maps 容器 */
+        #trip-map { height: 200px; width: 100%; border-radius: 20px; z-index: 5; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.8); box-shadow: var(--kr-shadow); background: #e9e5dc; display: flex; align-items: center; justify-content: center; color: #9A9283; font-weight: bold; text-align: center; font-size: 12px; }
         
-        /* 預算圓環 */
         .budget-ring { position: relative; width: 100px; height: 100px; border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; }
         .budget-ring::before { content: ""; position: absolute; inset: 8px; background: var(--kr-glass); border-radius: 50%; backdrop-filter: blur(10px); }
+
+        /* 隱藏 Google Place 原生 Logo 保持版面乾淨 */
+        .pac-container { border-radius: 12px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1); font-family: Arial, sans-serif; }
     </style>
 </head>
 <body>
@@ -146,15 +148,15 @@
                 </div>
                 <div id="weather-banner" class="liquid-glass p-5 mb-4"></div>
                 
-                <!-- 10.0 地圖全覽 -->
-                <div id="trip-map"></div>
+                <!-- 11.0 Google Maps 互動式全覽地圖 -->
+                <div id="trip-map">讀取 Google 地圖中...<br>(請確認已填寫 API Key)</div>
 
                 <div id="daily-content"></div>
                 
                 <div class="fab-container">
                     <button class="btn-map-fab" onclick="showMap()" title="Google 總導航"><i class="fa-solid fa-map-marked-alt"></i></button>
-                    <!-- 10.0 一鍵優化路線 -->
-                    <button class="btn-map-fab bg-[var(--kr-cream)] text-[var(--kr-text)]" onclick="optimizeDailyRoute()" title="優化路線"><i class="fa-solid fa-route"></i></button>
+                    <!-- 11.0 路線優化 (僅中間節點) -->
+                    <button class="btn-map-fab bg-[var(--kr-cream)] text-[var(--kr-text)]" onclick="optimizeDailyRoute()" title="優化路線 (固定首尾住宿)"><i class="fa-solid fa-route"></i></button>
                     <button class="btn-fab" onclick="addNewAttraction()"><i class="fa-solid fa-plus"></i></button>
                 </div>
             </div>
@@ -190,7 +192,6 @@
             <div id="expenses" class="tab-section">
                 <h2 class="text-xl font-bold mb-6 text-center hand-drawn">花費記帳 💰</h2>
                 
-                <!-- 10.0 預算進度條 -->
                 <div class="liquid-glass p-5 mb-4 text-center">
                     <div class="flex justify-between items-center mb-2">
                         <h3 class="text-sm font-bold text-gray-500"><i class="fa-solid fa-chart-pie"></i> 預算控制</h3>
@@ -317,7 +318,7 @@
 
     <script>
         // ================= 資料庫 & 初始化 =================
-        const dbName = "TravelBookDB_v10";
+        const dbName = "TravelBookDB_v11";
         let db;
         const initDB = new Promise((resolve) => {
             const req = indexedDB.open(dbName, 1);
@@ -338,13 +339,15 @@
         let currentDayIdx = 0;
         let selectedNewColor = "#9A9283";
         let exchangeRates = {};
-        let map = null; // Leaflet 地圖實例
         
-        // 14天完整資料 (含真實經緯度以供地圖與路程計算使用)
+        // 11.0 Google Maps 全域變數
+        let gMap = null, gDirectionsService = null, gPolylines = [], gMarkers = [];
+        let mapInitialized = false;
+
+        // 14天完整 JSON 資料生成 (確保所有欄位完整)
         function generate14DaysData() {
             const regions = ["吉隆坡","釜山","釜山","釜山-濟州","濟州島","濟州島","濟州島","濟州島","濟州島","濟州-首爾","首爾","首爾","首爾","首爾"];
             let daily = [];
-            
             const richIntro1 = "這是本次旅程的起點。機場設施完善，擁有各類免稅商店與多樣化的餐飲選擇。作為第一次出國或長途飛行的旅客，這裡提供舒適的候機休息區與便捷的交通轉乘服務，讓你帶著輕鬆愉快的心情準備啟程前往美麗的韓國。";
             const richRevPos1 = "機場指標非常清楚，免稅店很好逛，整體空間明亮寬敞！";
             const richRevNeg1 = "安檢排隊人潮有時非常多，強烈建議一定要提早三個小時抵達機場以免匆忙。";
@@ -360,16 +363,15 @@
                 
                 let items = [];
                 if(i === 0) {
-                    items.push({ id:`d0_0`, time: "16:00", task: "吉隆坡國際機場", loc: "KLIA Terminal 1", lat: 2.7456, lng: 101.7072, endTime: "23:59", intro: richIntro1, review: {pos: richRevPos1, neg: richRevNeg1}, img: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600" });
+                    items.push({ id:`d0_0`, time: "16:00", task: "吉隆坡國際機場", loc: "KLIA Terminal 1", lat: 2.7456, lng: 101.7072, endTime: "23:59", intro: richIntro1, review: {pos: richRevPos1, neg: richRevNeg1}, img: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600", isAutoStay: false });
                 } else if(i === 1) {
-                    items.push({ id:`d1_0`, time: "10:30", task: "海雲台海水浴場", loc: "Haeundae Beach", lat: 35.1587, lng: 129.1603, endTime: "22:00", intro: richIntro2, review: {pos: richRevPos2, neg: richRevNeg2}, img: "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=600" });
-                    items.push({ id:`d1_1`, time: "14:00", task: "人氣海景咖啡廳", loc: "Cafe in Busan", lat: 35.159, lng: 129.161, endTime: "18:00", intro: "絕美海景咖啡廳。", review: {pos: "好喝", neg: "人多"}, img: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600" });
+                    items.push({ id:`d1_0`, time: "10:30", task: "海雲台海水浴場", loc: "Haeundae Beach", lat: 35.1587, lng: 129.1603, endTime: "22:00", intro: richIntro2, review: {pos: richRevPos2, neg: richRevNeg2}, img: "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=600", isAutoStay: false });
+                    items.push({ id:`d1_1`, time: "14:00", task: "人氣海景咖啡廳", loc: "Cafe in Busan", lat: 35.159, lng: 129.161, endTime: "18:00", intro: "絕美海景咖啡廳。", review: {pos: "好喝", neg: "人多"}, img: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600", isAutoStay: false });
                 } else {
                     let lat = dStr.includes("釜山") ? 35.1 : (dStr.includes("濟州") ? 33.5 : 37.5);
                     let lng = dStr.includes("釜山") ? 129.0 : (dStr.includes("濟州") ? 126.5 : 126.9);
-                    items.push({ id:`d${i}_0`, time: "10:00", task: "探索" + regions[i], loc: regions[i] + "市中心", lat: lat, lng: lng, endTime: "22:00", intro: "充滿歷史與現代的完美交融。", review: {pos: "交通便利", neg: "需翻譯軟體"}, img: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=600" });
+                    items.push({ id:`d${i}_0`, time: "10:00", task: "探索" + regions[i], loc: regions[i] + "市中心", lat: lat, lng: lng, endTime: "22:00", intro: "充滿歷史與現代的完美交融。", review: {pos: "交通便利", neg: "需翻譯軟體"}, img: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=600", isAutoStay: false });
                 }
-
                 daily.push({ day: `Day ${i+1}`, date: dStr, dayName: dayName, region: regions[i], items: items });
             }
             return daily;
@@ -382,7 +384,7 @@
                 { id:"f3", title: "回程", date: "2026-11-11", route: "ICN → KUL", flight: "MH67", airlineIcon: "fa-plane-arrival", time: "16:25", term: "Incheon T1" }
             ],
             stays: [
-                { id:"s0", name: "Ramada Encore Haeundae", date: "10/30 - 11/01", addr: "釜山海雲台區" }
+                { id:"s0", name: "Ramada Encore Haeundae", date: "10/30 - 11/01", addr: "釜山海雲台區", lat: 35.1631, lng: 129.1582 }
             ],
             expenses: [], packItems: [{c:"📄 证件", n:"護照正本"}],
             daily: generate14DaysData()
@@ -394,6 +396,63 @@
             if(allTrips.length === 0) { await saveDB('trips', defaultTrip.id, defaultTrip); allTrips = [defaultTrip]; }
             fetchExchangeRateAPI(); initTranslateLangs();
             renderHome();
+        }
+
+        // ================= 11.0 Google Maps 初始化與樣式 =================
+        function initGoogleMaps(lat, lng) {
+            if (typeof google === 'undefined') return;
+            if (!gMap) {
+                // 韓系奶油 Retro 風格地圖
+                const retroStyle = [
+                    {elementType:"geometry",stylers:[{color:"#ebe3cd"}]},
+                    {elementType:"labels.text.fill",stylers:[{color:"#523735"}]},
+                    {elementType:"labels.text.stroke",stylers:[{color:"#f5f1e6"}]},
+                    {featureType:"administrative",elementType:"geometry.stroke",stylers:[{color:"#c9b2a6"}]},
+                    {featureType:"water",elementType:"geometry.fill",stylers:[{color:"#b9d3c2"}]},
+                    {featureType:"water",elementType:"labels.text.fill",stylers:[{color:"#92998d"}]}
+                ];
+                gMap = new google.maps.Map(document.getElementById('trip-map'), {
+                    center: {lat, lng}, zoom: 12, styles: retroStyle, disableDefaultUI: true
+                });
+                gDirectionsService = new google.maps.DirectionsService();
+            } else {
+                gMap.setCenter({lat, lng});
+            }
+        }
+
+        function drawRouteOnGoogleMap(items) {
+            if (typeof google === 'undefined' || !gMap) return;
+            // 清除舊 Marker 和 Polyline
+            gMarkers.forEach(m => m.setMap(null)); gMarkers = [];
+            gPolylines.forEach(p => p.setMap(null)); gPolylines = [];
+            
+            let path = [];
+            items.forEach((item, i) => {
+                if (item.lat && item.lng) {
+                    let pos = {lat: item.lat, lng: item.lng};
+                    path.push(pos);
+                    let marker = new google.maps.Marker({
+                        position: pos, map: gMap,
+                        label: { text: (i+1).toString(), color: 'white', fontSize: '10px', fontWeight: 'bold' },
+                        icon: { path: google.maps.SymbolPath.CIRCLE, scale: 10, fillColor: item.isAutoStay ? '#D8A48F' : '#9A9283', fillOpacity: 1, strokeColor: '#ffffff', strokeWeight: 2 }
+                    });
+                    gMarkers.push(marker);
+                }
+            });
+
+            if (path.length > 1) {
+                let polyline = new google.maps.Polyline({
+                    path: path, geodesic: true, strokeColor: '#9A9283', strokeOpacity: 0.8, strokeWeight: 3, map: gMap
+                });
+                gPolylines.push(polyline);
+            }
+            if (path.length > 0) {
+                let bounds = new google.maps.LatLngBounds();
+                path.forEach(p => bounds.extend(p));
+                gMap.fitBounds(bounds);
+                // 避免單點縮放過大
+                if (path.length === 1) { gMap.setZoom(14); }
+            }
         }
 
         // ================= 首頁 =================
@@ -414,15 +473,7 @@
         }
 
         function selectColor(el, color) { document.querySelectorAll('.color-dot').forEach(d=>d.style.borderColor='white'); el.style.borderColor='gray'; selectedNewColor = color; }
-
-        async function createNewTrip() {
-            const title = document.getElementById('new-trip-title').value || "新旅行繪本";
-            let nt = JSON.parse(JSON.stringify(defaultTrip));
-            nt.id = Date.now().toString(); nt.title = title; nt.color = selectedNewColor;
-            await saveDB('trips', nt.id, nt); allTrips.push(nt); renderHome();
-            document.getElementById('new-trip-title').value = '';
-        }
-
+        async function createNewTrip() { const title = document.getElementById('new-trip-title').value || "新旅行繪本"; let nt = JSON.parse(JSON.stringify(defaultTrip)); nt.id = Date.now().toString(); nt.title = title; nt.color = selectedNewColor; await saveDB('trips', nt.id, nt); allTrips.push(nt); renderHome(); document.getElementById('new-trip-title').value = ''; }
         async function deleteTrip(id) { if(!confirm("捨不得這本繪本嗎？確定刪除？")) return; allTrips = allTrips.filter(t => t.id !== id); const tx = db.transaction('trips', 'readwrite'); tx.objectStore('trips').delete(id); renderHome(); }
 
         // ================= 行程詳情 =================
@@ -433,7 +484,7 @@
             document.getElementById('trip-view').classList.add('active');
             document.getElementById('trip-title-input').value = currentTrip.title;
             
-            syncStaysToItinerary(); // 10.0 確保住宿與行程聯動
+            syncStaysToItinerary(); 
             currentDayIdx = 0; renderDayNav(); renderDaily(currentDayIdx); renderTransportStay(); renderExpenses(); renderLists();
         }
 
@@ -455,29 +506,29 @@
         function selectDay(i) { currentDayIdx = i; renderDayNav(); renderDaily(i); }
 
         function getWmoEmoji(code) {
-            if ([0].includes(code)) return '☀️';
-            if ([1, 2].includes(code)) return '🌤️';
-            if ([3].includes(code)) return '☁️';
-            if ([45, 48].includes(code)) return '🌫️';
+            if ([0].includes(code)) return '☀️'; if ([1, 2].includes(code)) return '🌤️'; if ([3].includes(code)) return '☁️'; if ([45, 48].includes(code)) return '🌫️';
             if ([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return '🌧️';
-            if ([71, 73, 75, 77, 85, 86].includes(code)) return '❄️';
-            if ([95, 96, 99].includes(code)) return '⛈️';
-            return '🌥️';
+            if ([71, 73, 75, 77, 85, 86].includes(code)) return '❄️'; if ([95, 96, 99].includes(code)) return '⛈️'; return '🌥️';
         }
 
-        async function fetchWeather(lat, lon) {
-            try { 
-                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,precipitation_probability,weathercode,uv_index`); 
-                return await res.json(); 
-            } catch(e) { return null; }
-        }
+        async function fetchWeather(lat, lon) { try { const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,precipitation_probability,weathercode,uv_index`); return await res.json(); } catch(e) { return null; } }
 
-        // 10.0 Haversine 距離計算 (公里)
+        // 大約距離計算 (作為備用)
         function getDistKm(lat1, lon1, lat2, lon2) {
-            if(!lat1 || !lon1 || !lat2 || !lon2) return 0;
-            const R = 6371; const dLat = (lat2-lat1)*Math.PI/180; const dLon = (lon2-lon1)*Math.PI/180;
-            const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
-            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            if(!lat1 || !lon1 || !lat2 || !lon2) return 0; const R = 6371; const dLat = (lat2-lat1)*Math.PI/180; const dLon = (lon2-lon1)*Math.PI/180;
+            const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2); return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        }
+
+        // 11.0 實時呼叫 Google Directions API 計算大眾運輸時間
+        function fetchRealTransitTime(lat1, lng1, lat2, lng2, elId) {
+            if(typeof google === 'undefined' || !gDirectionsService) return;
+            gDirectionsService.route({
+                origin: {lat: lat1, lng: lng1}, destination: {lat: lat2, lng: lng2}, travelMode: google.maps.TravelMode.TRANSIT
+            }, (res, status) => {
+                const el = document.getElementById(elId);
+                if (status === 'OK' && el) { el.innerText = `大眾運輸 ${res.routes[0].legs[0].duration.text}`; }
+                else if (el) { el.innerText = `開車約 ${Math.max(5, Math.round(getDistKm(lat1,lng1,lat2,lng2)/40*60))} 分`; }
+            });
         }
 
         async function renderDaily(idx) {
@@ -486,7 +537,6 @@
             
             let lat = 35.1, lon = 129.0; 
             if(d.items.length > 0 && d.items[0].lat) { lat = d.items[0].lat; lon = d.items[0].lng; }
-            else if(d.region.includes('首爾')) { lat=37.5; lon=126.9; } else if(d.region.includes('濟州')) { lat=33.5; lon=126.5; } else if(d.region.includes('吉隆坡')) { lat=3.13; lon=101.68; }
             
             const wData = await fetchWeather(lat, lon);
             const currentHour = new Date().getHours();
@@ -510,7 +560,6 @@
                     hourlyHtml += `<div class="hourly-item ${isActive}"><div class="mb-1 ${isActive?'':'opacity-70'}">${h12} ${ampm}</div><div class="mb-1 text-lg">${hEmoji}</div><div>${hTemp}°</div></div>`;
                 }
 
-                // 10.0 降雨預警
                 let rainWarning = rainProb > 40 ? `<div class="bg-blue-100 text-blue-600 px-3 py-1.5 rounded-xl text-xs font-bold mt-2 animate-pulse text-center">☔ 今日降雨機率高，請帶傘</div>` : '';
 
                 document.getElementById('weather-banner').innerHTML = `
@@ -534,27 +583,18 @@
 
             setTimeout(() => { const hs = document.getElementById('hourly-scroll'); if(hs) { const a = hs.querySelector('.active-hour'); if(a) a.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'}); } }, 300);
 
-            // 10.0 實例化 Leaflet 地圖
-            if (map) { map.off(); map.remove(); }
-            map = L.map('trip-map', { scrollWheelZoom: false }).setView([lat, lon], 12);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-            let mapMarkers = [];
+            // 11.0 更新地圖
+            initGoogleMaps(lat, lon);
+            drawRouteOnGoogleMap(d.items);
 
             let html = '';
             d.items.forEach((item, i) => {
-                // 10.0 營業時間紅綠燈 (接近打烊 1 小時內閃橘框)
                 let borderClass = 'border border-white';
                 if(item.endTime) {
                     let [h, m] = item.endTime.split(':');
                     let now = new Date(); let closeTime = new Date(); closeTime.setHours(h, m, 0);
                     let diffMins = (closeTime - now) / 60000;
                     if(diffMins > 0 && diffMins <= 60) borderClass = 'border-2 border-orange-400 shadow-orange-100';
-                }
-
-                // 畫地圖標記
-                if(item.lat && item.lng) {
-                    let marker = L.marker([item.lat, item.lng]).addTo(map).bindPopup(`<b>${i+1}. ${item.task}</b>`);
-                    mapMarkers.push([item.lat, item.lng]);
                 }
 
                 html += `
@@ -568,9 +608,12 @@
                         <div class="flex justify-between items-start mb-2">
                             <input type="time" value="${item.time}" onchange="updateItemTime(${idx}, ${i}, this.value)" class="text-sm font-mono text-[var(--kr-accent)] bg-white px-2 py-0.5 rounded-lg shadow-sm w-24">
                             <div class="flex gap-1">
+                                <!-- 鎖定固定節點的移動與刪除 -->
+                                ${item.isAutoStay ? `<span class="text-[10px] bg-gray-200 text-gray-500 px-2 py-1 rounded-full font-bold">📍 住宿自動綁定</span>` : `
                                 <button class="w-7 h-7 bg-white rounded-full shadow-sm text-gray-400" onclick="moveOrder(${idx}, ${i}, -1)"><i class="fa-solid fa-arrow-up text-[10px]"></i></button>
                                 <button class="w-7 h-7 bg-white rounded-full shadow-sm text-gray-400" onclick="moveOrder(${idx}, ${i}, 1)"><i class="fa-solid fa-arrow-down text-[10px]"></i></button>
                                 <button class="w-7 h-7 bg-red-50 rounded-full shadow-sm text-red-400 ml-2" onclick="deleteItem(${idx}, ${i})"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                                `}
                             </div>
                         </div>
                         <h4 class="text-xl font-bold mt-2 text-gray-800">${item.task}</h4>
@@ -587,24 +630,22 @@
                             <div id="display_info_${item.id}">
                                 ${item.intro ? `<div class="bg-white p-4 rounded-2xl mb-3 text-sm text-gray-700 leading-relaxed shadow-sm border border-gray-100">${item.intro}</div>` : ''}
                                 ${item.review ? `<div class="flex gap-2 mb-3"><div class="w-1/2 bg-red-50 p-3 rounded-xl text-xs text-red-800 border border-red-100 leading-relaxed"><b>👍 小紅書推薦：</b><br>${item.review.pos}</div><div class="w-1/2 bg-gray-100 p-3 rounded-xl text-xs text-gray-700 border border-gray-200 leading-relaxed"><b>⚠️ 真實避雷：</b><br>${item.review.neg}</div></div>` : ''}
-                                
                                 <div class="flex justify-end"><button class="bg-white border border-gray-200 text-gray-600 text-xs px-4 py-2 rounded-full shadow-sm font-bold" onclick="toggleEdit('${item.id}')"><i class="fa-solid fa-pen"></i> 編輯地點 / 時間</button></div>
                             </div>
                             
-                            <!-- 10.0 智慧搜索建議 DOM -->
+                            <!-- 11.0 Google Places Autocomplete 綁定 -->
                             <div id="edit_form_${item.id}" class="hidden space-y-3 mb-3 bg-[rgba(255,255,255,0.8)] p-4 rounded-xl border border-white shadow-inner">
                                 <input id="edit_task_${item.id}" value="${item.task}" placeholder="主標題" class="font-bold text-sm">
                                 <div class="flex gap-2 items-center text-xs text-gray-500">打烊: <input type="time" id="edit_end_${item.id}" value="${item.endTime || '22:00'}" class="w-24"></div>
                                 <div class="relative">
-                                    <input id="edit_loc_${item.id}" value="${item.loc === '輸入地址' ? '' : item.loc}" data-lat="${item.lat||0}" data-lng="${item.lng||0}" placeholder="搜尋地點 (Photon API)..." class="w-full text-sm" oninput="fetchSuggestions(this.value, '${item.id}')">
-                                    <div id="sug_${item.id}" class="absolute z-50 w-full"></div>
+                                    <input id="edit_loc_${item.id}" value="${item.loc === '輸入地址' ? '' : item.loc}" data-lat="${item.lat||0}" data-lng="${item.lng||0}" data-img="${item.img}" placeholder="Google 搜尋地點..." class="w-full text-sm">
                                 </div>
-                                <button class="btn-primary w-full text-sm py-2" onclick="saveItemEdit(${idx}, ${i}, '${item.id}')">儲存並獲取自動配圖</button>
+                                <button class="btn-primary w-full text-sm py-2" onclick="saveItemEdit(${idx}, ${i}, '${item.id}')">儲存</button>
                             </div>
 
                             <div class="pt-4 mt-3 border-t border-[rgba(0,0,0,0.05)]">
                                 <label class="text-xs font-bold text-gray-500 block mb-2"><i class="fa-solid fa-book-open mr-1"></i> 【添加筆記】</label>
-                                <!-- 筆記字體統一 text-xs -->
+                                <!-- 筆記字體嚴格統一 text-xs -->
                                 <textarea id="note_${item.id}" rows="2" placeholder="..." class="text-xs" onchange="saveFileData('${item.id}', 'note', this.value)"></textarea>
 
                                 <div class="mt-3 flex gap-2">
@@ -619,87 +660,83 @@
                 </div>`;
                 
                 if(i < d.items.length - 1) {
-                    // 10.0 計算路程時間 (大眾運輸約 30km/h)
-                    let dist = getDistKm(item.lat, item.lng, d.items[i+1].lat, d.items[i+1].lng);
-                    let estTime = dist > 0 ? Math.max(5, Math.round((dist / 30) * 60)) : 30;
-
+                    let tId = `transit_time_${item.id}`;
+                    let roughTime = Math.max(5, Math.round(getDistKm(item.lat, item.lng, d.items[i+1].lat, d.items[i+1].lng)/30*60));
                     html += `
                         <div class="transit-node">
                             <div class="transit-line"></div>
                             <div class="bg-white border border-gray-200 rounded-full px-4 py-1.5 shadow-sm text-[10px] text-gray-500 z-10 flex items-center font-bold">
-                                <i class="fa-solid fa-train-subway mr-2 text-[var(--kr-accent)]"></i> 預計 ${estTime} 分
+                                <i class="fa-solid fa-train-subway mr-2 text-[var(--kr-accent)]"></i> <span id="${tId}">預計 ${roughTime} 分</span>
                                 <a href="https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(item.loc)}&destination=${encodeURIComponent(d.items[i+1].loc)}&travelmode=transit" target="_blank" class="text-[var(--kr-accent)] ml-3"><i class="fa-solid fa-location-arrow mr-1"></i>一鍵導航</a>
                             </div>
                             <div class="transit-line"></div>
                         </div>`;
+                    // 觸發實時計算
+                    setTimeout(() => fetchRealTransitTime(item.lat, item.lng, d.items[i+1].lat, d.items[i+1].lng, tId), 500);
                 }
             });
-
-            if(mapMarkers.length > 0) {
-                L.polyline(mapMarkers, {color: '#9A9283', weight: 3, dashArray: '5, 5'}).addTo(map);
-                map.fitBounds(mapMarkers, {padding: [30, 30]});
-            }
 
             document.getElementById('daily-content').innerHTML = html;
         }
 
-        // 10.0 Photon API 智慧搜索
-        let sugTimeout;
-        async function fetchSuggestions(q, id) {
-            clearTimeout(sugTimeout);
-            if(q.length < 2) { document.getElementById(`sug_${id}`).innerHTML = ''; return; }
-            sugTimeout = setTimeout(async () => {
-                try {
-                    let res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=5`);
-                    let data = await res.json();
-                    let html = data.features.map(f => {
-                        let name = f.properties.name; let lat = f.geometry.coordinates[1]; let lng = f.geometry.coordinates[0];
-                        return `<li class="p-2 border-b text-xs cursor-pointer bg-white hover:bg-gray-100" onclick="selectSug('${id}', '${name}', ${lat}, ${lng})">${name} <span class="text-[10px] text-gray-400">${f.properties.country || ''}</span></li>`;
-                    }).join('');
-                    document.getElementById(`sug_${id}`).innerHTML = `<ul class="bg-white border rounded shadow mt-1 max-h-40 overflow-y-auto">${html}</ul>`;
-                } catch(e) {}
-            }, 500);
-        }
-        function selectSug(id, name, lat, lng) {
-            let inp = document.getElementById(`edit_loc_${id}`);
-            inp.value = name; inp.dataset.lat = lat; inp.dataset.lng = lng;
-            document.getElementById(`sug_${id}`).innerHTML = '';
+        // 11.0 Google Places Autocomplete 綁定
+        function bindGoogleAutocomplete(inputId, targetItemData) {
+            if (typeof google === 'undefined') return;
+            const input = document.getElementById(inputId);
+            if (!input || input.dataset.gBound) return;
+            
+            const autocomplete = new google.maps.places.Autocomplete(input);
+            autocomplete.addListener('place_changed', function() {
+                const place = autocomplete.getPlace();
+                if (!place.geometry) return;
+                input.dataset.lat = place.geometry.location.lat();
+                input.dataset.lng = place.geometry.location.lng();
+                input.value = place.name;
+                // 自動抓取 Google 官方配圖
+                if (place.photos && place.photos.length > 0) {
+                    input.dataset.img = place.photos[0].getUrl({maxWidth: 600});
+                }
+            });
+            input.dataset.gBound = "true";
         }
 
-        // 10.0 一鍵優化路線 (TSP Greedy)
+        // 11.0 一鍵優化路線 (TSP - 只優化中間節點)
         async function optimizeDailyRoute() {
             let items = currentTrip.daily[currentDayIdx].items;
-            if(items.length <= 2) return alert("景點太少，無需優化！");
-            let optimized = [items[0]];
-            let unvisited = items.slice(1);
+            if(items.length <= 3) return alert("中間行程過少，無需優化！");
+            
+            let startNode = items[0];
+            let endNode = items[items.length - 1];
+            // 確認首尾是否為固定住宿點，若不是也鎖定，確保「初始站與最後一站不動」
+            let unvisited = items.slice(1, items.length - 1);
+            let optimized = [];
+            
+            let current = startNode;
             while(unvisited.length > 0) {
-                let last = optimized[optimized.length - 1];
                 let nearestIdx = 0; let minDist = Infinity;
                 for(let i=0; i<unvisited.length; i++) {
-                    let d = getDistKm(last.lat, last.lng, unvisited[i].lat, unvisited[i].lng);
+                    let d = getDistKm(current.lat, current.lng, unvisited[i].lat, unvisited[i].lng);
                     if(d < minDist) { minDist = d; nearestIdx = i; }
                 }
-                optimized.push(unvisited.splice(nearestIdx, 1)[0]);
+                current = unvisited.splice(nearestIdx, 1)[0];
+                optimized.push(current);
             }
-            currentTrip.daily[currentDayIdx].items = optimized;
+            
+            currentTrip.daily[currentDayIdx].items = [startNode, ...optimized, endNode];
             await saveDB('trips', currentTrip.id, currentTrip);
             renderDaily(currentDayIdx);
-            alert("已為您重排最短距離路線！");
-        }
-
-        // 10.0 自動配圖機制
-        async function fetchImageForLoc(q) {
-            try {
-                const wRes = await fetch(`https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&format=json&piprop=original&titles=${encodeURIComponent(q)}&origin=*`);
-                const wData = await wRes.json();
-                const pages = wData.query.pages; const pageId = Object.keys(pages)[0];
-                if(pages[pageId] && pages[pageId].original) return pages[pageId].original.source;
-            } catch(e) {}
-            return `https://images.unsplash.com/photo-1503614472-8c93d56e92ce?w=600&q=80&seed=${Math.random()}`;
+            alert("已為您重排最短距離路線（首尾節點已自動鎖定不更動）！");
         }
 
         function toggleExpand(id) { const w = document.getElementById(`wrap_${id}`); w.classList.toggle('expanded'); if(w.classList.contains('expanded')) renderUserFiles(id); }
-        function toggleEdit(id) { document.getElementById(`display_info_${id}`).classList.toggle('hidden'); document.getElementById(`edit_form_${id}`).classList.toggle('hidden'); }
+        
+        function toggleEdit(id) { 
+            document.getElementById(`display_info_${id}`).classList.toggle('hidden'); 
+            document.getElementById(`edit_form_${id}`).classList.toggle('hidden'); 
+            // 開啟編輯時綁定 Google Autocomplete
+            bindGoogleAutocomplete(`edit_loc_${id}`);
+        }
+        
         async function updateItemTime(dIdx, iIdx, val) { currentTrip.daily[dIdx].items[iIdx].time = val; await saveDB('trips', currentTrip.id, currentTrip); }
         
         async function saveItemEdit(dIdx, iIdx, id) {
@@ -708,21 +745,28 @@
             itm.task = document.getElementById(`edit_task_${id}`).value;
             itm.endTime = document.getElementById(`edit_end_${id}`).value;
             
-            // 若地點更換，自動重抓經緯度與配圖
-            if(inp.value !== itm.loc && inp.value !== '輸入地址') {
-                itm.loc = inp.value; itm.lat = parseFloat(inp.dataset.lat); itm.lng = parseFloat(inp.dataset.lng);
-                itm.img = await fetchImageForLoc(itm.loc);
+            if(inp.value !== '輸入地址') {
+                itm.loc = inp.value; 
+                if(inp.dataset.lat) itm.lat = parseFloat(inp.dataset.lat); 
+                if(inp.dataset.lng) itm.lng = parseFloat(inp.dataset.lng);
+                if(inp.dataset.img && inp.dataset.img !== 'undefined') itm.img = inp.dataset.img;
             }
             await saveDB('trips', currentTrip.id, currentTrip); renderDaily(currentDayIdx);
         }
 
         async function addNewAttraction() {
-            currentTrip.daily[currentDayIdx].items.push({ id: `d${currentDayIdx}_${Date.now()}`, time: "12:00", task: "新行程", loc: "輸入地址", lat: 0, lng: 0, endTime: "22:00", img: "https://images.unsplash.com/photo-1556012018-50c5c0da73bf?w=600" });
+            currentTrip.daily[currentDayIdx].items.push({ id: `d${currentDayIdx}_${Date.now()}`, time: "12:00", task: "新行程", loc: "輸入地址", lat: 0, lng: 0, endTime: "22:00", img: "https://images.unsplash.com/photo-1556012018-50c5c0da73bf?w=600", isAutoStay: false });
             await saveDB('trips', currentTrip.id, currentTrip); renderDaily(currentDayIdx);
             setTimeout(() => window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'}), 100);
         }
-        async function deleteItem(dIdx, iIdx) { if(!confirm("確定刪除此行程？")) return; currentTrip.daily[dIdx].items.splice(iIdx, 1); await saveDB('trips', currentTrip.id, currentTrip); renderDaily(currentDayIdx); }
-        async function moveOrder(dIdx, iIdx, dir) { const arr = currentTrip.daily[dIdx].items; if(iIdx + dir < 0 || iIdx + dir >= arr.length) return; const temp = arr[iIdx]; arr[iIdx] = arr[iIdx + dir]; arr[iIdx + dir] = temp; await saveDB('trips', currentTrip.id, currentTrip); renderDaily(currentDayIdx); }
+        async function deleteItem(dIdx, iIdx) { if(currentTrip.daily[dIdx].items[iIdx].isAutoStay) return alert("這是住宿自動綁定的節點，請至「交通與住宿」修改！"); if(!confirm("確定刪除此行程？")) return; currentTrip.daily[dIdx].items.splice(iIdx, 1); await saveDB('trips', currentTrip.id, currentTrip); renderDaily(currentDayIdx); }
+        async function moveOrder(dIdx, iIdx, dir) { 
+            const arr = currentTrip.daily[dIdx].items; 
+            if(iIdx + dir < 0 || iIdx + dir >= arr.length) return; 
+            if(arr[iIdx].isAutoStay || arr[iIdx+dir].isAutoStay) return alert("住宿自動節點已鎖定順序！");
+            const temp = arr[iIdx]; arr[iIdx] = arr[iIdx + dir]; arr[iIdx + dir] = temp; 
+            await saveDB('trips', currentTrip.id, currentTrip); renderDaily(currentDayIdx); 
+        }
         function showMap() { const d = currentTrip.daily[currentDayIdx]; if(d.items.length===0) return; const o=d.items[0].loc, dest=d.items[d.items.length-1].loc; window.open(`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(o)}&destination=${encodeURIComponent(dest)}`, '_blank'); }
 
         // ================= 檔案與照片刪除與儲存 =================
@@ -755,11 +799,9 @@
         document.getElementById('lightbox').addEventListener('touchend', e => { touchendX = e.changedTouches[0].screenX; if(touchendX < touchstartX - 50) { lbIdx = (lbIdx + 1) % lbPhotos.length; updateLightboxImg(); } if(touchendX > touchstartX + 50) { lbIdx = (lbIdx - 1 + lbPhotos.length) % lbPhotos.length; updateLightboxImg(); } });
         async function viewPDF(id) { const pdf = await getDB('files', `${currentTrip.id}_${id}_pdf`); if(pdf) { document.getElementById('pdf-iframe').src = pdf.data; document.getElementById('pdf-viewer').style.display = 'flex'; } }
 
-        // ================= 10.0 交通與住宿同步聯動 =================
+        // ================= 11.0 交通與住宿同步聯動 =================
         async function syncStaysToItinerary() {
-            // 清除舊的自動化節點
             currentTrip.daily.forEach(d => { d.items = d.items.filter(i => !i.isAutoStay); });
-            // 植入新節點
             currentTrip.stays.forEach(s => {
                 if(!s.date || !s.name) return;
                 let parts = s.date.split('-');
@@ -767,39 +809,70 @@
                     let dIn = parts[0].trim(); let dOut = parts[1].trim();
                     let dInIdx = currentTrip.daily.findIndex(d => d.date === dIn);
                     let dOutIdx = currentTrip.daily.findIndex(d => d.date === dOut);
+                    
                     if(dInIdx !== -1) {
-                        currentTrip.daily[dInIdx].items.push({ id: `stay_in_${s.id}`, time: "15:00", task: `入住 ${s.name}`, loc: s.addr || "酒店地址", lat: s.lat||0, lng: s.lng||0, isAutoStay: true, img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600" });
+                        currentTrip.daily[dInIdx].items.push({ id: `stay_in_${s.id}`, time: "20:00", task: `入住 ${s.name}`, loc: s.addr || "酒店地址", lat: s.lat||0, lng: s.lng||0, isAutoStay: true, img: s.img || "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600" });
                     }
                     if(dOutIdx !== -1) {
-                        currentTrip.daily[dOutIdx].items.unshift({ id: `stay_out_${s.id}`, time: "09:00", task: `從 ${s.name} 出發`, loc: s.addr || "酒店地址", lat: s.lat||0, lng: s.lng||0, isAutoStay: true, img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600" });
+                        currentTrip.daily[dOutIdx].items.unshift({ id: `stay_out_${s.id}`, time: "09:00", task: `從 ${s.name} 出發`, loc: s.addr || "酒店地址", lat: s.lat||0, lng: s.lng||0, isAutoStay: true, img: s.img || "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600" });
                     }
                 }
             });
             await saveDB('trips', currentTrip.id, currentTrip);
         }
 
+        // 11.0 航班自動同步邏輯 (Mock API)
+        function autoSyncFlight(idx, fId) {
+            const fInput = document.getElementById(`flight_num_${fId}`).value.toUpperCase();
+            if(!fInput) return alert("請輸入航班號");
+            
+            let airline = "國際航空", time = "12:00", term = "Terminal 1";
+            if(fInput.includes("VN")) { airline = "越南航空"; time = "19:10"; term = "KLIA T1"; }
+            else if(fInput.includes("MH")) { airline = "馬來西亞航空"; time = "16:25"; term = "Incheon T1"; }
+            else if(fInput.includes("KE")) { airline = "大韓航空"; time = "09:30"; term = "Incheon T2"; }
+            else if(fInput.includes("D7")) { airline = "AirAsia X"; time = "23:50"; term = "KLIA T2"; }
+
+            currentTrip.flights[idx].flight = fInput;
+            currentTrip.flights[idx].time = time;
+            currentTrip.flights[idx].term = term;
+            currentTrip.flights[idx].title = airline;
+            saveDB('trips', currentTrip.id, currentTrip);
+            renderTransportStay();
+            alert(`已自動同步 ${fInput} 航班資訊！`);
+        }
+
         function renderTransportStay() {
-            document.getElementById('flight-content').innerHTML = currentTrip.flights.map(f => `
+            document.getElementById('flight-content').innerHTML = currentTrip.flights.map((f, idx) => `
                 <div class="mb-4 bg-[rgba(255,255,255,0.7)] p-4 rounded-xl border border-white shadow-sm">
                     <div class="flex justify-between items-center mb-2">
                         <input value="${f.title}" class="bg-transparent border-none font-bold text-sm p-0 w-1/3" onchange="f.title=this.value;saveDB('trips',currentTrip.id,currentTrip)">
                         <div class="flex items-center gap-3"><input type="date" value="${f.date}" class="bg-transparent border-none text-xs text-gray-500 p-0 text-right" onchange="f.date=this.value;saveDB('trips',currentTrip.id,currentTrip)"><button onclick="deleteFlight('${f.id}')" class="text-red-400"><i class="fa-solid fa-trash"></i></button></div>
                     </div>
-                    <div class="flex items-center my-3"><i class="fa-solid ${f.airlineIcon} text-2xl mr-4 text-[var(--kr-accent)]"></i><div><p class="font-bold text-lg">${f.route} <span class="text-xs bg-white border px-2 py-0.5 rounded-lg ml-1">${f.flight}</span></p><input type="time" value="${f.time}" class="text-sm font-bold font-mono mt-1 text-gray-600 bg-transparent border-none p-0 w-24"></div></div>
+                    <div class="flex items-center my-3">
+                        <i class="fa-solid ${f.airlineIcon} text-2xl mr-4 text-[var(--kr-accent)]"></i>
+                        <div class="flex-1">
+                            <p class="font-bold text-lg">${f.route} 
+                                <span class="inline-flex items-center bg-white border rounded-lg ml-1 overflow-hidden">
+                                    <input id="flight_num_${f.id}" value="${f.flight}" class="text-xs w-16 p-1 text-center border-none" placeholder="航班號">
+                                    <button onclick="autoSyncFlight(${idx}, '${f.id}')" class="bg-[var(--kr-accent)] text-white text-[10px] px-2 py-1">自動同步</button>
+                                </span>
+                            </p>
+                            <input type="time" value="${f.time}" class="text-sm font-bold font-mono mt-1 text-gray-600 bg-transparent border-none p-0 w-24">
+                        </div>
+                    </div>
                     <div class="bg-white p-2 rounded-lg text-xs font-bold flex items-center justify-between"><a href="https://maps.google.com/?q=${encodeURIComponent(f.term)}" target="_blank" class="text-blue-500"><i class="fa-solid fa-map-pin"></i> ${f.term}</a></div>
                     <div class="flex justify-end mt-2"><label class="cursor-pointer text-[var(--kr-accent)] text-xs font-bold"><input type="file" accept=".pdf" class="file-hide" onchange="addPdf(this, '${f.id}')"><i class="fa-solid fa-file-pdf"></i> 添加檔案</label></div>
                     <div id="file_wrap_${f.id}" class="mt-2 text-xs flex justify-end"></div>
                 </div>`).join(''); 
             currentTrip.flights.forEach(f => renderUserFiles(f.id));
 
-            // 10.0 住宿卡片加入地點地標連結
             document.getElementById('stay-content').innerHTML = currentTrip.stays.map(s => `
                 <div class="mb-5 bg-[rgba(255,255,255,0.7)] p-4 rounded-xl border border-white shadow-sm">
                     <div class="flex justify-between items-center mb-1">
                         <input value="${s.date}" class="bg-transparent border-none text-xs text-gray-500 font-bold p-0 flex-1" placeholder="例如: 10/30 - 11/01" onchange="s.date=this.value;saveDB('trips',currentTrip.id,currentTrip);syncStaysToItinerary()">
                         <button onclick="deleteStay('${s.id}')" class="text-red-400 ml-2"><i class="fa-solid fa-trash"></i></button>
                     </div>
-                    <input id="stay_name_${s.id}" value="${s.name}" class="w-full text-sm font-bold p-2 mb-2 bg-white rounded-lg border-none" onchange="s.name=this.value;saveDB('trips',currentTrip.id,currentTrip);syncStaysToItinerary()">
+                    <input id="stay_name_${s.id}" value="${s.name}" class="w-full text-sm font-bold p-2 mb-2 bg-white rounded-lg border-none" onclick="bindGoogleAutocomplete('stay_name_${s.id}')" onblur="setTimeout(()=>{s.name=this.value; s.addr=this.value; if(this.dataset.lat) s.lat=parseFloat(this.dataset.lat); if(this.dataset.lng) s.lng=parseFloat(this.dataset.lng); if(this.dataset.img) s.img=this.dataset.img; saveDB('trips',currentTrip.id,currentTrip);syncStaysToItinerary();renderTransportStay();}, 300)">
                     <div class="bg-white p-2 rounded-lg text-xs font-bold flex items-center justify-between mb-2">
                         <a href="https://maps.google.com/?q=${encodeURIComponent(s.addr)}" target="_blank" class="text-blue-500 truncate w-full"><i class="fa-solid fa-map-pin"></i> ${s.addr}</a>
                     </div>
@@ -813,7 +886,7 @@
         async function deleteStay(sid) { if(!confirm("刪除此住宿？")) return; currentTrip.stays = currentTrip.stays.filter(s => s.id !== sid); syncStaysToItinerary(); renderTransportStay(); }
 
         async function addFlight() { const nid = `f${Date.now()}`; currentTrip.flights.push({ id: nid, title: "新航班", date: "2026-10-29", route: "出發 → 抵達", flight: "航班號", airlineIcon: "fa-plane", time: "12:00", term: "輸入航廈" }); await saveDB('trips', currentTrip.id, currentTrip); renderTransportStay(); }
-        async function addStay() { const nid = `s${Date.now()}`; currentTrip.stays.push({ id: nid, name: "新住宿", date: "10/30 - 10/31", addr: "飯店地址", lat:0, lng:0 }); syncStaysToItinerary(); renderTransportStay(); }
+        async function addStay() { const nid = `s${Date.now()}`; currentTrip.stays.push({ id: nid, name: "點擊搜尋住宿...", date: "10/30 - 10/31", addr: "飯店地址", lat:0, lng:0 }); syncStaysToItinerary(); renderTransportStay(); }
 
         // ================= 花費與全球匯率 =================
         async function fetchExchangeRateAPI() {
@@ -850,16 +923,13 @@
 
         function renderExpenses() {
             renderUserSelects();
-            let balances = {}; let totalBaseSpent = 0; // 基準預算統一轉為基準貨幣 (預設為 MYR)
+            let balances = {}; let totalBaseSpent = 0; 
             
             let html = currentTrip.expenses.map(e => {
                 let cur = e.c || 'KRW';
                 if(!balances[cur]) { balances[cur] = {}; currentTrip.users.forEach(u => balances[cur][u] = 0); }
                 if(e.split === 'equal') { balances[cur][e.p] += e.a; const splitAmt = e.a / currentTrip.users.length; currentTrip.users.forEach(u => balances[cur][u] -= splitAmt); }
-                
-                // 計算圓環預算 (假定基準為 MYR，若匯率有載入則轉換)
                 if(exchangeRates[cur] && exchangeRates["MYR"]) { totalBaseSpent += (e.a / exchangeRates[cur]) * exchangeRates["MYR"]; }
-                
                 return `<div class="flex justify-between items-center border-b border-white pb-2 mb-2 text-sm"><div><span class="font-bold text-gray-700">${e.n || e.t}</span> <span class="text-[10px] text-gray-400 bg-white px-1 rounded">${e.p} 付款</span></div><div class="flex items-center gap-3"><span class="font-mono text-[var(--kr-accent)] font-bold">${e.a} ${cur}</span><button onclick="deleteExpense(${e.id})" class="text-red-400"><i class="fa-solid fa-trash"></i></button></div></div>`;
             }).join('');
             
@@ -871,11 +941,10 @@
 
             document.getElementById('expense-summary').innerHTML = `<div class="bg-[rgba(255,255,255,0.8)] p-4 rounded-xl border border-white mb-4 shadow-sm text-center"><p class="text-xs text-gray-500 mb-2 font-bold">💳 分帳結算</p>${sumHtml || '<p class="text-xs text-gray-400">目前無欠款</p>'}</div><div class="max-h-40 overflow-y-auto pr-2">${html}</div>`;
 
-            // 10.0 更新預算進度條顏色與進度
             document.getElementById('tripBudget').value = currentTrip.budget || 0;
             document.getElementById('total-spent-display').innerText = Math.round(totalBaseSpent);
             let pct = currentTrip.budget > 0 ? (totalBaseSpent / currentTrip.budget) * 100 : 0;
-            let ringColor = pct > 100 ? '#ef4444' : (pct > 80 ? '#f59e0b' : '#10b981'); // 紅 / 黃 / 綠
+            let ringColor = pct > 100 ? '#ef4444' : (pct > 80 ? '#f59e0b' : '#10b981');
             document.getElementById('budget-ring-el').style.background = `conic-gradient(${ringColor} ${Math.min(pct, 100)}%, #ddd 0%)`;
         }
 
@@ -896,19 +965,11 @@
         // ================= 翻譯 API =================
         const langMap = {"zh":"中文","ko":"韓文","ja":"日文","en":"英文","th":"泰文","vi":"越南文","fr":"法文","es":"西班牙文"};
         function initTranslateLangs() { let opts = Object.keys(langMap).map(k=>`<option value="${k}">${langMap[k]}</option>`).join(''); document.getElementById('langFrom').innerHTML=opts; document.getElementById('langFrom').value='zh'; document.getElementById('langTo').innerHTML=opts; document.getElementById('langTo').value='ko'; }
-        
-        async function translateText(forceText = null) {
-            const f = document.getElementById('langFrom').value; const t = document.getElementById('langTo').value; const i = forceText || document.getElementById('transInput').value; const o = document.getElementById('transOutput');
-            if(!i) return; o.value = "翻譯中..."; try { const r = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(i)}&langpair=${f}|${t}`); const d = await r.json(); o.value = d.responseData.translatedText; } catch(e) { o.value = "失敗，請檢查網路。"; }
-        }
-        
-        async function processOCR(input) {
-            if(!input.files[0]) return; document.getElementById('ocrStatus').classList.remove('hidden'); document.getElementById('transInput').value = "影像辨識中...";
-            try { const result = await Tesseract.recognize(input.files[0], 'eng+kor+chi_tra', { logger: m => console.log(m) }); document.getElementById('transInput').value = result.data.text.trim(); document.getElementById('ocrStatus').classList.add('hidden'); translateText(); } catch(e) { document.getElementById('transInput').value = "辨識失敗"; document.getElementById('ocrStatus').classList.add('hidden'); }
-        }
-
+        async function translateText(forceText = null) { const f = document.getElementById('langFrom').value; const t = document.getElementById('langTo').value; const i = forceText || document.getElementById('transInput').value; const o = document.getElementById('transOutput'); if(!i) return; o.value = "翻譯中..."; try { const r = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(i)}&langpair=${f}|${t}`); const d = await r.json(); o.value = d.responseData.translatedText; } catch(e) { o.value = "失敗，請檢查網路。"; } }
+        async function processOCR(input) { if(!input.files[0]) return; document.getElementById('ocrStatus').classList.remove('hidden'); document.getElementById('transInput').value = "影像辨識中..."; try { const result = await Tesseract.recognize(input.files[0], 'eng+kor+chi_tra', { logger: m => console.log(m) }); document.getElementById('transInput').value = result.data.text.trim(); document.getElementById('ocrStatus').classList.add('hidden'); translateText(); } catch(e) { document.getElementById('transInput').value = "辨識失敗"; document.getElementById('ocrStatus').classList.add('hidden'); } }
         function speakKorean() { const t = document.getElementById('transOutput').value; const lang = document.getElementById('langTo').value; if(!t) return; const u = new SpeechSynthesisUtterance(t); u.lang = lang === 'ko' ? 'ko-KR' : (lang === 'ja' ? 'ja-JP' : (lang === 'en' ? 'en-US' : 'zh-TW')); window.speechSynthesis.speak(u); }
-        function changeSection(id, btn) { document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active')); document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active')); document.getElementById(id).classList.add('active'); btn.classList.add('active'); window.scrollTo(0, 0); if(id === 'daily' && map) { setTimeout(() => { map.invalidateSize(); }, 300); } }
+        
+        function changeSection(id, btn) { document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active')); document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active')); document.getElementById(id).classList.add('active'); btn.classList.add('active'); window.scrollTo(0, 0); }
         
         window.onload = init;
     </script>
