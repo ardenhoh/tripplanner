@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>我的旅行繪本</title>
-    <!-- App Icon -->
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23F5F3EC%22 rx=%2220%22/><path d=%22M20 10h10v80H20z%22 fill=%22%23D8A48F%22/><path d=%22M40 30h40v5H40zm0 15h40v5H40zm0 15h30v5H40z%22 fill=%22%23A39B8B%22/></svg>">
+    <!-- 4. 更改瀏覽器標籤頁小圖標 -->
+    <link rel="icon" href="https://www.shutterstock.com/image-vector/airplane-vector-isolated-emoticon-emoji-600nw-2627946825.jpg">
+    <link rel="apple-touch-icon" href="https://www.shutterstock.com/image-vector/airplane-vector-isolated-emoticon-emoji-600nw-2627946825.jpg">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -24,13 +25,12 @@
         body {
             background-color: var(--kr-cream);
             color: var(--kr-text);
-            /* 1. 統一使用 Arial 字體 */
             font-family: Arial, sans-serif;
             background-image: radial-gradient(circle at 50% -20%, #ffffff 0%, transparent 80%);
             background-attachment: fixed;
             -webkit-tap-highlight-color: transparent;
         }
-        .hand-drawn { font-family: Arial, sans-serif; } /* 保持結構但不使用手繪字體 */
+        .hand-drawn { font-family: Arial, sans-serif; }
 
         .liquid-glass { background: var(--kr-glass); backdrop-filter: saturate(200%) blur(40px); -webkit-backdrop-filter: saturate(200%) blur(40px); border: 1px solid var(--kr-glass-border); box-shadow: var(--kr-shadow), inset 0 1px 1px rgba(255,255,255,0.6); border-radius: 24px; position: relative; z-index: 10; }
 
@@ -194,6 +194,8 @@
                         <input type="text" id="expName" placeholder="花費名稱 (例如: 晚餐)" class="text-sm font-bold">
                         <div class="flex gap-2">
                             <select id="expType" class="w-1/3 text-xs"><option value="餐飲">🍽️ 餐飲</option><option value="交通">🚕 交通</option><option value="門票">🎫 門票</option><option value="住宿">🏨 住宿</option></select>
+                            <!-- 2. 加入貨幣選項 -->
+                            <select id="expCur" class="w-1/4 text-xs font-bold"><option value="KRW">KRW</option><option value="MYR">MYR</option><option value="USD">USD</option><option value="TWD">TWD</option></select>
                             <input type="number" id="expAmt" placeholder="總金額" class="flex-1 text-sm text-right">
                         </div>
                         <div class="flex gap-2 items-center bg-[rgba(255,255,255,0.5)] p-2 rounded-xl">
@@ -284,7 +286,7 @@
 
     <script>
         // ================= 資料庫 & 初始化 =================
-        const dbName = "TravelBookDB_v8";
+        const dbName = "TravelBookDB_v9";
         let db;
         const initDB = new Promise((resolve) => {
             const req = indexedDB.open(dbName, 1);
@@ -451,12 +453,16 @@
             let hourlyHtml = '';
             
             if(wData) {
-                const nowTemp = wData.current_weather.temperature;
+                const nowTemp = Math.round(wData.current_weather.temperature);
                 const uv = wData.hourly.uv_index[currentHour] || 0;
                 const feelTemp = Math.round(nowTemp + 1.5); 
                 const rainProb = wData.hourly.precipitation_probability[currentHour] || 0;
                 
-                // 3. 永遠顯示當天 12 AM 至 11 PM
+                // 1. 計算最高最低溫
+                const todayTemps = wData.hourly.temperature_2m.slice(0, 24);
+                const todayMax = Math.round(Math.max(...todayTemps));
+                const todayMin = Math.round(Math.min(...todayTemps));
+                
                 for(let i=0; i<24; i++) {
                     const hTemp = Math.round(wData.hourly.temperature_2m[i]);
                     const hEmoji = getWmoEmoji(wData.hourly.weathercode[i]);
@@ -465,10 +471,17 @@
                     hourlyHtml += `<div class="hourly-item ${isActive}"><div class="mb-1 ${isActive?'':'opacity-70'}">${h12} ${ampm}</div><div class="mb-1 text-lg">${hEmoji}</div><div>${hTemp}°</div></div>`;
                 }
 
-                // 2. 移除後方白框，保持通透
+                // 1. 左邊區域加入最高溫/最低溫與 emoji
                 document.getElementById('weather-banner').innerHTML = `
                     <div class="flex justify-between items-center border-b border-[rgba(0,0,0,0.05)] pb-3 mb-4">
-                        <div><div class="text-xs font-bold text-gray-500 mb-1"><i class="fa-solid fa-location-dot text-[var(--kr-accent)]"></i> ${d.region}即時天氣</div><div class="font-bold text-2xl">${nowTemp}°C</div></div>
+                        <div>
+                            <div class="text-xs font-bold text-gray-500 mb-1"><i class="fa-solid fa-location-dot text-[var(--kr-accent)]"></i> ${d.region}即時天氣</div>
+                            <div class="flex items-center gap-2">
+                                <div class="font-bold text-2xl">${nowTemp}°C</div>
+                                <div class="text-2xl">${getWmoEmoji(wData.current_weather.weathercode)}</div>
+                            </div>
+                            <div class="text-[10px] text-gray-400 mt-1 font-bold">最高 ${todayMax}°C / 最低 ${todayMin}°C</div>
+                        </div>
                         <div class="text-xs text-right text-gray-500 font-bold leading-relaxed">
                             體感 ${feelTemp}° | 降雨 ${rainProb}%<br>UV 指數: ${uv}
                         </div>
@@ -477,7 +490,6 @@
                 `;
             }
 
-            // 4. 自動滾動聚焦至當前時間
             setTimeout(() => { const hs = document.getElementById('hourly-scroll'); if(hs) { const a = hs.querySelector('.active-hour'); if(a) a.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'}); } }, 300);
 
             let html = '';
@@ -526,7 +538,8 @@
 
                             <div class="pt-4 mt-3 border-t border-[rgba(0,0,0,0.05)]">
                                 <label class="text-xs font-bold text-gray-500 block mb-2"><i class="fa-solid fa-book-open mr-1"></i> 【添加筆記】</label>
-                                <textarea id="note_${item.id}" rows="2" placeholder="..." onchange="saveFileData('${item.id}', 'note', this.value)"></textarea>
+                                <!-- 3. 添加筆記內容字體大小修正 (class="text-xs") -->
+                                <textarea id="note_${item.id}" rows="2" placeholder="..." class="text-xs" onchange="saveFileData('${item.id}', 'note', this.value)"></textarea>
 
                                 <div class="mt-3 flex gap-2">
                                     <label class="bg-white border border-gray-200 px-4 py-2 rounded-xl text-xs text-gray-600 cursor-pointer shadow-sm font-bold flex-1 text-center"><input type="file" accept="image/*" multiple class="file-hide" onchange="addPhotos(this, '${item.id}')"><i class="fa-solid fa-camera text-[var(--kr-accent)]"></i> 加入照片</label>
@@ -607,7 +620,6 @@
         async function addPhotos(input, id) { if(!input.files.length) return; let ex = await getDB('files', `${currentTrip.id}_${id}_photos`) || []; for(let f of input.files) { if(ex.length>=5) break; ex.push(await toBase64(f)); } await saveFileData(id, 'photos', ex); renderUserFiles(id); }
         async function addPdf(input, id) { if(!input.files[0]) return; const f = input.files[0]; await saveFileData(id, 'pdf', { name: f.name, data: await toBase64(f) }); renderUserFiles(id); }
         
-        // 5. 照片檔案刪除功能
         async function deletePhoto(id, idx) {
             if(!confirm("刪除此照片？")) return;
             let p = await getDB('files', `${currentTrip.id}_${id}_photos`);
@@ -657,7 +669,7 @@
 
         async function viewPDF(id) { const pdf = await getDB('files', `${currentTrip.id}_${id}_pdf`); if(pdf) { document.getElementById('pdf-iframe').src = pdf.data; document.getElementById('pdf-viewer').style.display = 'flex'; } }
 
-        // ================= 交通與住宿 (含刪除) =================
+        // ================= 交通與住宿 =================
         function renderTransportStay() {
             document.getElementById('flight-content').innerHTML = currentTrip.flights.map(f => `
                 <div class="mb-4 bg-[rgba(255,255,255,0.7)] p-4 rounded-xl border border-white shadow-sm">
@@ -712,7 +724,11 @@
                 const topCur = ["MYR","KRW","TWD","JPY","USD","EUR","GBP","HKD","THB","SGD"];
                 let opts = Object.keys(exchangeRates).sort((a,b) => topCur.includes(a) ? -1 : 1).map(k => `<option value="${k}">${k}</option>`).join('');
                 document.getElementById('curFrom').innerHTML = opts; document.getElementById('curTo').innerHTML = opts;
+                
+                document.getElementById('expCur').innerHTML = opts; // 2. 同步貨幣選項到新增記帳
+                
                 document.getElementById('curFrom').value = "MYR"; document.getElementById('curTo').value = "KRW";
+                document.getElementById('expCur').value = "KRW"; 
                 document.getElementById('rateUpdateTxt').innerText = `API 更新: ${data.time_last_update_utc.substring(0,16)}`;
                 convertCurrency();
             } catch(e) {}
@@ -728,40 +744,60 @@
         function addUser() { const u = prompt("輸入新增用戶名稱:"); if(u) { currentTrip.users.push(u); saveDB('trips', currentTrip.id, currentTrip); renderUserSelects(); } }
 
         async function addExpense() {
-            const e = { id: Date.now(), t: document.getElementById('expType').value, n: document.getElementById('expName').value, a: parseFloat(document.getElementById('expAmt').value)||0, p: document.getElementById('expPayer').value, split: document.getElementById('expSplitType').value };
+            // 2. 獲取所選貨幣
+            const e = { 
+                id: Date.now(), 
+                t: document.getElementById('expType').value, 
+                n: document.getElementById('expName').value, 
+                a: parseFloat(document.getElementById('expAmt').value)||0, 
+                c: document.getElementById('expCur').value,
+                p: document.getElementById('expPayer').value, 
+                split: document.getElementById('expSplitType').value 
+            };
             if(e.a <= 0) return alert("請輸入金額");
             currentTrip.expenses.push(e); await saveDB('trips', currentTrip.id, currentTrip);
             document.getElementById('expName').value=''; document.getElementById('expAmt').value=''; renderExpenses();
         }
 
-        // 5 & 6. 花費刪除功能與即時計算
         async function deleteExpense(eid) {
             if(!confirm("刪除此筆花費？")) return;
             currentTrip.expenses = currentTrip.expenses.filter(e => e.id !== eid);
             await saveDB('trips', currentTrip.id, currentTrip);
-            renderExpenses(); // 即時重新計算
+            renderExpenses(); 
         }
 
         function renderExpenses() {
             renderUserSelects();
-            let balances = {}; currentTrip.users.forEach(u => balances[u] = 0);
+            let balances = {}; 
             
             let html = currentTrip.expenses.map(e => {
+                let cur = e.c || 'KRW';
+                if(!balances[cur]) {
+                    balances[cur] = {};
+                    currentTrip.users.forEach(u => balances[cur][u] = 0);
+                }
                 if(e.split === 'equal') {
-                    balances[e.p] += e.a; 
+                    balances[cur][e.p] += e.a; 
                     const splitAmt = e.a / currentTrip.users.length;
-                    currentTrip.users.forEach(u => balances[u] -= splitAmt);
+                    currentTrip.users.forEach(u => balances[cur][u] -= splitAmt);
                 }
                 return `
                 <div class="flex justify-between items-center border-b border-white pb-2 mb-2 text-sm">
                     <div><span class="font-bold text-gray-700">${e.n || e.t}</span> <span class="text-[10px] text-gray-400 bg-white px-1 rounded">${e.p} 付款</span></div>
-                    <div class="flex items-center gap-3"><span class="font-mono text-[var(--kr-accent)] font-bold">${e.a}</span><button onclick="deleteExpense(${e.id})" class="text-red-400"><i class="fa-solid fa-trash"></i></button></div>
+                    <div class="flex items-center gap-3"><span class="font-mono text-[var(--kr-accent)] font-bold">${e.a} ${cur}</span><button onclick="deleteExpense(${e.id})" class="text-red-400"><i class="fa-solid fa-trash"></i></button></div>
                 </div>`;
             }).join('');
             
-            let sumHtml = Object.keys(balances).map(u => `<p class="text-xs ${balances[u]>=0?'text-green-600':'text-red-500'} font-bold">${u}: ${balances[u]>=0?'需收回':'需支付'} ${Math.abs(balances[u]).toFixed(2)}</p>`).join('');
+            let sumHtml = '';
+            for(let cur in balances) {
+                let curSum = Object.keys(balances[cur]).map(u => {
+                    let amt = balances[cur][u];
+                    if(Math.abs(amt) < 0.01) return '';
+                    return `<p class="text-xs ${amt>=0?'text-green-600':'text-red-500'} font-bold">${u}: ${amt>=0?'需收回':'需支付'} ${Math.abs(amt).toFixed(2)} ${cur}</p>`;
+                }).filter(x=>x).join('');
+                if(curSum) sumHtml += `<div class="mb-2 border-b border-gray-100 pb-1 last:border-0">${curSum}</div>`;
+            }
 
-            // 7. 去除 Splitwise 標題
             document.getElementById('expense-summary').innerHTML = `
                 <div class="bg-[rgba(255,255,255,0.8)] p-4 rounded-xl border border-white mb-4 shadow-sm text-center">
                     <p class="text-xs text-gray-500 mb-2 font-bold">💳 分帳結算</p>
@@ -771,7 +807,7 @@
             `;
         }
 
-        // ================= 8. 行李分類功能修復 =================
+        // ================= 行李分類 =================
         function renderLists() {
             let groups = {}; 
             currentTrip.packItems.forEach((item, i) => { 
