@@ -4,13 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>我的旅行繪本</title>
-    <!-- 4. 更改瀏覽器標籤頁小圖標 -->
+    <!-- 飛機 Emoji 瀏覽器小圖標 -->
     <link rel="icon" href="https://www.shutterstock.com/image-vector/airplane-vector-isolated-emoticon-emoji-600nw-2627946825.jpg">
     <link rel="apple-touch-icon" href="https://www.shutterstock.com/image-vector/airplane-vector-isolated-emoticon-emoji-600nw-2627946825.jpg">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+    <!-- 10.0 引入 Leaflet.js -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <style>
         :root {
@@ -22,6 +25,7 @@
             --kr-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.1);
         }
 
+        /* 全域字體統一為 Arial */
         body {
             background-color: var(--kr-cream);
             color: var(--kr-text);
@@ -32,7 +36,7 @@
         }
         .hand-drawn { font-family: Arial, sans-serif; }
 
-        .liquid-glass { background: var(--kr-glass); backdrop-filter: saturate(200%) blur(40px); -webkit-backdrop-filter: saturate(200%) blur(40px); border: 1px solid var(--kr-glass-border); box-shadow: var(--kr-shadow), inset 0 1px 1px rgba(255,255,255,0.6); border-radius: 24px; position: relative; z-index: 10; }
+        .liquid-glass { background: var(--kr-glass); backdrop-filter: saturate(200%) blur(40px); -webkit-backdrop-filter: saturate(200%) blur(40px); border: 1px solid var(--kr-glass-border); box-shadow: var(--kr-shadow), inset 0 1px 1px rgba(255,255,255,0.6); border-radius: 24px; position: relative; z-index: 10; transition: border-color 0.3s; }
 
         .view-screen { display: none; min-height: 100vh; padding-bottom: 110px; animation: fadeIn 0.4s ease; }
         .view-screen.active { display: block; }
@@ -69,8 +73,11 @@
         input[type="time"] { background: transparent; border: none; box-shadow: none; padding: 0; font-size: 0.9rem; font-family: monospace; width: auto; outline: none; -webkit-appearance: none; }
         .file-hide { display: none; }
         .btn-primary { background: var(--kr-accent); color: white; padding: 10px 18px; border-radius: 14px; font-size: 0.85rem; font-weight: bold; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
-        .btn-fab { position: fixed; bottom: 110px; right: 20px; background: var(--kr-text); color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; box-shadow: 0 6px 20px rgba(0,0,0,0.2); z-index: 900; }
-        .btn-map-fab { position: fixed; bottom: 175px; right: 20px; background: white; color: var(--kr-accent); width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; box-shadow: 0 6px 20px rgba(0,0,0,0.1); z-index: 900; }
+        
+        /* 懸浮按鈕群 */
+        .fab-container { position: fixed; bottom: 110px; right: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 900; }
+        .btn-fab { background: var(--kr-text); color: white; width: 45px; height: 45px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1rem; box-shadow: 0 6px 20px rgba(0,0,0,0.2); cursor: pointer; }
+        .btn-map-fab { background: white; color: var(--kr-accent); width: 45px; height: 45px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1rem; box-shadow: 0 6px 20px rgba(0,0,0,0.1); cursor: pointer; }
 
         .book-card { background: white; border-radius: 12px 24px 24px 12px; padding: 20px; box-shadow: 5px 5px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; border-left: 12px solid var(--kr-accent); position: relative; overflow: hidden; cursor: pointer; transition: 0.3s; margin-bottom: 15px; }
         .book-card::before { content:''; position:absolute; left:12px; top:0; bottom:0; width:2px; background:rgba(0,0,0,0.1); }
@@ -90,8 +97,11 @@
         #pdf-viewer { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 2000; flex-direction: column; }
         #pdf-iframe { flex: 1; width: 100%; border: none; }
         
-        .draggable { cursor: grab; }
-        .dragging { opacity: 0.4; border: 2px dashed var(--kr-accent); transform: scale(0.98); }
+        #trip-map { height: 180px; width: 100%; border-radius: 20px; z-index: 5; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.8); box-shadow: var(--kr-shadow); }
+        
+        /* 預算圓環 */
+        .budget-ring { position: relative; width: 100px; height: 100px; border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; }
+        .budget-ring::before { content: ""; position: absolute; inset: 8px; background: var(--kr-glass); border-radius: 50%; backdrop-filter: blur(10px); }
     </style>
 </head>
 <body>
@@ -134,11 +144,19 @@
                 <div class="h-scroll-container mb-2">
                     <div class="h-scroll" id="day-selector"></div>
                 </div>
-                <div id="weather-banner" class="liquid-glass p-5 mb-6"></div>
+                <div id="weather-banner" class="liquid-glass p-5 mb-4"></div>
+                
+                <!-- 10.0 地圖全覽 -->
+                <div id="trip-map"></div>
+
                 <div id="daily-content"></div>
                 
-                <button class="btn-map-fab" onclick="showMap()"><i class="fa-solid fa-map-marked-alt"></i></button>
-                <button class="btn-fab" onclick="addNewAttraction()"><i class="fa-solid fa-plus"></i></button>
+                <div class="fab-container">
+                    <button class="btn-map-fab" onclick="showMap()" title="Google 總導航"><i class="fa-solid fa-map-marked-alt"></i></button>
+                    <!-- 10.0 一鍵優化路線 -->
+                    <button class="btn-map-fab bg-[var(--kr-cream)] text-[var(--kr-text)]" onclick="optimizeDailyRoute()" title="優化路線"><i class="fa-solid fa-route"></i></button>
+                    <button class="btn-fab" onclick="addNewAttraction()"><i class="fa-solid fa-plus"></i></button>
+                </div>
             </div>
 
             <!-- SECTION 2: 交通與住宿 -->
@@ -172,7 +190,21 @@
             <div id="expenses" class="tab-section">
                 <h2 class="text-xl font-bold mb-6 text-center hand-drawn">花費記帳 💰</h2>
                 
-                <div class="liquid-glass p-5 mb-6">
+                <!-- 10.0 預算進度條 -->
+                <div class="liquid-glass p-5 mb-4 text-center">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-sm font-bold text-gray-500"><i class="fa-solid fa-chart-pie"></i> 預算控制</h3>
+                        <div class="text-xs text-gray-400 flex items-center gap-1">預算 <input type="number" id="tripBudget" class="w-16 p-0 text-right bg-transparent border-none font-bold" value="0" onchange="updateBudget(this.value)"></div>
+                    </div>
+                    <div class="budget-ring" id="budget-ring-el">
+                        <div class="relative z-10 flex flex-col items-center">
+                            <span class="text-[10px] text-gray-500 font-bold">總花費 (基準)</span>
+                            <span class="text-sm font-bold text-gray-700" id="total-spent-display">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="liquid-glass p-5 mb-4">
                     <div class="flex justify-between items-center mb-3">
                         <h3 class="text-sm font-bold text-gray-500"><i class="fa-solid fa-money-bill-transfer"></i> 實時全球匯率</h3>
                         <button onclick="swapCurrencies()" class="text-[var(--kr-accent)] text-lg"><i class="fa-solid fa-right-left"></i></button>
@@ -194,8 +226,7 @@
                         <input type="text" id="expName" placeholder="花費名稱 (例如: 晚餐)" class="text-sm font-bold">
                         <div class="flex gap-2">
                             <select id="expType" class="w-1/3 text-xs"><option value="餐飲">🍽️ 餐飲</option><option value="交通">🚕 交通</option><option value="門票">🎫 門票</option><option value="住宿">🏨 住宿</option></select>
-                            <!-- 2. 加入貨幣選項 -->
-                            <select id="expCur" class="w-1/4 text-xs font-bold"><option value="KRW">KRW</option><option value="MYR">MYR</option><option value="USD">USD</option><option value="TWD">TWD</option></select>
+                            <select id="expCur" class="w-1/4 text-xs font-bold"></select>
                             <input type="number" id="expAmt" placeholder="總金額" class="flex-1 text-sm text-right">
                         </div>
                         <div class="flex gap-2 items-center bg-[rgba(255,255,255,0.5)] p-2 rounded-xl">
@@ -286,7 +317,7 @@
 
     <script>
         // ================= 資料庫 & 初始化 =================
-        const dbName = "TravelBookDB_v9";
+        const dbName = "TravelBookDB_v10";
         let db;
         const initDB = new Promise((resolve) => {
             const req = indexedDB.open(dbName, 1);
@@ -307,8 +338,9 @@
         let currentDayIdx = 0;
         let selectedNewColor = "#9A9283";
         let exchangeRates = {};
+        let map = null; // Leaflet 地圖實例
         
-        // 14天完整資料 (保留所有字數與細節)
+        // 14天完整資料 (含真實經緯度以供地圖與路程計算使用)
         function generate14DaysData() {
             const regions = ["吉隆坡","釜山","釜山","釜山-濟州","濟州島","濟州島","濟州島","濟州島","濟州島","濟州-首爾","首爾","首爾","首爾","首爾"];
             let daily = [];
@@ -319,9 +351,6 @@
             const richIntro2 = "海雲台是釜山最具代表性的海灘度假勝地。這裡擁有蔚藍的海岸線、白色的沙灘與繁華的周邊商圈。無論是白天漫步在沙灘上享受海風，還是夜晚欣賞美麗的城市夜景與街頭表演，都能深刻體驗到釜山獨特的海洋魅力與熱情。";
             const richRevPos2 = "海景無敵美！周邊美食超級多，尤其是晚上的氣氛浪漫到不行。";
             const richRevNeg2 = "夏天旺季時人潮非常擁擠，海灘周邊的餐廳價格普遍稍微偏高一些。";
-            const richIntro3 = "這是一間充滿現代感與藝術氣息的設計咖啡廳。店內裝潢採用極簡的韓系奶油風格，搭配大片落地窗，讓自然光線完美灑入。不僅提供專業級的手沖咖啡，還有每日現做的精緻甜點。這裡是拍照打卡、放鬆身心、享受午後悠閒時光的絕佳秘密基地。";
-            const richRevPos3 = "咖啡香氣濃郁，甜點不僅顏值高而且非常好吃，完全不踩雷。";
-            const richRevNeg3 = "座位數量不多，假日下午通常需要候位超過半小時，建議平日前往。";
 
             for(let i=0; i<14; i++) {
                 let dayDate = new Date(2026, 9, 29); dayDate.setDate(dayDate.getDate() + i);
@@ -331,12 +360,14 @@
                 
                 let items = [];
                 if(i === 0) {
-                    items.push({ id:`d0_0`, time: "16:00", task: "吉隆坡國際機場", loc: "KLIA Terminal 1", intro: richIntro1, review: {pos: richRevPos1, neg: richRevNeg1}, img: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600" });
+                    items.push({ id:`d0_0`, time: "16:00", task: "吉隆坡國際機場", loc: "KLIA Terminal 1", lat: 2.7456, lng: 101.7072, endTime: "23:59", intro: richIntro1, review: {pos: richRevPos1, neg: richRevNeg1}, img: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600" });
                 } else if(i === 1) {
-                    items.push({ id:`d1_0`, time: "10:30", task: "海雲台海水浴場", loc: "Haeundae Beach", intro: richIntro2, review: {pos: richRevPos2, neg: richRevNeg2}, img: "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=600" });
-                    items.push({ id:`d1_1`, time: "14:00", task: "人氣海景咖啡廳", loc: "Cafe in Busan", intro: richIntro3, review: {pos: richRevPos3, neg: richRevNeg3}, img: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600" });
+                    items.push({ id:`d1_0`, time: "10:30", task: "海雲台海水浴場", loc: "Haeundae Beach", lat: 35.1587, lng: 129.1603, endTime: "22:00", intro: richIntro2, review: {pos: richRevPos2, neg: richRevNeg2}, img: "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=600" });
+                    items.push({ id:`d1_1`, time: "14:00", task: "人氣海景咖啡廳", loc: "Cafe in Busan", lat: 35.159, lng: 129.161, endTime: "18:00", intro: "絕美海景咖啡廳。", review: {pos: "好喝", neg: "人多"}, img: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600" });
                 } else {
-                    items.push({ id:`d${i}_0`, time: "10:00", task: "探索" + regions[i], loc: regions[i] + "市中心", intro: "這是一座充滿歷史底蘊與現代活力的城市。在這裡，你可以品嚐到最道地的街頭小吃，走訪傳統市場感受當地人的熱情，或是穿梭在繁華的購物街區尋找最新的流行服飾。每一個角落都隱藏著令人驚喜的風景，絕對是不可錯過的旅遊勝地。", review: {pos: "交通非常便利，景點之間距離不遠，非常適合自由行旅客。", neg: "部分熱門景點的標示只有韓文，建議手機隨時備好翻譯軟體。"}, img: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=600" });
+                    let lat = dStr.includes("釜山") ? 35.1 : (dStr.includes("濟州") ? 33.5 : 37.5);
+                    let lng = dStr.includes("釜山") ? 129.0 : (dStr.includes("濟州") ? 126.5 : 126.9);
+                    items.push({ id:`d${i}_0`, time: "10:00", task: "探索" + regions[i], loc: regions[i] + "市中心", lat: lat, lng: lng, endTime: "22:00", intro: "充滿歷史與現代的完美交融。", review: {pos: "交通便利", neg: "需翻譯軟體"}, img: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=600" });
                 }
 
                 daily.push({ day: `Day ${i+1}`, date: dStr, dayName: dayName, region: regions[i], items: items });
@@ -345,14 +376,13 @@
         }
 
         const defaultTrip = {
-            id: Date.now().toString(), title: "2026 苦盡柑來 🍊", color: "#9A9283", users: ["我"],
+            id: Date.now().toString(), title: "2026 苦盡柑來 🍊", color: "#9A9283", users: ["我"], budget: 50000,
             flights: [
                 { id:"f0", title: "去程", date: "2026-10-29", route: "KUL → HAN", flight: "VN680", airlineIcon: "fa-plane-departure", time: "19:10", term: "KLIA T1" },
                 { id:"f3", title: "回程", date: "2026-11-11", route: "ICN → KUL", flight: "MH67", airlineIcon: "fa-plane-arrival", time: "16:25", term: "Incheon T1" }
             ],
             stays: [
-                { id:"s0", name: "Ramada Encore Haeundae", date: "10/30 - 11/01", addr: "釜山海雲台區" },
-                { id:"s1", name: "Around Follie", date: "11/01 - 11/07", addr: "濟州島" }
+                { id:"s0", name: "Ramada Encore Haeundae", date: "10/30 - 11/01", addr: "釜山海雲台區" }
             ],
             expenses: [], packItems: [{c:"📄 证件", n:"護照正本"}],
             daily: generate14DaysData()
@@ -403,6 +433,7 @@
             document.getElementById('trip-view').classList.add('active');
             document.getElementById('trip-title-input').value = currentTrip.title;
             
+            syncStaysToItinerary(); // 10.0 確保住宿與行程聯動
             currentDayIdx = 0; renderDayNav(); renderDaily(currentDayIdx); renderTransportStay(); renderExpenses(); renderLists();
         }
 
@@ -441,12 +472,21 @@
             } catch(e) { return null; }
         }
 
+        // 10.0 Haversine 距離計算 (公里)
+        function getDistKm(lat1, lon1, lat2, lon2) {
+            if(!lat1 || !lon1 || !lat2 || !lon2) return 0;
+            const R = 6371; const dLat = (lat2-lat1)*Math.PI/180; const dLon = (lon2-lon1)*Math.PI/180;
+            const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        }
+
         async function renderDaily(idx) {
             const d = currentTrip.daily[idx];
             document.getElementById('weather-banner').innerHTML = `<div class="text-center text-xs text-gray-400 py-2">讀取當地天氣中...</div>`;
             
             let lat = 35.1, lon = 129.0; 
-            if(d.region.includes('首爾')) { lat=37.5; lon=126.9; } else if(d.region.includes('濟州')) { lat=33.5; lon=126.5; } else if(d.region.includes('吉隆坡')) { lat=3.13; lon=101.68; }
+            if(d.items.length > 0 && d.items[0].lat) { lat = d.items[0].lat; lon = d.items[0].lng; }
+            else if(d.region.includes('首爾')) { lat=37.5; lon=126.9; } else if(d.region.includes('濟州')) { lat=33.5; lon=126.5; } else if(d.region.includes('吉隆坡')) { lat=3.13; lon=101.68; }
             
             const wData = await fetchWeather(lat, lon);
             const currentHour = new Date().getHours();
@@ -458,7 +498,6 @@
                 const feelTemp = Math.round(nowTemp + 1.5); 
                 const rainProb = wData.hourly.precipitation_probability[currentHour] || 0;
                 
-                // 1. 計算最高最低溫
                 const todayTemps = wData.hourly.temperature_2m.slice(0, 24);
                 const todayMax = Math.round(Math.max(...todayTemps));
                 const todayMin = Math.round(Math.min(...todayTemps));
@@ -471,9 +510,11 @@
                     hourlyHtml += `<div class="hourly-item ${isActive}"><div class="mb-1 ${isActive?'':'opacity-70'}">${h12} ${ampm}</div><div class="mb-1 text-lg">${hEmoji}</div><div>${hTemp}°</div></div>`;
                 }
 
-                // 1. 左邊區域加入最高溫/最低溫與 emoji
+                // 10.0 降雨預警
+                let rainWarning = rainProb > 40 ? `<div class="bg-blue-100 text-blue-600 px-3 py-1.5 rounded-xl text-xs font-bold mt-2 animate-pulse text-center">☔ 今日降雨機率高，請帶傘</div>` : '';
+
                 document.getElementById('weather-banner').innerHTML = `
-                    <div class="flex justify-between items-center border-b border-[rgba(0,0,0,0.05)] pb-3 mb-4">
+                    <div class="flex justify-between items-center border-b border-[rgba(0,0,0,0.05)] pb-3 mb-3">
                         <div>
                             <div class="text-xs font-bold text-gray-500 mb-1"><i class="fa-solid fa-location-dot text-[var(--kr-accent)]"></i> ${d.region}即時天氣</div>
                             <div class="flex items-center gap-2">
@@ -487,18 +528,41 @@
                         </div>
                     </div>
                     <div class="h-scroll-container"><div class="h-scroll" id="hourly-scroll">${hourlyHtml}</div></div>
+                    ${rainWarning}
                 `;
             }
 
             setTimeout(() => { const hs = document.getElementById('hourly-scroll'); if(hs) { const a = hs.querySelector('.active-hour'); if(a) a.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'}); } }, 300);
 
+            // 10.0 實例化 Leaflet 地圖
+            if (map) { map.off(); map.remove(); }
+            map = L.map('trip-map', { scrollWheelZoom: false }).setView([lat, lon], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+            let mapMarkers = [];
+
             let html = '';
             d.items.forEach((item, i) => {
+                // 10.0 營業時間紅綠燈 (接近打烊 1 小時內閃橘框)
+                let borderClass = 'border border-white';
+                if(item.endTime) {
+                    let [h, m] = item.endTime.split(':');
+                    let now = new Date(); let closeTime = new Date(); closeTime.setHours(h, m, 0);
+                    let diffMins = (closeTime - now) / 60000;
+                    if(diffMins > 0 && diffMins <= 60) borderClass = 'border-2 border-orange-400 shadow-orange-100';
+                }
+
+                // 畫地圖標記
+                if(item.lat && item.lng) {
+                    let marker = L.marker([item.lat, item.lng]).addTo(map).bindPopup(`<b>${i+1}. ${item.task}</b>`);
+                    mapMarkers.push([item.lat, item.lng]);
+                }
+
                 html += `
-                <div class="liquid-glass mb-0">
+                <div class="liquid-glass mb-0 ${borderClass}">
                     <div class="item-header">
                         <img id="img_${item.id}" src="${item.img}">
                         <label class="edit-img-btn"><input type="file" accept="image/*" class="file-hide" onchange="updateImg(this, ${idx}, ${i}, 'img')"><i class="fa-solid fa-camera"></i></label>
+                        <div class="absolute top-3 left-3 bg-[var(--kr-accent)] text-white w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs shadow">${i+1}</div>
                     </div>
                     <div class="p-5" id="wrap_${item.id}">
                         <div class="flex justify-between items-start mb-2">
@@ -524,21 +588,23 @@
                                 ${item.intro ? `<div class="bg-white p-4 rounded-2xl mb-3 text-sm text-gray-700 leading-relaxed shadow-sm border border-gray-100">${item.intro}</div>` : ''}
                                 ${item.review ? `<div class="flex gap-2 mb-3"><div class="w-1/2 bg-red-50 p-3 rounded-xl text-xs text-red-800 border border-red-100 leading-relaxed"><b>👍 小紅書推薦：</b><br>${item.review.pos}</div><div class="w-1/2 bg-gray-100 p-3 rounded-xl text-xs text-gray-700 border border-gray-200 leading-relaxed"><b>⚠️ 真實避雷：</b><br>${item.review.neg}</div></div>` : ''}
                                 
-                                <div class="flex justify-end"><button class="bg-white border border-gray-200 text-gray-600 text-xs px-4 py-2 rounded-full shadow-sm font-bold" onclick="toggleEdit('${item.id}')"><i class="fa-solid fa-pen"></i> 編輯地點</button></div>
+                                <div class="flex justify-end"><button class="bg-white border border-gray-200 text-gray-600 text-xs px-4 py-2 rounded-full shadow-sm font-bold" onclick="toggleEdit('${item.id}')"><i class="fa-solid fa-pen"></i> 編輯地點 / 時間</button></div>
                             </div>
                             
+                            <!-- 10.0 智慧搜索建議 DOM -->
                             <div id="edit_form_${item.id}" class="hidden space-y-3 mb-3 bg-[rgba(255,255,255,0.8)] p-4 rounded-xl border border-white shadow-inner">
                                 <input id="edit_task_${item.id}" value="${item.task}" placeholder="主標題" class="font-bold text-sm">
-                                <div class="flex gap-2">
-                                    <input id="edit_loc_${item.id}" value="${item.loc === '輸入地址' ? '' : item.loc}" placeholder="搜尋地點..." class="flex-1 text-sm">
-                                    <button class="bg-white text-[var(--kr-accent)] px-3 py-1 rounded-xl shadow-sm font-bold" onclick="searchLocationOSM('${item.id}', ${idx}, ${i})"><i class="fa-solid fa-magnifying-glass"></i></button>
+                                <div class="flex gap-2 items-center text-xs text-gray-500">打烊: <input type="time" id="edit_end_${item.id}" value="${item.endTime || '22:00'}" class="w-24"></div>
+                                <div class="relative">
+                                    <input id="edit_loc_${item.id}" value="${item.loc === '輸入地址' ? '' : item.loc}" data-lat="${item.lat||0}" data-lng="${item.lng||0}" placeholder="搜尋地點 (Photon API)..." class="w-full text-sm" oninput="fetchSuggestions(this.value, '${item.id}')">
+                                    <div id="sug_${item.id}" class="absolute z-50 w-full"></div>
                                 </div>
-                                <button class="btn-primary w-full text-sm py-2" onclick="saveItemEdit(${idx}, ${i}, '${item.id}')">儲存變更</button>
+                                <button class="btn-primary w-full text-sm py-2" onclick="saveItemEdit(${idx}, ${i}, '${item.id}')">儲存並獲取自動配圖</button>
                             </div>
 
                             <div class="pt-4 mt-3 border-t border-[rgba(0,0,0,0.05)]">
                                 <label class="text-xs font-bold text-gray-500 block mb-2"><i class="fa-solid fa-book-open mr-1"></i> 【添加筆記】</label>
-                                <!-- 3. 添加筆記內容字體大小修正 (class="text-xs") -->
+                                <!-- 筆記字體統一 text-xs -->
                                 <textarea id="note_${item.id}" rows="2" placeholder="..." class="text-xs" onchange="saveFileData('${item.id}', 'note', this.value)"></textarea>
 
                                 <div class="mt-3 flex gap-2">
@@ -553,18 +619,83 @@
                 </div>`;
                 
                 if(i < d.items.length - 1) {
+                    // 10.0 計算路程時間 (大眾運輸約 30km/h)
+                    let dist = getDistKm(item.lat, item.lng, d.items[i+1].lat, d.items[i+1].lng);
+                    let estTime = dist > 0 ? Math.max(5, Math.round((dist / 30) * 60)) : 30;
+
                     html += `
                         <div class="transit-node">
                             <div class="transit-line"></div>
                             <div class="bg-white border border-gray-200 rounded-full px-4 py-1.5 shadow-sm text-[10px] text-gray-500 z-10 flex items-center font-bold">
-                                <i class="fa-solid fa-train-subway mr-2 text-[var(--kr-accent)]"></i> 約 30 分
+                                <i class="fa-solid fa-train-subway mr-2 text-[var(--kr-accent)]"></i> 預計 ${estTime} 分
                                 <a href="https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(item.loc)}&destination=${encodeURIComponent(d.items[i+1].loc)}&travelmode=transit" target="_blank" class="text-[var(--kr-accent)] ml-3"><i class="fa-solid fa-location-arrow mr-1"></i>一鍵導航</a>
                             </div>
                             <div class="transit-line"></div>
                         </div>`;
                 }
             });
+
+            if(mapMarkers.length > 0) {
+                L.polyline(mapMarkers, {color: '#9A9283', weight: 3, dashArray: '5, 5'}).addTo(map);
+                map.fitBounds(mapMarkers, {padding: [30, 30]});
+            }
+
             document.getElementById('daily-content').innerHTML = html;
+        }
+
+        // 10.0 Photon API 智慧搜索
+        let sugTimeout;
+        async function fetchSuggestions(q, id) {
+            clearTimeout(sugTimeout);
+            if(q.length < 2) { document.getElementById(`sug_${id}`).innerHTML = ''; return; }
+            sugTimeout = setTimeout(async () => {
+                try {
+                    let res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=5`);
+                    let data = await res.json();
+                    let html = data.features.map(f => {
+                        let name = f.properties.name; let lat = f.geometry.coordinates[1]; let lng = f.geometry.coordinates[0];
+                        return `<li class="p-2 border-b text-xs cursor-pointer bg-white hover:bg-gray-100" onclick="selectSug('${id}', '${name}', ${lat}, ${lng})">${name} <span class="text-[10px] text-gray-400">${f.properties.country || ''}</span></li>`;
+                    }).join('');
+                    document.getElementById(`sug_${id}`).innerHTML = `<ul class="bg-white border rounded shadow mt-1 max-h-40 overflow-y-auto">${html}</ul>`;
+                } catch(e) {}
+            }, 500);
+        }
+        function selectSug(id, name, lat, lng) {
+            let inp = document.getElementById(`edit_loc_${id}`);
+            inp.value = name; inp.dataset.lat = lat; inp.dataset.lng = lng;
+            document.getElementById(`sug_${id}`).innerHTML = '';
+        }
+
+        // 10.0 一鍵優化路線 (TSP Greedy)
+        async function optimizeDailyRoute() {
+            let items = currentTrip.daily[currentDayIdx].items;
+            if(items.length <= 2) return alert("景點太少，無需優化！");
+            let optimized = [items[0]];
+            let unvisited = items.slice(1);
+            while(unvisited.length > 0) {
+                let last = optimized[optimized.length - 1];
+                let nearestIdx = 0; let minDist = Infinity;
+                for(let i=0; i<unvisited.length; i++) {
+                    let d = getDistKm(last.lat, last.lng, unvisited[i].lat, unvisited[i].lng);
+                    if(d < minDist) { minDist = d; nearestIdx = i; }
+                }
+                optimized.push(unvisited.splice(nearestIdx, 1)[0]);
+            }
+            currentTrip.daily[currentDayIdx].items = optimized;
+            await saveDB('trips', currentTrip.id, currentTrip);
+            renderDaily(currentDayIdx);
+            alert("已為您重排最短距離路線！");
+        }
+
+        // 10.0 自動配圖機制
+        async function fetchImageForLoc(q) {
+            try {
+                const wRes = await fetch(`https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&format=json&piprop=original&titles=${encodeURIComponent(q)}&origin=*`);
+                const wData = await wRes.json();
+                const pages = wData.query.pages; const pageId = Object.keys(pages)[0];
+                if(pages[pageId] && pages[pageId].original) return pages[pageId].original.source;
+            } catch(e) {}
+            return `https://images.unsplash.com/photo-1503614472-8c93d56e92ce?w=600&q=80&seed=${Math.random()}`;
         }
 
         function toggleExpand(id) { const w = document.getElementById(`wrap_${id}`); w.classList.toggle('expanded'); if(w.classList.contains('expanded')) renderUserFiles(id); }
@@ -573,31 +704,20 @@
         
         async function saveItemEdit(dIdx, iIdx, id) {
             const itm = currentTrip.daily[dIdx].items[iIdx];
+            let inp = document.getElementById(`edit_loc_${id}`);
             itm.task = document.getElementById(`edit_task_${id}`).value;
-            itm.loc = document.getElementById(`edit_loc_${id}`).value || '輸入地址';
+            itm.endTime = document.getElementById(`edit_end_${id}`).value;
+            
+            // 若地點更換，自動重抓經緯度與配圖
+            if(inp.value !== itm.loc && inp.value !== '輸入地址') {
+                itm.loc = inp.value; itm.lat = parseFloat(inp.dataset.lat); itm.lng = parseFloat(inp.dataset.lng);
+                itm.img = await fetchImageForLoc(itm.loc);
+            }
             await saveDB('trips', currentTrip.id, currentTrip); renderDaily(currentDayIdx);
         }
 
-        async function searchLocationOSM(id, dIdx, iIdx) {
-            const q = document.getElementById(`edit_loc_${id}`).value; if(!q) return;
-            try {
-                const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1`);
-                const data = await res.json();
-                if(data.length > 0) document.getElementById(`edit_loc_${id}`).value = data[0].display_name.split(',')[0];
-                const wRes = await fetch(`https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&format=json&piprop=original&titles=${encodeURIComponent(q)}&origin=*`);
-                const wData = await wRes.json();
-                const pages = wData.query.pages; const pageId = Object.keys(pages)[0];
-                if(pages[pageId] && pages[pageId].original) {
-                    currentTrip.daily[dIdx].items[iIdx].img = pages[pageId].original.source;
-                    document.getElementById(`img_${id}`).src = pages[pageId].original.source;
-                }
-                alert("已透過開源 API 自動更新地點與首圖！");
-                saveItemEdit(dIdx, iIdx, id);
-            } catch(e) { alert("搜尋失敗，請稍後再試。"); }
-        }
-
         async function addNewAttraction() {
-            currentTrip.daily[currentDayIdx].items.push({ id: `d${currentDayIdx}_${Date.now()}`, time: "12:00", task: "新行程", loc: "輸入地址", img: "https://images.unsplash.com/photo-1556012018-50c5c0da73bf?w=600" });
+            currentTrip.daily[currentDayIdx].items.push({ id: `d${currentDayIdx}_${Date.now()}`, time: "12:00", task: "新行程", loc: "輸入地址", lat: 0, lng: 0, endTime: "22:00", img: "https://images.unsplash.com/photo-1556012018-50c5c0da73bf?w=600" });
             await saveDB('trips', currentTrip.id, currentTrip); renderDaily(currentDayIdx);
             setTimeout(() => window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'}), 100);
         }
@@ -607,78 +727,63 @@
 
         // ================= 檔案與照片刪除與儲存 =================
         function toBase64(file) { return new Promise((r) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => r(reader.result); }); }
-        
-        async function updateImg(input, dIdx, iIdx, type) {
-            if (!input.files[0]) return; const b64 = await toBase64(input.files[0]);
-            currentTrip.daily[dIdx].items[iIdx].img = b64; 
-            document.getElementById(`img_${currentTrip.daily[dIdx].items[iIdx].id}`).src = b64;
-            await saveDB('trips', currentTrip.id, currentTrip);
-        }
-
+        async function updateImg(input, dIdx, iIdx, type) { if (!input.files[0]) return; const b64 = await toBase64(input.files[0]); currentTrip.daily[dIdx].items[iIdx].img = b64; document.getElementById(`img_${currentTrip.daily[dIdx].items[iIdx].id}`).src = b64; await saveDB('trips', currentTrip.id, currentTrip); }
         async function saveFileData(id, type, data) { await saveDB('files', `${currentTrip.id}_${id}_${type}`, data); }
-        
         async function addPhotos(input, id) { if(!input.files.length) return; let ex = await getDB('files', `${currentTrip.id}_${id}_photos`) || []; for(let f of input.files) { if(ex.length>=5) break; ex.push(await toBase64(f)); } await saveFileData(id, 'photos', ex); renderUserFiles(id); }
         async function addPdf(input, id) { if(!input.files[0]) return; const f = input.files[0]; await saveFileData(id, 'pdf', { name: f.name, data: await toBase64(f) }); renderUserFiles(id); }
-        
-        async function deletePhoto(id, idx) {
-            if(!confirm("刪除此照片？")) return;
-            let p = await getDB('files', `${currentTrip.id}_${id}_photos`);
-            if(p) { p.splice(idx, 1); await saveFileData(id, 'photos', p); renderUserFiles(id); }
-        }
-        async function deletePdf(id) {
-            if(!confirm("刪除此檔案？")) return;
-            await saveFileData(id, 'pdf', null); renderUserFiles(id);
-        }
+        async function deletePhoto(id, idx) { if(!confirm("刪除此照片？")) return; let p = await getDB('files', `${currentTrip.id}_${id}_photos`); if(p) { p.splice(idx, 1); await saveFileData(id, 'photos', p); renderUserFiles(id); } }
+        async function deletePdf(id) { if(!confirm("刪除此檔案？")) return; await saveFileData(id, 'pdf', null); renderUserFiles(id); }
 
         async function renderUserFiles(id) {
             const note = await getDB('files', `${currentTrip.id}_${id}_note`); if(note) { const el = document.getElementById(`note_${id}`); if(el) el.value = note; }
             const p = await getDB('files', `${currentTrip.id}_${id}_photos`);
             if(p && document.getElementById(`thumb_wrap_${id}`)) {
-                document.getElementById(`thumb_wrap_${id}`).innerHTML = p.map((src, i) => `
-                <div class="thumb-wrap-relative">
-                    <img src="${src}" class="thumb-box" onclick="openLightbox('${id}', ${i})">
-                    <div class="thumb-del-btn" onclick="deletePhoto('${id}', ${i})"><i class="fa-solid fa-xmark"></i></div>
-                </div>`).join('');
+                document.getElementById(`thumb_wrap_${id}`).innerHTML = p.map((src, i) => `<div class="thumb-wrap-relative"><img src="${src}" class="thumb-box" onclick="openLightbox('${id}', ${i})"><div class="thumb-del-btn" onclick="deletePhoto('${id}', ${i})"><i class="fa-solid fa-xmark"></i></div></div>`).join('');
             }
             const pdf = await getDB('files', `${currentTrip.id}_${id}_pdf`);
             if(document.getElementById(`file_wrap_${id}`)) {
-                if(pdf) {
-                    document.getElementById(`file_wrap_${id}`).innerHTML = `
-                    <div class="flex items-center justify-end gap-2 mt-2">
-                        <button onclick="viewPDF('${id}')" class="bg-white border px-3 py-1.5 rounded-xl shadow-sm text-gray-700 font-bold"><i class="fa-solid fa-file-pdf text-[var(--kr-accent)] mr-1"></i> ${pdf.name}</button>
-                        <button onclick="deletePdf('${id}')" class="text-red-400 p-2 bg-white border rounded-xl shadow-sm"><i class="fa-solid fa-trash"></i></button>
-                    </div>`;
-                } else {
-                    document.getElementById(`file_wrap_${id}`).innerHTML = '';
-                }
+                if(pdf) { document.getElementById(`file_wrap_${id}`).innerHTML = `<div class="flex items-center justify-end gap-2 mt-2"><button onclick="viewPDF('${id}')" class="bg-white border px-3 py-1.5 rounded-xl shadow-sm text-gray-700 font-bold"><i class="fa-solid fa-file-pdf text-[var(--kr-accent)] mr-1"></i> ${pdf.name}</button><button onclick="deletePdf('${id}')" class="text-red-400 p-2 bg-white border rounded-xl shadow-sm"><i class="fa-solid fa-trash"></i></button></div>`; }
+                else { document.getElementById(`file_wrap_${id}`).innerHTML = ''; }
             }
         }
 
-        let lbPhotos = [], lbIdx = 0;
-        let touchstartX = 0, touchendX = 0;
+        let lbPhotos = [], lbIdx = 0; let touchstartX = 0, touchendX = 0;
         async function openLightbox(id, idx) { lbPhotos = await getDB('files', `${currentTrip.id}_${id}_photos`); lbIdx = idx; updateLightboxImg(); document.getElementById('lightbox').style.display='flex'; }
         function updateLightboxImg() { document.getElementById('lightbox-img').src = lbPhotos[lbIdx]; }
         function closeLightbox() { document.getElementById('lightbox').style.display='none'; }
-        
         document.getElementById('lightbox').addEventListener('touchstart', e => { touchstartX = e.changedTouches[0].screenX; });
-        document.getElementById('lightbox').addEventListener('touchend', e => {
-            touchendX = e.changedTouches[0].screenX;
-            if(touchendX < touchstartX - 50) { lbIdx = (lbIdx + 1) % lbPhotos.length; updateLightboxImg(); }
-            if(touchendX > touchstartX + 50) { lbIdx = (lbIdx - 1 + lbPhotos.length) % lbPhotos.length; updateLightboxImg(); }
-        });
-
+        document.getElementById('lightbox').addEventListener('touchend', e => { touchendX = e.changedTouches[0].screenX; if(touchendX < touchstartX - 50) { lbIdx = (lbIdx + 1) % lbPhotos.length; updateLightboxImg(); } if(touchendX > touchstartX + 50) { lbIdx = (lbIdx - 1 + lbPhotos.length) % lbPhotos.length; updateLightboxImg(); } });
         async function viewPDF(id) { const pdf = await getDB('files', `${currentTrip.id}_${id}_pdf`); if(pdf) { document.getElementById('pdf-iframe').src = pdf.data; document.getElementById('pdf-viewer').style.display = 'flex'; } }
 
-        // ================= 交通與住宿 =================
+        // ================= 10.0 交通與住宿同步聯動 =================
+        async function syncStaysToItinerary() {
+            // 清除舊的自動化節點
+            currentTrip.daily.forEach(d => { d.items = d.items.filter(i => !i.isAutoStay); });
+            // 植入新節點
+            currentTrip.stays.forEach(s => {
+                if(!s.date || !s.name) return;
+                let parts = s.date.split('-');
+                if(parts.length === 2) {
+                    let dIn = parts[0].trim(); let dOut = parts[1].trim();
+                    let dInIdx = currentTrip.daily.findIndex(d => d.date === dIn);
+                    let dOutIdx = currentTrip.daily.findIndex(d => d.date === dOut);
+                    if(dInIdx !== -1) {
+                        currentTrip.daily[dInIdx].items.push({ id: `stay_in_${s.id}`, time: "15:00", task: `入住 ${s.name}`, loc: s.addr || "酒店地址", lat: s.lat||0, lng: s.lng||0, isAutoStay: true, img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600" });
+                    }
+                    if(dOutIdx !== -1) {
+                        currentTrip.daily[dOutIdx].items.unshift({ id: `stay_out_${s.id}`, time: "09:00", task: `從 ${s.name} 出發`, loc: s.addr || "酒店地址", lat: s.lat||0, lng: s.lng||0, isAutoStay: true, img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600" });
+                    }
+                }
+            });
+            await saveDB('trips', currentTrip.id, currentTrip);
+        }
+
         function renderTransportStay() {
             document.getElementById('flight-content').innerHTML = currentTrip.flights.map(f => `
                 <div class="mb-4 bg-[rgba(255,255,255,0.7)] p-4 rounded-xl border border-white shadow-sm">
                     <div class="flex justify-between items-center mb-2">
                         <input value="${f.title}" class="bg-transparent border-none font-bold text-sm p-0 w-1/3" onchange="f.title=this.value;saveDB('trips',currentTrip.id,currentTrip)">
-                        <div class="flex items-center gap-3">
-                            <input type="date" value="${f.date}" class="bg-transparent border-none text-xs text-gray-500 p-0 text-right" onchange="f.date=this.value;saveDB('trips',currentTrip.id,currentTrip)">
-                            <button onclick="deleteFlight('${f.id}')" class="text-red-400"><i class="fa-solid fa-trash"></i></button>
-                        </div>
+                        <div class="flex items-center gap-3"><input type="date" value="${f.date}" class="bg-transparent border-none text-xs text-gray-500 p-0 text-right" onchange="f.date=this.value;saveDB('trips',currentTrip.id,currentTrip)"><button onclick="deleteFlight('${f.id}')" class="text-red-400"><i class="fa-solid fa-trash"></i></button></div>
                     </div>
                     <div class="flex items-center my-3"><i class="fa-solid ${f.airlineIcon} text-2xl mr-4 text-[var(--kr-accent)]"></i><div><p class="font-bold text-lg">${f.route} <span class="text-xs bg-white border px-2 py-0.5 rounded-lg ml-1">${f.flight}</span></p><input type="time" value="${f.time}" class="text-sm font-bold font-mono mt-1 text-gray-600 bg-transparent border-none p-0 w-24"></div></div>
                     <div class="bg-white p-2 rounded-lg text-xs font-bold flex items-center justify-between"><a href="https://maps.google.com/?q=${encodeURIComponent(f.term)}" target="_blank" class="text-blue-500"><i class="fa-solid fa-map-pin"></i> ${f.term}</a></div>
@@ -687,14 +792,17 @@
                 </div>`).join(''); 
             currentTrip.flights.forEach(f => renderUserFiles(f.id));
 
+            // 10.0 住宿卡片加入地點地標連結
             document.getElementById('stay-content').innerHTML = currentTrip.stays.map(s => `
                 <div class="mb-5 bg-[rgba(255,255,255,0.7)] p-4 rounded-xl border border-white shadow-sm">
                     <div class="flex justify-between items-center mb-1">
-                        <input value="${s.date}" class="bg-transparent border-none text-xs text-gray-500 font-bold p-0 flex-1" placeholder="例如: 10/30 - 11/01" onchange="s.date=this.value;saveDB('trips',currentTrip.id,currentTrip)">
+                        <input value="${s.date}" class="bg-transparent border-none text-xs text-gray-500 font-bold p-0 flex-1" placeholder="例如: 10/30 - 11/01" onchange="s.date=this.value;saveDB('trips',currentTrip.id,currentTrip);syncStaysToItinerary()">
                         <button onclick="deleteStay('${s.id}')" class="text-red-400 ml-2"><i class="fa-solid fa-trash"></i></button>
                     </div>
-                    <div class="flex gap-2 mb-2"><input id="stay_name_${s.id}" value="${s.name}" class="flex-1 text-sm font-bold p-2 bg-white"><button class="btn-primary px-3 py-1 text-xs rounded-xl" onclick="searchLocationOSM('${s.id}')"><i class="fa-solid fa-magnifying-glass"></i></button></div>
-                    <input id="edit_loc_${s.id}" value="${s.addr}" class="text-xs p-2 mb-2 w-full text-gray-500 bg-white">
+                    <input id="stay_name_${s.id}" value="${s.name}" class="w-full text-sm font-bold p-2 mb-2 bg-white rounded-lg border-none" onchange="s.name=this.value;saveDB('trips',currentTrip.id,currentTrip);syncStaysToItinerary()">
+                    <div class="bg-white p-2 rounded-lg text-xs font-bold flex items-center justify-between mb-2">
+                        <a href="https://maps.google.com/?q=${encodeURIComponent(s.addr)}" target="_blank" class="text-blue-500 truncate w-full"><i class="fa-solid fa-map-pin"></i> ${s.addr}</a>
+                    </div>
                     <div class="flex justify-end"><label class="bg-white px-3 py-1.5 rounded-xl cursor-pointer shadow-sm text-xs font-bold text-[var(--kr-accent)] border"><input type="file" accept=".pdf" class="file-hide" onchange="addPdf(this, '${s.id}')"><i class="fa-solid fa-file-pdf"></i> 添加檔案</label></div>
                     <div id="file_wrap_${s.id}" class="mt-2 text-xs flex justify-end"></div>
                 </div>`).join('');
@@ -702,141 +810,87 @@
         }
 
         async function deleteFlight(fid) { if(!confirm("刪除此航班？")) return; currentTrip.flights = currentTrip.flights.filter(f => f.id !== fid); await saveDB('trips', currentTrip.id, currentTrip); renderTransportStay(); }
-        async function deleteStay(sid) { if(!confirm("刪除此住宿？")) return; currentTrip.stays = currentTrip.stays.filter(s => s.id !== sid); await saveDB('trips', currentTrip.id, currentTrip); renderTransportStay(); }
+        async function deleteStay(sid) { if(!confirm("刪除此住宿？")) return; currentTrip.stays = currentTrip.stays.filter(s => s.id !== sid); syncStaysToItinerary(); renderTransportStay(); }
 
-        async function addFlight() {
-            const nid = `f${Date.now()}`;
-            currentTrip.flights.push({ id: nid, title: "新航班", date: "2026-10-29", route: "出發 → 抵達", flight: "航班號", airlineIcon: "fa-plane", time: "12:00", term: "輸入航廈" });
-            await saveDB('trips', currentTrip.id, currentTrip); renderTransportStay();
-        }
-        async function addStay() {
-            const nid = `s${Date.now()}`;
-            currentTrip.stays.push({ id: nid, name: "新住宿名稱", date: "10/30", addr: "輸入地址" });
-            await saveDB('trips', currentTrip.id, currentTrip); renderTransportStay();
-        }
+        async function addFlight() { const nid = `f${Date.now()}`; currentTrip.flights.push({ id: nid, title: "新航班", date: "2026-10-29", route: "出發 → 抵達", flight: "航班號", airlineIcon: "fa-plane", time: "12:00", term: "輸入航廈" }); await saveDB('trips', currentTrip.id, currentTrip); renderTransportStay(); }
+        async function addStay() { const nid = `s${Date.now()}`; currentTrip.stays.push({ id: nid, name: "新住宿", date: "10/30 - 10/31", addr: "飯店地址", lat:0, lng:0 }); syncStaysToItinerary(); renderTransportStay(); }
 
         // ================= 花費與全球匯率 =================
         async function fetchExchangeRateAPI() {
             try {
                 const res = await fetch("https://open.er-api.com/v6/latest/USD");
-                const data = await res.json();
-                exchangeRates = data.rates;
+                const data = await res.json(); exchangeRates = data.rates;
                 const topCur = ["MYR","KRW","TWD","JPY","USD","EUR","GBP","HKD","THB","SGD"];
                 let opts = Object.keys(exchangeRates).sort((a,b) => topCur.includes(a) ? -1 : 1).map(k => `<option value="${k}">${k}</option>`).join('');
-                document.getElementById('curFrom').innerHTML = opts; document.getElementById('curTo').innerHTML = opts;
-                
-                document.getElementById('expCur').innerHTML = opts; // 2. 同步貨幣選項到新增記帳
-                
-                document.getElementById('curFrom').value = "MYR"; document.getElementById('curTo').value = "KRW";
-                document.getElementById('expCur').value = "KRW"; 
+                document.getElementById('curFrom').innerHTML = opts; document.getElementById('curTo').innerHTML = opts; document.getElementById('expCur').innerHTML = opts; 
+                document.getElementById('curFrom').value = "MYR"; document.getElementById('curTo').value = "KRW"; document.getElementById('expCur').value = "KRW"; 
                 document.getElementById('rateUpdateTxt').innerText = `API 更新: ${data.time_last_update_utc.substring(0,16)}`;
                 convertCurrency();
             } catch(e) {}
         }
         function swapCurrencies() { const f = document.getElementById('curFrom').value; document.getElementById('curFrom').value = document.getElementById('curTo').value; document.getElementById('curTo').value = f; convertCurrency(); }
         function convertCurrency() {
-            const f = document.getElementById('curFrom').value; const t = document.getElementById('curTo').value;
-            const amt = parseFloat(document.getElementById('curAmount').value) || 0;
+            const f = document.getElementById('curFrom').value; const t = document.getElementById('curTo').value; const amt = parseFloat(document.getElementById('curAmount').value) || 0;
             if(exchangeRates[f] && exchangeRates[t]) { document.getElementById('curResult').value = ((amt / exchangeRates[f]) * exchangeRates[t]).toFixed(2); }
         }
 
         function renderUserSelects() { document.getElementById('expPayer').innerHTML = currentTrip.users.map(u => `<option value="${u}">${u}</option>`).join(''); }
         function addUser() { const u = prompt("輸入新增用戶名稱:"); if(u) { currentTrip.users.push(u); saveDB('trips', currentTrip.id, currentTrip); renderUserSelects(); } }
 
+        async function updateBudget(val) { currentTrip.budget = parseFloat(val); await saveDB('trips', currentTrip.id, currentTrip); renderExpenses(); }
+
         async function addExpense() {
-            // 2. 獲取所選貨幣
-            const e = { 
-                id: Date.now(), 
-                t: document.getElementById('expType').value, 
-                n: document.getElementById('expName').value, 
-                a: parseFloat(document.getElementById('expAmt').value)||0, 
-                c: document.getElementById('expCur').value,
-                p: document.getElementById('expPayer').value, 
-                split: document.getElementById('expSplitType').value 
-            };
+            const e = { id: Date.now(), t: document.getElementById('expType').value, n: document.getElementById('expName').value, a: parseFloat(document.getElementById('expAmt').value)||0, c: document.getElementById('expCur').value, p: document.getElementById('expPayer').value, split: document.getElementById('expSplitType').value };
             if(e.a <= 0) return alert("請輸入金額");
             currentTrip.expenses.push(e); await saveDB('trips', currentTrip.id, currentTrip);
             document.getElementById('expName').value=''; document.getElementById('expAmt').value=''; renderExpenses();
         }
 
-        async function deleteExpense(eid) {
-            if(!confirm("刪除此筆花費？")) return;
-            currentTrip.expenses = currentTrip.expenses.filter(e => e.id !== eid);
-            await saveDB('trips', currentTrip.id, currentTrip);
-            renderExpenses(); 
-        }
+        async function deleteExpense(eid) { if(!confirm("刪除此筆花費？")) return; currentTrip.expenses = currentTrip.expenses.filter(e => e.id !== eid); await saveDB('trips', currentTrip.id, currentTrip); renderExpenses(); }
 
         function renderExpenses() {
             renderUserSelects();
-            let balances = {}; 
+            let balances = {}; let totalBaseSpent = 0; // 基準預算統一轉為基準貨幣 (預設為 MYR)
             
             let html = currentTrip.expenses.map(e => {
                 let cur = e.c || 'KRW';
-                if(!balances[cur]) {
-                    balances[cur] = {};
-                    currentTrip.users.forEach(u => balances[cur][u] = 0);
-                }
-                if(e.split === 'equal') {
-                    balances[cur][e.p] += e.a; 
-                    const splitAmt = e.a / currentTrip.users.length;
-                    currentTrip.users.forEach(u => balances[cur][u] -= splitAmt);
-                }
-                return `
-                <div class="flex justify-between items-center border-b border-white pb-2 mb-2 text-sm">
-                    <div><span class="font-bold text-gray-700">${e.n || e.t}</span> <span class="text-[10px] text-gray-400 bg-white px-1 rounded">${e.p} 付款</span></div>
-                    <div class="flex items-center gap-3"><span class="font-mono text-[var(--kr-accent)] font-bold">${e.a} ${cur}</span><button onclick="deleteExpense(${e.id})" class="text-red-400"><i class="fa-solid fa-trash"></i></button></div>
-                </div>`;
+                if(!balances[cur]) { balances[cur] = {}; currentTrip.users.forEach(u => balances[cur][u] = 0); }
+                if(e.split === 'equal') { balances[cur][e.p] += e.a; const splitAmt = e.a / currentTrip.users.length; currentTrip.users.forEach(u => balances[cur][u] -= splitAmt); }
+                
+                // 計算圓環預算 (假定基準為 MYR，若匯率有載入則轉換)
+                if(exchangeRates[cur] && exchangeRates["MYR"]) { totalBaseSpent += (e.a / exchangeRates[cur]) * exchangeRates["MYR"]; }
+                
+                return `<div class="flex justify-between items-center border-b border-white pb-2 mb-2 text-sm"><div><span class="font-bold text-gray-700">${e.n || e.t}</span> <span class="text-[10px] text-gray-400 bg-white px-1 rounded">${e.p} 付款</span></div><div class="flex items-center gap-3"><span class="font-mono text-[var(--kr-accent)] font-bold">${e.a} ${cur}</span><button onclick="deleteExpense(${e.id})" class="text-red-400"><i class="fa-solid fa-trash"></i></button></div></div>`;
             }).join('');
             
             let sumHtml = '';
             for(let cur in balances) {
-                let curSum = Object.keys(balances[cur]).map(u => {
-                    let amt = balances[cur][u];
-                    if(Math.abs(amt) < 0.01) return '';
-                    return `<p class="text-xs ${amt>=0?'text-green-600':'text-red-500'} font-bold">${u}: ${amt>=0?'需收回':'需支付'} ${Math.abs(amt).toFixed(2)} ${cur}</p>`;
-                }).filter(x=>x).join('');
+                let curSum = Object.keys(balances[cur]).map(u => { let amt = balances[cur][u]; if(Math.abs(amt) < 0.01) return ''; return `<p class="text-xs ${amt>=0?'text-green-600':'text-red-500'} font-bold">${u}: ${amt>=0?'需收回':'需支付'} ${Math.abs(amt).toFixed(2)} ${cur}</p>`; }).filter(x=>x).join('');
                 if(curSum) sumHtml += `<div class="mb-2 border-b border-gray-100 pb-1 last:border-0">${curSum}</div>`;
             }
 
-            document.getElementById('expense-summary').innerHTML = `
-                <div class="bg-[rgba(255,255,255,0.8)] p-4 rounded-xl border border-white mb-4 shadow-sm text-center">
-                    <p class="text-xs text-gray-500 mb-2 font-bold">💳 分帳結算</p>
-                    ${sumHtml || '<p class="text-xs text-gray-400">目前無欠款</p>'}
-                </div>
-                <div class="max-h-40 overflow-y-auto pr-2">${html}</div>
-            `;
+            document.getElementById('expense-summary').innerHTML = `<div class="bg-[rgba(255,255,255,0.8)] p-4 rounded-xl border border-white mb-4 shadow-sm text-center"><p class="text-xs text-gray-500 mb-2 font-bold">💳 分帳結算</p>${sumHtml || '<p class="text-xs text-gray-400">目前無欠款</p>'}</div><div class="max-h-40 overflow-y-auto pr-2">${html}</div>`;
+
+            // 10.0 更新預算進度條顏色與進度
+            document.getElementById('tripBudget').value = currentTrip.budget || 0;
+            document.getElementById('total-spent-display').innerText = Math.round(totalBaseSpent);
+            let pct = currentTrip.budget > 0 ? (totalBaseSpent / currentTrip.budget) * 100 : 0;
+            let ringColor = pct > 100 ? '#ef4444' : (pct > 80 ? '#f59e0b' : '#10b981'); // 紅 / 黃 / 綠
+            document.getElementById('budget-ring-el').style.background = `conic-gradient(${ringColor} ${Math.min(pct, 100)}%, #ddd 0%)`;
         }
 
         // ================= 行李分類 =================
         function renderLists() {
-            let groups = {}; 
-            currentTrip.packItems.forEach((item, i) => { 
-                if(!groups[item.c]) groups[item.c] = []; 
-                groups[item.c].push({n: item.n, idx: i}); 
-            });
+            let groups = {}; currentTrip.packItems.forEach((item, i) => { if(!groups[item.c]) groups[item.c] = []; groups[item.c].push({n: item.n, idx: i}); });
             let html = '';
             for(let cat in groups) {
                 html += `<div class="mb-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm"><div class="text-sm font-bold text-gray-800 mb-3 border-b pb-1">${cat}</div>`;
-                groups[cat].forEach(itm => { 
-                    html += `<div class="flex items-center gap-3 mb-2"><input type="checkbox" class="w-5 h-5 accent-[var(--kr-accent)]"><span class="text-sm font-bold text-gray-600 flex-1">${itm.n}</span><button onclick="delPack(${itm.idx})" class="text-red-400"><i class="fa-solid fa-trash text-[12px]"></i></button></div>`; 
-                });
-                html += `</div>`;
+                groups[cat].forEach(itm => { html += `<div class="flex items-center gap-3 mb-2"><input type="checkbox" class="w-5 h-5 accent-[var(--kr-accent)]"><span class="text-sm font-bold text-gray-600 flex-1">${itm.n}</span><button onclick="delPack(${itm.idx})" class="text-red-400"><i class="fa-solid fa-trash text-[12px]"></i></button></div>`; }); html += `</div>`;
             }
             document.getElementById('prep-list').innerHTML = html;
         }
 
-        async function addPackItem() { 
-            const c = document.getElementById('packCategory').value; 
-            const n = document.getElementById('newPrep').value; 
-            if(n) { 
-                if(!currentTrip.packItems) currentTrip.packItems = [];
-                currentTrip.packItems.push({c, n}); 
-                document.getElementById('newPrep').value = ''; 
-                await saveDB('trips', currentTrip.id, currentTrip); 
-                renderLists(); 
-            } 
-        }
-
+        async function addPackItem() { const c = document.getElementById('packCategory').value; const n = document.getElementById('newPrep').value; if(n) { if(!currentTrip.packItems) currentTrip.packItems = []; currentTrip.packItems.push({c, n}); document.getElementById('newPrep').value = ''; await saveDB('trips', currentTrip.id, currentTrip); renderLists(); } }
         async function delPack(i) { currentTrip.packItems.splice(i, 1); await saveDB('trips', currentTrip.id, currentTrip); renderLists(); }
 
         // ================= 翻譯 API =================
@@ -844,32 +898,17 @@
         function initTranslateLangs() { let opts = Object.keys(langMap).map(k=>`<option value="${k}">${langMap[k]}</option>`).join(''); document.getElementById('langFrom').innerHTML=opts; document.getElementById('langFrom').value='zh'; document.getElementById('langTo').innerHTML=opts; document.getElementById('langTo').value='ko'; }
         
         async function translateText(forceText = null) {
-            const f = document.getElementById('langFrom').value; const t = document.getElementById('langTo').value;
-            const i = forceText || document.getElementById('transInput').value; const o = document.getElementById('transOutput');
-            if(!i) return; o.value = "翻譯中...";
-            try { const r = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(i)}&langpair=${f}|${t}`); const d = await r.json(); o.value = d.responseData.translatedText; } catch(e) { o.value = "失敗，請檢查網路。"; }
+            const f = document.getElementById('langFrom').value; const t = document.getElementById('langTo').value; const i = forceText || document.getElementById('transInput').value; const o = document.getElementById('transOutput');
+            if(!i) return; o.value = "翻譯中..."; try { const r = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(i)}&langpair=${f}|${t}`); const d = await r.json(); o.value = d.responseData.translatedText; } catch(e) { o.value = "失敗，請檢查網路。"; }
         }
         
         async function processOCR(input) {
-            if(!input.files[0]) return;
-            document.getElementById('ocrStatus').classList.remove('hidden');
-            document.getElementById('transInput').value = "影像辨識中...";
-            try {
-                const result = await Tesseract.recognize(input.files[0], 'eng+kor+chi_tra', { logger: m => console.log(m) });
-                document.getElementById('transInput').value = result.data.text.trim();
-                document.getElementById('ocrStatus').classList.add('hidden');
-                translateText();
-            } catch(e) { document.getElementById('transInput').value = "辨識失敗"; document.getElementById('ocrStatus').classList.add('hidden'); }
+            if(!input.files[0]) return; document.getElementById('ocrStatus').classList.remove('hidden'); document.getElementById('transInput').value = "影像辨識中...";
+            try { const result = await Tesseract.recognize(input.files[0], 'eng+kor+chi_tra', { logger: m => console.log(m) }); document.getElementById('transInput').value = result.data.text.trim(); document.getElementById('ocrStatus').classList.add('hidden'); translateText(); } catch(e) { document.getElementById('transInput').value = "辨識失敗"; document.getElementById('ocrStatus').classList.add('hidden'); }
         }
 
-        function speakKorean() {
-            const t = document.getElementById('transOutput').value; const lang = document.getElementById('langTo').value;
-            if(!t) return; const u = new SpeechSynthesisUtterance(t);
-            u.lang = lang === 'ko' ? 'ko-KR' : (lang === 'ja' ? 'ja-JP' : (lang === 'en' ? 'en-US' : 'zh-TW')); 
-            window.speechSynthesis.speak(u);
-        }
-
-        function changeSection(id, btn) { document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active')); document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active')); document.getElementById(id).classList.add('active'); btn.classList.add('active'); window.scrollTo(0, 0); }
+        function speakKorean() { const t = document.getElementById('transOutput').value; const lang = document.getElementById('langTo').value; if(!t) return; const u = new SpeechSynthesisUtterance(t); u.lang = lang === 'ko' ? 'ko-KR' : (lang === 'ja' ? 'ja-JP' : (lang === 'en' ? 'en-US' : 'zh-TW')); window.speechSynthesis.speak(u); }
+        function changeSection(id, btn) { document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active')); document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active')); document.getElementById(id).classList.add('active'); btn.classList.add('active'); window.scrollTo(0, 0); if(id === 'daily' && map) { setTimeout(() => { map.invalidateSize(); }, 300); } }
         
         window.onload = init;
     </script>
