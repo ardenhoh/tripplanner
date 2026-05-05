@@ -12,7 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
     
     <style>
-        /* ================= 21.0 主題變數 ================= */
+        /* ================= 主題變數 ================= */
         :root {
             --kr-cream: #F5F3EC; --kr-text: #4A4641; --kr-accent: #9A9283;
             --kr-glass: rgba(255, 255, 255, 0.4); --kr-glass-border: rgba(255, 255, 255, 0.8);
@@ -41,7 +41,7 @@
         .nav-item.active { color: var(--kr-text); transform: translateY(-4px); }
         .nav-item.active::after { content:''; position:absolute; bottom:-6px; left:50%; transform:translateX(-50%); width:4px; height:4px; background:var(--kr-accent); border-radius:50%; }
 
-        /* 21.0 小時天氣 UI 修復：確保內容絕對不超出框線 */
+        /* 22.0 小時天氣 UI 修復：垂直間距優化，鎖定高度不溢出 */
         .h-scroll-container { margin: -10px -5px; padding: 10px 5px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; scroll-behavior: smooth; }
         .h-scroll-container::-webkit-scrollbar { display: none; }
         .h-scroll { display: flex; gap: 8px; width: max-content; }
@@ -49,33 +49,29 @@
         .day-btn.active { background: var(--kr-accent); color: #fff; border-color: var(--kr-accent); font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         
         .hourly-item { 
-            flex: 0 0 55px; height: 65px; text-align: center; font-size: 0.75rem; line-height: 1.2; 
+            flex: 0 0 55px; height: 65px; /* 嚴格對齊 day-btn 高度 */
+            text-align: center; font-size: 0.7rem; line-height: 1.1; 
             border-radius: 12px; background: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.3); 
             scroll-snap-align: center; transition: 0.2s; display: flex; flex-direction: column; 
-            justify-content: center; align-items: center; box-sizing: border-box; overflow: hidden; padding: 4px;
+            justify-content: space-evenly; align-items: center; box-sizing: border-box; overflow: hidden; 
+            padding: 4px; gap: 2px;
         }
         .hourly-item.active-hour { background: var(--kr-accent); color: white; font-weight: bold; transform: scale(1.1); border-color: transparent; box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 10; }
-        .hourly-item .time-txt { margin-bottom: 2px; font-size: 0.7rem; }
-        .hourly-item .emoji-txt { margin-bottom: 2px; font-size: 1.1rem; line-height: 1; }
+        .hourly-item .time-txt { font-size: 0.65rem; font-weight: bold; }
+        .hourly-item .emoji-txt { font-size: 1.1rem; }
 
-        /* ================= 21.0 物理渲染：光斑副環與流體雲、隨機雨滴 ================= */
+        /* 物理渲染：光斑副環與流體雲、隨機雨滴 */
         .weather-bg-container { position: absolute; inset: 0; overflow: hidden; border-radius: 24px; z-index: -1; pointer-events: none; transition: background-color 0.8s ease; }
         .weather-darken { background-color: rgba(45, 55, 68, 0.9); } 
         
-        /* 太陽：無邊緣折射與 Ghost Halo 強化 */
         .anim-sun-flare { position: absolute; top: -120px; left: -120px; width: 450px; height: 450px; background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,245,180,0.8) 20%, rgba(255,210,80,0.3) 50%, transparent 80%); filter: blur(45px); mix-blend-mode: screen; animation: lensPulse 5s ease-in-out infinite alternate, refractiveJitter 0.08s infinite alternate; }
         .anim-sun-flare::after { content: ''; position: absolute; top: 220px; left: 220px; width: 160px; height: 160px; border-radius: 50%; box-shadow: inset 0 0 30px rgba(255,255,255,0.5), 0 0 90px rgba(100,200,255,0.4); filter: blur(15px); animation: ghostHalo 4s infinite alternate ease-in-out; mix-blend-mode: color-dodge; }
-        .anim-sun-ripple { position: absolute; top: 15px; left: 15px; width: 90px; height: 90px; border-radius: 50%; box-shadow: 0 0 70px 50px rgba(255,255,255,0.6); animation: ripplePulse 2.5s linear infinite; }
-        
-        /* 雲層：Apple 級流體蒸氣 */
         .anim-apple-cloud { position: absolute; width: 350px; height: 250px; background: radial-gradient(ellipse at center, rgba(160, 170, 180, 0.95) 0%, rgba(110, 120, 135, 0.6) 50%, transparent 80%); filter: url(#cloudFilter) blur(6px); opacity: 0.85; animation: endlessDrift 28s linear infinite; mix-blend-mode: multiply; pointer-events: none; }
-        /* 雨天：隨機高度直接掉落 */
         .anim-rain-drop { position: absolute; background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.9) 100%); width: 1px; height: 60px; animation: rainFullFall 0.5s linear infinite; }
         
         @keyframes lensPulse { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(1.3); opacity: 1; } }
         @keyframes refractiveJitter { 0% { transform: scale(1) translate(0px, 0px); opacity: 0.95; } 33% { transform: scale(1.01) translate(1.5px, -1px); opacity: 1; } 66% { transform: scale(0.99) translate(-1px, 1.5px); opacity: 0.92; } 100% { transform: scale(1.005) translate(1px, 1px); opacity: 0.98; } }
         @keyframes ghostHalo { 0% { transform: translate(0,0) scale(1); opacity:0.3; } 100% { transform: translate(50px, 50px) scale(1.6); opacity:0.8; } }
-        @keyframes ripplePulse { 0% { transform: scale(0.6); opacity: 1; } 100% { transform: scale(2.6); opacity: 0; } }
         @keyframes endlessDrift { 0% { transform: translateX(-350px); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateX(120vw); opacity: 0; } }
         @keyframes rainFullFall { 0% { transform: translateY(-80px) rotate(15deg); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { transform: translateY(500px) rotate(15deg); opacity: 0; } }
 
@@ -106,7 +102,7 @@
         @keyframes springUp { 0% { transform: translateY(40px) scale(0.8); opacity: 0; } 60% { transform: translateY(-5px) scale(1.02); opacity: 1; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
         
         .omni-item { display: flex; align-items: center; gap: 12px; cursor: pointer; pointer-events: auto; }
-        .omni-label { background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); color: var(--kr-text); border-radius: 10px; font-size: 13px; font-weight: bold; padding: 8px 16px; border: 1px solid rgba(255,255,255,0.8); box-shadow: 0 4px 15px rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: center; text-align: center; }
+        .omni-label { background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(25px); color: var(--kr-text); border-radius: 10px; font-size: 13px; font-weight: bold; padding: 8px 16px; border: 1px solid rgba(255,255,255,0.8); box-shadow: 0 4px 15px rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: center; }
         .omni-menu.active .omni-label { animation: smartFadeOut 0.5s ease-in forwards; animation-delay: 3s; }
         @keyframes smartFadeOut { to { opacity: 0; filter: blur(8px); transform: translateX(10px); pointer-events: none; } }
         .omni-sub-btn { background: white; color: var(--kr-accent); width: 44px; height: 44px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.1rem; box-shadow: 0 6px 15px rgba(0,0,0,0.15); }
@@ -118,12 +114,12 @@
         .thumb-box { width: 60px; height: 60px; border-radius: 10px; object-fit: cover; cursor: pointer; border: 1px solid #eee; }
         .thumb-del-btn { position: absolute; top: -6px; right: -6px; background: #ef4444; color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 10px; display: flex; align-items: center; justify-content: center; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
-        /* 全屏預覽優化：增強熱區與清晰度 */
+        /* 22.0 全屏預覽優化：增強關閉熱區 */
         #fullscreen-preview { display: none; position: fixed; inset: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.95); z-index: 5000; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(15px); overflow: hidden; }
         #preview-wrapper { width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; }
         #preview-img { max-width: 100%; max-height: 100%; object-fit: contain; transform-origin: center; transition: transform 0.1s ease-out; cursor: grab; }
         #preview-iframe { width: 100vw; height: 100vh; border: none; background: white; }
-        .close-fullscreen { position: fixed; top: 25px; right: 25px; background: rgba(255,255,255,0.25); backdrop-filter: blur(10px); color: white; width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 26px; z-index: 5100; border: 2px solid rgba(255,255,255,0.7); box-shadow: 0 4px 15px rgba(0,0,0,0.5); transition: 0.2s; }
+        .close-fullscreen { position: fixed; top: 25px; right: 25px; background: rgba(255,255,255,0.25); backdrop-filter: blur(10px); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 28px; z-index: 5100; border: 2px solid rgba(255,255,255,0.7); box-shadow: 0 4px 15px rgba(0,0,0,0.5); transition: 0.2s; padding: 10px; }
         .close-fullscreen:active { transform: scale(0.9); background: rgba(255,255,255,0.5); }
 
         .budget-ring { position: relative; width: 110px; height: 110px; border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; transition: background 0.3s; }
@@ -139,16 +135,15 @@
         .wheel-item { height: 40px; line-height: 40px; scroll-snap-align: center; font-size: 1.1rem; font-weight: bold; color: var(--kr-text); transition: 0.2s; }
         .picker-selection-bar { position: absolute; top: 55px; left: 0; right: 0; height: 40px; border-top: 1px solid rgba(0,0,0,0.1); border-bottom: 1px solid rgba(0,0,0,0.1); pointer-events: none; z-index: -1; background: rgba(0,0,0,0.03); }
 
-        /* 21.0 狀態語意化 CSS (用於 `<details>` 切換) */
+        /* 22.0 CSS 動態圖示切換 (無文字干擾) */
         details > summary { list-style: none; }
         details > summary::-webkit-details-marker { display: none; }
-        details > summary .toggle-text::after { content: "展開詳細 ⬇️"; }
-        details[open] > summary .toggle-text::after { content: "收起詳細 ⬆️"; }
+        details > summary .toggle-icon { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        details[open] > summary .toggle-icon { transform: rotate(180deg); }
     </style>
 </head>
 <body class="theme-cream">
 
-    <!-- 21.0 強化版 SVG 雲層流體濾鏡 -->
     <svg width="0" height="0" style="position:absolute; pointer-events:none;">
         <filter id="cloudFilter">
             <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="5" seed="5" result="noise" />
@@ -219,11 +214,11 @@
             <div id="transport-stay" class="tab-section">
                 <h2 class="text-xl font-bold mb-6 text-center hand-drawn">交通與住宿 🏨✈️</h2>
                 
-                <!-- 21.0 `<details>` 動態語意切換 (使用 summary.toggle-text) -->
+                <!-- 22.0 <details> 純圖示切換 -->
                 <details class="liquid-glass mb-4 group" open>
                     <summary class="p-4 font-bold cursor-pointer flex justify-between items-center group-summary">
                         <span><i class="fa-solid fa-plane mr-2 text-[var(--kr-accent)]"></i> 航班資訊</span>
-                        <span class="text-xs text-gray-400 font-bold toggle-text"></span>
+                        <i class="fa-solid fa-chevron-down text-gray-400 toggle-icon"></i>
                     </summary>
                     <div class="p-4 border-t border-white">
                         <div id="flight-content"></div>
@@ -234,7 +229,7 @@
                 <details class="liquid-glass mb-4 group" open>
                     <summary class="p-4 font-bold cursor-pointer flex justify-between items-center group-summary">
                         <span><i class="fa-solid fa-bed mr-2 text-[var(--kr-accent)]"></i> 住宿資訊</span>
-                        <span class="text-xs text-gray-400 font-bold toggle-text"></span>
+                        <i class="fa-solid fa-chevron-down text-gray-400 toggle-icon"></i>
                     </summary>
                     <div class="p-4 border-t border-white">
                         <div id="stay-content"></div>
@@ -302,7 +297,7 @@
         </nav>
     </div>
 
-    <!-- 21.0 全屏檔案預覽 Modal (fa-xmark 大熱區) -->
+    <!-- 22.0 全屏檔案預覽 Modal -->
     <div id="fullscreen-preview" onclick="closePreview()">
         <div class="close-fullscreen react-btn" onclick="event.stopPropagation(); closePreview()"><i class="fa-solid fa-xmark"></i></div>
         <div id="preview-wrapper" onclick="event.stopPropagation()">
@@ -320,7 +315,7 @@
 
     <script>
         // ================= 資料庫 & 初始化 =================
-        const dbName = "TravelBookDB_v21"; let db;
+        const dbName = "TravelBookDB_v22"; let db;
         const initDB = new Promise((resolve) => {
             const req = indexedDB.open(dbName, 1);
             req.onupgradeneeded = (e) => {
@@ -341,15 +336,15 @@
         function toggleHomeOmni() { const btn = document.getElementById('home-omni-btn'); const menu = document.getElementById('home-omni-menu'); btn.classList.toggle('active'); menu.classList.toggle('active'); }
         function toggleTripOmni() { const btn = document.getElementById('trip-omni-btn'); const menu = document.getElementById('trip-omni-menu'); btn.classList.toggle('active'); menu.classList.toggle('active'); }
 
-        // ================= 21.0 嚴格 50 字以上深度約束文案 (14天完整 JSON) =================
+        // ================= 22.0 嚴格 50 字以上深度約束文案 (14天完整 JSON) =================
         function generate14DaysData() {
             const regions = ["吉隆坡","釜山","釜山","釜山","濟州島","濟州島","濟州島","濟州島","濟州島","濟州-首爾","首爾","首爾","首爾","首爾"];
             let daily = [];
             
             // 嚴格執行超過 50 中文字的深度內容：融合了數據分析師視角與 Bauhaus 觀察
-            const deepIntro = "作為一名專注於細節的數據分析師，我強烈推薦這座完美融合包浩斯極簡美學與工業鋼骨結構的地標建築。這裡不僅在空間幾何上展現了極致的對稱與流體力學，更在自然採光與不鏽鋼材質的折射中，營造出冷冽卻充滿生命力的視覺張力。強烈建議預留至少兩個小時，仔細品味其建築空間的流動感與光影的微妙變化。"; // 141 字
-            const deepPos = "這裡絕對是追求質感與極簡風格的旅人首選！現場的光線折射與清水模材質紋理真的無可挑剔，每一個轉角都像是精心計算過的取景框，隨手一拍都是自帶高級感濾鏡的大片，發到小紅書絕對能收穫滿滿的讚與收藏。周邊的配套設施也極度完善，無論是動線設計還是咖啡休息區的安排，都展現了極高的服務水準與細節控的堅持。"; // 148 字
-            const deepNeg = "唯一需要警戒的變量是週末的遊客密度，這會顯著降低空間的質感體驗。建議避開尖峰時段，否則排隊的人流數據會讓你感到焦慮。此外，周邊商業設施的定價策略偏高，性價比係數較低，建議自行攜帶飲用水或在進入該區域前完成用餐，將預算保留給真正值得的深度體驗，避免不必要的情緒內耗。"; // 133 字
+            const deepIntro = "作為一名專注於細節的數據分析師，我強烈推薦這座完美融合包浩斯極簡美學與工業鋼骨結構的地標建築。這裡不僅在空間幾何上展現了極致的對稱與流體力學，更在自然採光與不鏽鋼材質的折射中，營造出冷冽卻充滿生命力的視覺張力。強烈建議預留至少兩個小時，仔細品味其建築空間的流動感與光影的微妙變化。"; 
+            const deepPos = "這裡絕對是追求質感與極簡風格的旅人首選！現場的光線折射與清水模材質紋理真的無可挑剔，每一個轉角都像是精心計算過的取景框，隨手一拍都是自帶高級感濾鏡的大片，發到小紅書絕對能收穫滿滿的讚與收藏。周邊的配套設施也極度完善，無論是動線設計還是咖啡休息區的安排，都展現了極高的服務水準與細節控的堅持。"; 
+            const deepNeg = "唯一需要警戒的變量是週末的遊客密度，這會顯著降低空間的質感體驗。建議避開尖峰時段，否則排隊的人流數據會讓你感到焦慮。此外，周邊商業設施的定價策略偏高，性價比係數較低，建議自行攜帶飲用水或在進入該區域前完成用餐，將預算保留給真正值得的深度體驗，避免不必要的情緒內耗。"; 
 
             for(let i=0; i<14; i++) {
                 let dayDate = new Date(2026, 9, 29); dayDate.setDate(dayDate.getDate() + i);
@@ -384,13 +379,12 @@
             fetchExchangeRateAPI(); initTranslateLangs(); initPickerWheels(); renderHome();
         }
 
-        // ================= 21.0 物理級渲染 (隨機全視窗雨滴分佈) =================
+        // ================= 物理級渲染 =================
         function generateWeatherAnim(code) {
             let html = '';
             if([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82, 95, 96, 99].includes(code)) {
                 html += '<div class="weather-bg-container weather-darken">'; 
                 html += `<div class="anim-apple-cloud" style="top: -30px; animation-delay: 0s;"></div><div class="anim-apple-cloud" style="top: 40px; animation-delay: -14s; transform: scale(0.95); opacity: 0.6;"></div>`;
-                // 21.0：一開啟直接掉落，隨機分佈 top 高度 (-20% ~ 100%)
                 for(let i=0; i<60; i++) { 
                     let left = Math.random() * 100;
                     let top = Math.random() * 120 - 20; 
@@ -407,7 +401,6 @@
             html += '</div>'; return html;
         }
 
-        // 21.0 天氣區塊展開偵測
         function toggleHourlyWeather(btn) { 
             const h = document.getElementById('hourly-weather-container'); 
             h.classList.toggle('hidden'); 
@@ -505,8 +498,8 @@
                             ${item.loc === '輸入地址' ? `<button class="text-xs text-[var(--kr-accent)] mt-1 font-bold bg-white px-2 py-1 rounded shadow-sm react-btn" onclick="toggleEdit('${item.id}')"><i class="fa-solid fa-pen"></i> 點此輸入名稱或地圖連結</button>` : `<a href="https://maps.google.com/?q=${encodeURIComponent(item.loc)}" target="_blank" class="block text-xs text-blue-500 mt-1 truncate font-bold"><i class="fa-solid fa-map-pin mr-1 text-[var(--kr-accent)]"></i>${item.loc}</a>`}
                         </div>
                         
-                        <!-- 21.0 狀態偵測：傳遞 this 給 toggleExpand -->
-                        <button class="w-full text-center mt-4 py-2 bg-[rgba(255,255,255,0.6)] rounded-xl text-gray-500 text-xs font-bold border border-white react-btn" onclick="toggleExpand('${item.id}', this)"><i class="fa-solid fa-chevron-down"></i> 展開詳細 ⬇️</button>
+                        <!-- 22.0 純文字 Bauhaus 展開偵測 -->
+                        <button class="w-full text-center mt-4 py-2 bg-[rgba(255,255,255,0.6)] rounded-xl text-gray-500 text-xs font-bold border border-white react-btn" onclick="toggleExpand('${item.id}', this)"><i class="fa-solid fa-chevron-down"></i> 展開詳細</button>
                         
                         <div class="expand-content">
                             <div id="display_info_${item.id}">
@@ -540,22 +533,22 @@
 
         async function optimizeDailyRoute() { toggleTripOmni(); let items = currentTrip.daily[currentDayIdx].items; if(items.length <= 3) return alert("中間行程過少，無需優化！"); let startNode = items[0]; let endNode = items[items.length - 1]; let unvisited = items.slice(1, items.length - 1); let optimized = []; let current = startNode; while(unvisited.length > 0) { let nearestIdx = 0; let minDist = Infinity; for(let i=0; i<unvisited.length; i++) { let d = getDistKm(current.lat, current.lng, unvisited[i].lat, unvisited[i].lng); if(d < minDist) { minDist = d; nearestIdx = i; } } current = unvisited.splice(nearestIdx, 1)[0]; optimized.push(current); } currentTrip.daily[currentDayIdx].items = [startNode, ...optimized, endNode]; await saveDB('trips', currentTrip.id, currentTrip); renderDaily(currentDayIdx); alert("已重排中間最短距離路線！"); }
         
-        // 21.0 卡片展開偵測替換字眼
+        // 22.0 狀態偵測：移除 Emoji
         function toggleExpand(id, btn) { 
             const w = document.getElementById(`wrap_${id}`); 
             w.classList.toggle('expanded'); 
             if(w.classList.contains('expanded')) {
-                btn.innerHTML = '<i class="fa-solid fa-chevron-up"></i> 收起詳細 ⬆️';
+                btn.innerHTML = '<i class="fa-solid fa-chevron-up"></i> 收起詳細';
                 renderUserFiles(id); 
             } else {
-                btn.innerHTML = '<i class="fa-solid fa-chevron-down"></i> 展開詳細 ⬇️';
+                btn.innerHTML = '<i class="fa-solid fa-chevron-down"></i> 展開詳細';
             }
         }
         
         function toggleEdit(id) { document.getElementById(`display_info_${id}`).classList.toggle('hidden'); document.getElementById(`edit_form_${id}`).classList.toggle('hidden'); }
         async function updateItemTime(dIdx, iIdx, val) { currentTrip.daily[dIdx].items[iIdx].time = val; await saveDB('trips', currentTrip.id, currentTrip); }
         
-        // 21.0 Google Maps 深度解析引擎完全體 (共用 Parser，實時時間連動)
+        // 22.0 Google Maps 深度解析引擎 (精準 URL Regex + 住宿支援)
         const mockGeoDB = {
             "wQr7gSbrs4JGj4aR8": { name: "COEX 星空圖書館", loc: "Starfield COEX Mall, 首爾特別市江南區", hours: "10:30", lat: 37.5113, lng: 127.0596 },
             "Q2A7zM9L": { name: "海雲台藍線公園", loc: "釜山海雲台區", hours: "09:30", lat: 35.1631, lng: 129.1582 },
@@ -569,6 +562,26 @@
             
             if(type === 'item' && targetNameEl) { if(targetNameEl.value === '新行程' || targetNameEl.dataset.autoSync === "true") { targetNameEl.value = val; targetNameEl.dataset.autoSync = "true"; } }
 
+            // 1. 直出 Google Maps Place 正則解析
+            if(val.includes('google.com/maps/place/')) {
+                try {
+                    let extracted = val.split('/place/')[1].split('/')[0];
+                    let decodedName = decodeURIComponent(extracted).replace(/\+/g, ' ');
+                    input.value = "📍 地標精準提取中...";
+                    setTimeout(() => {
+                        if(type === 'stay') {
+                            input.value = decodedName;
+                            input.dispatchEvent(new Event('change'));
+                        } else {
+                            input.value = decodedName + " (地圖解析地址)";
+                            if(targetNameEl) { targetNameEl.value = decodedName; }
+                        }
+                    }, 400);
+                    return; // 成功解析直接返回
+                } catch(e) { console.log(e); }
+            }
+
+            // 2. 短網址對照 mockGeoDB
             if(val.includes('maps.app.goo.gl/') || val.includes('goo.gl/maps/')) {
                 input.value = "📍 Google Maps 深度數據提取中...";
                 let match = val.match(/goo\.gl\/([a-zA-Z0-9]+)/) || val.match(/goo\.gl\/maps\/([a-zA-Z0-9]+)/) || val.match(/maps\.app\.goo\.gl\/([a-zA-Z0-9]+)/);
@@ -576,33 +589,16 @@
 
                 setTimeout(() => {
                     const data = (mapKey && mockGeoDB[mapKey]) ? mockGeoDB[mapKey] : mockGeoDB["default"];
-                    // 1. 寫入地址
-                    input.value = data.loc;
-                    // 2. 寫入名稱
-                    if(targetNameEl) {
-                        targetNameEl.value = data.name;
-                        // 若為住宿，觸發 onchange 儲存
-                        if(type === 'stay') targetNameEl.dispatchEvent(new Event('change'));
-                    }
-                    // 3. 自動連動時間 (行程的 Input Time 或 住宿)
-                    if(type === 'item') {
+                    if(type === 'stay') {
+                        input.value = data.name;
+                        input.dispatchEvent(new Event('change'));
+                    } else {
+                        input.value = data.loc;
+                        if(targetNameEl) { targetNameEl.value = data.name; }
                         let tInp = document.getElementById('time_' + id);
                         if(tInp) { tInp.value = data.hours; tInp.dispatchEvent(new Event('change')); }
                     }
                 }, 800);
-            } else if(val.includes('google.com/maps/place/')) {
-                let match = val.match(/place\/([^\/]+)/);
-                if(match && match[1]) {
-                    let decodedName = decodeURIComponent(match[1]).replace(/\+/g, ' ');
-                    input.value = "📍 地標精準提取中...";
-                    setTimeout(() => {
-                        input.value = decodedName + " (地圖解析地址)";
-                        if(targetNameEl) {
-                            targetNameEl.value = decodedName;
-                            if(type === 'stay') targetNameEl.dispatchEvent(new Event('change'));
-                        }
-                    }, 400);
-                }
             }
         }
 
@@ -701,7 +697,8 @@
         async function handleFlightChange(fId, field, value) { let f = currentTrip.flights.find(x => x.id === fId); if(f) { f[field] = value; await saveDB('trips', currentTrip.id, currentTrip); await syncToItinerary(); renderTransportStay(); if(document.getElementById('daily').classList.contains('active')) renderDaily(currentDayIdx); } }
         async function handleStayChange(sId, field, value) { let s = currentTrip.stays.find(x => x.id === sId); if(s) { s[field] = value; if(field==='name' && !s.addr.includes(value)) s.addr=value; await saveDB('trips', currentTrip.id, currentTrip); await syncToItinerary(); renderTransportStay(); if(document.getElementById('daily').classList.contains('active')) renderDaily(currentDayIdx); } }
 
-        function autoSyncFlight(idx, fId) {
+        // 22.0 航班同步邏輯修復：加上 async/await 確保完整閉環實時渲染
+        async function autoSyncFlight(idx, fId) {
             const fInput = document.getElementById(`flight_num_${fId}`).value.toUpperCase().trim();
             if(!fInput) return alert("請輸入航班號");
             
@@ -718,9 +715,15 @@
 
             currentTrip.flights[idx].flight = fInput; currentTrip.flights[idx].time = time; currentTrip.flights[idx].term = term; currentTrip.flights[idx].title = airline; currentTrip.flights[idx].destName = dest; currentTrip.flights[idx].depIATA = depIATA; currentTrip.flights[idx].arrIATA = arrIATA; currentTrip.flights[idx].lat = lat; currentTrip.flights[idx].lng = lng;
             
-            saveDB('trips', currentTrip.id, currentTrip).then(() => {
-                syncToItinerary().then(() => { renderTransportStay(); if(document.getElementById('daily').classList.contains('active')) renderDaily(currentDayIdx); alert(`已實時解析航班 ${fInput} ( ${depIATA} ✈️ ${arrIATA} )！`); });
-            });
+            await saveDB('trips', currentTrip.id, currentTrip);
+            await syncToItinerary();
+            
+            // 實時重新渲染介面
+            renderTransportStay(); 
+            if(document.getElementById('daily').classList.contains('active')) {
+                renderDaily(currentDayIdx);
+            }
+            alert(`已實時解析航班 ${fInput} ( ${depIATA} ✈️ ${arrIATA} )！`);
         }
 
         function renderTransportStay() {
