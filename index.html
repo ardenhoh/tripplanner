@@ -13,7 +13,7 @@
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
     
     <style>
-        /* ================= 極致質感主題變數 ================= */
+        /* ================= 16.0 極致質感主題變數 ================= */
         :root {
             --kr-cream: #F5F3EC;
             --kr-text: #4A4641;
@@ -25,33 +25,13 @@
             --kr-card-bg: rgba(255, 255, 255, 0.4);
         }
 
-        /* 奶油 Cream (絲滑消光 Matte) */
-        body.theme-cream { 
-            --kr-cream: #F5F3EC; --kr-text: #4A4641; --kr-accent: #9A9283; 
-            --kr-glass: rgba(255, 255, 255, 0.5); --kr-bg-texture: radial-gradient(circle at 50% -20%, #ffffff 0%, transparent 80%); 
-        }
-        
-        /* 水泥 Cement (微磨砂混凝土感) */
-        body.theme-cement { 
-            --kr-cream: #D6D6D6; --kr-text: #2C3033; --kr-accent: #5A6066; 
-            --kr-glass: rgba(230, 230, 230, 0.6); --kr-glass-border: rgba(255, 255, 255, 0.4);
-            --kr-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.15);
-            --kr-bg-texture: url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)" opacity="0.05"/></svg>'), linear-gradient(135deg, #E0E0E0, #C2C2C2);
-            --kr-card-bg: rgba(255, 255, 255, 0.3);
-        }
-        
-        /* 鋼鐵 Steel (拉絲不鏽鋼 Brushed Metal) */
-        body.theme-steel { 
-            --kr-cream: #AAB3BB; --kr-text: #1C2331; --kr-accent: #34425A; 
-            --kr-glass: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(180,190,200,0.5) 50%, rgba(255,255,255,0.3) 100%);
-            --kr-glass-border: rgba(255, 255, 255, 0.6);
-            --kr-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.2), inset 0 2px 2px rgba(255,255,255,0.8);
-            --kr-bg-texture: repeating-linear-gradient(90deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 1px, transparent 1px, transparent 3px), repeating-linear-gradient(90deg, rgba(0,0,0,0.02) 0px, rgba(0,0,0,0.02) 2px, transparent 2px, transparent 4px), linear-gradient(160deg, #DCE2E6 0%, #A4AFB8 50%, #8895A1 100%);
-            --kr-card-bg: linear-gradient(135deg, rgba(255,255,255,0.6) 0%, rgba(200,210,220,0.4) 100%);
-        }
+        body.theme-cream { --kr-cream: #F5F3EC; --kr-text: #4A4641; --kr-accent: #9A9283; --kr-glass: rgba(255, 255, 255, 0.5); --kr-bg-texture: radial-gradient(circle at 50% -20%, #ffffff 0%, transparent 80%); }
+        body.theme-cement { --kr-cream: #D6D6D6; --kr-text: #2C3033; --kr-accent: #5A6066; --kr-glass: rgba(230, 230, 230, 0.6); --kr-glass-border: rgba(255, 255, 255, 0.4); --kr-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.15); --kr-bg-texture: url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)" opacity="0.05"/></svg>'), linear-gradient(135deg, #E0E0E0, #C2C2C2); --kr-card-bg: rgba(255, 255, 255, 0.3); }
+        body.theme-steel { --kr-cream: #AAB3BB; --kr-text: #1C2331; --kr-accent: #34425A; --kr-glass: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(180,190,200,0.5) 50%, rgba(255,255,255,0.3) 100%); --kr-glass-border: rgba(255, 255, 255, 0.6); --kr-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.2), inset 0 2px 2px rgba(255,255,255,0.8); --kr-bg-texture: repeating-linear-gradient(90deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 1px, transparent 1px, transparent 3px), repeating-linear-gradient(90deg, rgba(0,0,0,0.02) 0px, rgba(0,0,0,0.02) 2px, transparent 2px, transparent 4px), linear-gradient(160deg, #DCE2E6 0%, #A4AFB8 50%, #8895A1 100%); --kr-card-bg: linear-gradient(135deg, rgba(255,255,255,0.6) 0%, rgba(200,210,220,0.4) 100%); }
 
-        body { background: var(--kr-cream); background-image: var(--kr-bg-texture); color: var(--kr-text); font-family: Arial, sans-serif; background-attachment: fixed; -webkit-tap-highlight-color: transparent; transition: background 0.5s ease, color 0.5s ease; min-height: 100vh; }
-        .hand-drawn { font-family: Arial, sans-serif; }
+        /* 全域字體強性統一為 Arial */
+        body, input, textarea, select, button, .hand-drawn { font-family: Arial, sans-serif !important; }
+        body { background: var(--kr-cream); background-image: var(--kr-bg-texture); color: var(--kr-text); background-attachment: fixed; -webkit-tap-highlight-color: transparent; transition: background 0.5s ease, color 0.5s ease; min-height: 100vh; }
 
         .liquid-glass { background: var(--kr-card-bg); backdrop-filter: saturate(150%) blur(40px); -webkit-backdrop-filter: saturate(150%) blur(40px); border: 1px solid var(--kr-glass-border); box-shadow: var(--kr-shadow); border-radius: 24px; position: relative; z-index: 10; transition: border-color 0.3s; }
 
@@ -66,33 +46,37 @@
         .nav-item.active { color: var(--kr-text); transform: translateY(-4px); }
         .nav-item.active::after { content:''; position:absolute; bottom:-6px; left:50%; transform:translateX(-50%); width:4px; height:4px; background:var(--kr-accent); border-radius:50%; }
 
+        /* 16.0 移除日期與小時預報的陰影 */
         .h-scroll-container { margin: 0 -20px; padding: 10px 20px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; scroll-behavior: smooth; }
         .h-scroll-container::-webkit-scrollbar { display: none; }
         .h-scroll { display: flex; gap: 12px; width: max-content; padding-bottom: 5px; }
-        .day-btn { flex: 0 0 65px; scroll-snap-align: center; padding: 12px 0; border-radius: 20px; background: rgba(255,255,255,0.7); border: 1px solid #fff; color: #999; text-align: center; font-size: 0.8rem; box-shadow: 0 4px 12px rgba(0,0,0,0.04); transition: 0.3s; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .day-btn.active { background: var(--kr-accent); color: #fff; border-color: var(--kr-accent); box-shadow: 0 8px 20px rgba(0,0,0,0.15); transform: scale(1.05); font-weight: bold; }
+        .day-btn { flex: 0 0 65px; scroll-snap-align: center; padding: 12px 0; border-radius: 20px; background: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.8); color: #999; text-align: center; font-size: 0.8rem; transition: 0.3s; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: none !important; }
+        .day-btn.active { background: var(--kr-accent); color: #fff; border-color: var(--kr-accent); transform: scale(1.05); font-weight: bold; }
+        .hourly-item { flex: 0 0 60px; text-align: center; font-size: 0.75rem; padding: 8px 0; border-radius: 16px; transition: 0.3s; background: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.3); scroll-snap-align: center; box-shadow: none !important; }
+        .hourly-item.active-hour { background: var(--kr-accent); color: white; font-weight: bold; transform: scale(1.1); border-color: transparent; }
 
-        .hourly-item { flex: 0 0 60px; text-align: center; font-size: 0.75rem; padding: 8px 0; border-radius: 16px; transition: 0.3s; background: rgba(255,255,255,0.4); border: 1px solid transparent; scroll-snap-align: center; }
-        .hourly-item.active-hour { background: var(--kr-accent); color: white; box-shadow: 0 6px 15px rgba(0,0,0,0.15); font-weight: bold; transform: scale(1.1); border-color: rgba(255,255,255,0.3); }
-
-        /* ================= 15.0 沉浸式物理級天氣 ================= */
-        .weather-bg-container { position: absolute; inset: 0; overflow: hidden; border-radius: 24px; z-index: -1; pointer-events: none; transition: 0.5s ease; }
-        .weather-darken { background-color: rgba(50, 60, 75, 0.45); } 
-        /* 晴天：耀斑與閃動波紋 */
-        .anim-sun-flare { position: absolute; top: -60px; left: -50px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,230,120,0.4) 30%, transparent 60%); filter: blur(15px); animation: pulseFlare 5s ease-in-out infinite alternate; mix-blend-mode: overlay; }
-        .anim-sun-ripple { position: absolute; top: 20px; left: 20px; width: 80px; height: 80px; border-radius: 50%; box-shadow: 0 0 50px 30px rgba(255,255,255,0.6); animation: rippleEffect 3s linear infinite; }
-        /* 雨天：細絲與烏雲 */
-        .anim-dark-cloud { position: absolute; background: rgba(80, 90, 100, 0.85); border-radius: 60px; filter: blur(10px); animation: floatCloud 20s ease-in-out infinite alternate; box-shadow: inset 0 -10px 20px rgba(0,0,0,0.3); mix-blend-mode: multiply; }
-        .anim-fine-rain { position: absolute; background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.6) 100%); width: 1px; height: 45px; animation: dropRain 0.5s linear infinite; }
+        /* ================= 16.0 沉浸式物理級天氣 (進化版) ================= */
+        .weather-bg-container { position: absolute; inset: 0; overflow: hidden; border-radius: 24px; z-index: -1; pointer-events: none; transition: background-color 0.8s ease; }
+        .weather-darken { background-color: rgba(30, 40, 55, 0.7); } 
+        /* 晴天：超強耀斑與波紋 */
+        .anim-sun-flare { position: absolute; top: -60px; left: -50px; width: 350px; height: 350px; background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,230,120,0.6) 20%, rgba(255,200,50,0.2) 50%, transparent 70%); filter: blur(12px); animation: pulseFlare 4s ease-in-out infinite alternate; mix-blend-mode: screen; }
+        .anim-sun-ripple { position: absolute; top: 15px; left: 15px; width: 90px; height: 90px; border-radius: 50%; box-shadow: 0 0 60px 40px rgba(255,255,255,0.7); animation: rippleEffect 2.5s linear infinite; }
+        /* 雨天：層次烏雲與細密雨絲 */
+        .anim-dark-cloud { position: absolute; background: rgba(120, 130, 140, 0.9); border-radius: 100px; box-shadow: 20px 20px 0 10px rgba(100, 110, 120, 0.9), -20px 30px 0 15px rgba(80, 90, 100, 0.9); filter: blur(8px); animation: floatCloud 10s ease-in-out infinite alternate; mix-blend-mode: multiply; }
+        .anim-fine-rain { position: absolute; background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.7) 100%); width: 0.8px; height: 55px; animation: dropRain 0.4s linear infinite; }
         
-        @keyframes pulseFlare { 0% { transform: scale(1); opacity: 0.7; } 100% { transform: scale(1.3); opacity: 1; } }
-        @keyframes rippleEffect { 0% { transform: scale(0.5); opacity: 1; } 100% { transform: scale(2); opacity: 0; } }
-        @keyframes dropRain { 0% { transform: translateY(-40px) rotate(10deg); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(220px) rotate(10deg); opacity: 0; } }
-        @keyframes floatCloud { 0% { transform: translateX(-30px); } 100% { transform: translateX(50px); } }
+        @keyframes pulseFlare { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(1.3); opacity: 1; } }
+        @keyframes rippleEffect { 0% { transform: scale(0.6); opacity: 1; } 100% { transform: scale(2.2); opacity: 0; } }
+        @keyframes dropRain { 0% { transform: translateY(-50px) rotate(15deg); opacity: 0; } 15% { opacity: 1; } 100% { transform: translateY(250px) rotate(15deg); opacity: 0; } }
+        @keyframes floatCloud { 0% { transform: translateX(-40px); } 100% { transform: translateX(60px); } }
 
         .item-header { position: relative; width: 100%; height: 180px; border-radius: 24px 24px 0 0; overflow: hidden; background: #e0e0e0; }
         .item-header img { width: 100%; height: 100%; object-fit: cover; }
-        .edit-img-btn { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.7); color: var(--kr-text); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(10px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 20; }
+        /* 16.0 檔案/圖片按鈕加入震動回饋 active:scale-90 */
+        .react-btn { transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; }
+        .react-btn:active { transform: scale(0.9); opacity: 0.8; }
+        
+        .edit-img-btn { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.7); color: var(--kr-text); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 20; }
         
         .transit-node { display: flex; flex-direction: column; align-items: center; margin: -15px 0; position: relative; z-index: 1; }
         .transit-line { width: 2px; height: 45px; background: repeating-linear-gradient(to bottom, #d1d1d1 0, #d1d1d1 4px, transparent 4px, transparent 8px); }
@@ -104,40 +88,41 @@
         .file-hide { display: none; }
         .btn-primary { background: var(--kr-accent); color: white; padding: 10px 18px; border-radius: 14px; font-size: 0.85rem; font-weight: bold; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
         
-        /* ================= 15.0 Omni-FAB (右下角彈出) ================= */
+        /* ================= 16.0 Omni-FAB (智慧標籤消失術) ================= */
         .omni-fab-container { position: fixed; bottom: 100px; right: 20px; z-index: 900; display: flex; flex-direction: column-reverse; align-items: flex-end; }
-        .omni-main-btn { background: var(--kr-text); color: white; width: 56px; height: 56px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; box-shadow: 0 8px 25px rgba(0,0,0,0.3); cursor: pointer; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 2; border: 2px solid rgba(255,255,255,0.2); }
+        .omni-main-btn { background: var(--kr-text); color: white; width: 56px; height: 56px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; box-shadow: 0 8px 25px rgba(0,0,0,0.3); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 2; border: 2px solid rgba(255,255,255,0.2); }
         .omni-main-btn.active { transform: rotate(45deg); background: var(--kr-accent); }
         
         .omni-menu { display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px; opacity: 0; pointer-events: none; transform: translateY(20px) scale(0.95); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); align-items: flex-end; transform-origin: bottom right; }
         .omni-menu.active { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }
         .omni-item { display: flex; align-items: center; gap: 12px; cursor: pointer; }
         
-        /* 15.0 強虛化居中標籤 */
+        /* 強虛化居中標籤，3秒消失動畫 */
         .omni-label { 
-            background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); 
-            color: var(--kr-text); padding: 8px 16px; border-radius: 12px; font-size: 13px; font-weight: bold; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; text-align: center;
-            border: 1px solid rgba(255,255,255,0.8);
+            background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); 
+            color: var(--kr-text); border-radius: 10px; font-size: 13px; font-weight: bold; 
+            padding: 8px 16px; border: 1px solid rgba(255,255,255,0.8);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08); 
+            display: flex; align-items: center; justify-content: center; text-align: center;
         }
+        .omni-menu.active .omni-label { animation: smartFadeOut 0.5s ease-in forwards; animation-delay: 3s; }
+        @keyframes smartFadeOut { to { opacity: 0; filter: blur(5px); transform: translateX(10px); pointer-events: none; } }
+        
         .omni-sub-btn { background: white; color: var(--kr-accent); width: 44px; height: 44px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.1rem; box-shadow: 0 6px 15px rgba(0,0,0,0.15); }
 
-        .book-card { background: var(--kr-card-bg); backdrop-filter: blur(20px); border-radius: 12px 24px 24px 12px; padding: 20px; box-shadow: 5px 5px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; border-left: 12px solid var(--kr-accent); position: relative; overflow: hidden; cursor: pointer; transition: 0.3s; margin-bottom: 15px; border-top: 1px solid rgba(255,255,255,0.5); }
+        .book-card { background: var(--kr-card-bg); backdrop-filter: blur(20px); border-radius: 12px 24px 24px 12px; padding: 20px; box-shadow: 5px 5px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; border-left: 12px solid var(--kr-accent); position: relative; overflow: hidden; transition: 0.3s; margin-bottom: 15px; border-top: 1px solid rgba(255,255,255,0.5); }
         .book-card::before { content:''; position:absolute; left:12px; top:0; bottom:0; width:2px; background:rgba(0,0,0,0.1); }
         .color-dot { width: 24px; height: 24px; border-radius: 50%; cursor: pointer; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
 
         .thumb-grid { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 10px; }
         .thumb-wrap-relative { position: relative; display: inline-block; }
         .thumb-box { width: 60px; height: 60px; border-radius: 10px; object-fit: cover; cursor: pointer; border: 1px solid #eee; }
-        .thumb-del-btn { position: absolute; top: -6px; right: -6px; background: #ef4444; color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .thumb-del-btn { position: absolute; top: -6px; right: -6px; background: #ef4444; color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 10px; display: flex; align-items: center; justify-content: center; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
-        #lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(10px); }
-        .lightbox-wrapper { position: relative; max-width: 95%; max-height: 90%; }
-        #lightbox img { width: 100%; height: 100%; object-fit: contain; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .lightbox-close { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; z-index: 2010; }
-        
-        #pdf-viewer { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 2000; flex-direction: column; }
-        #pdf-iframe { flex: 1; width: 100%; border: none; }
+        /* 16.0 全螢幕檔案/圖片預覽 */
+        #lightbox, #pdf-viewer { display: none; position: fixed; inset: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.95); z-index: 3000; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(15px); }
+        #lightbox img, #pdf-viewer iframe { width: 100%; height: 100%; max-width: 100vw; max-height: 100vh; object-fit: contain; border: none; }
+        .fullscreen-close { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; z-index: 3010; border: 1px solid rgba(255,255,255,0.4); }
 
         .budget-ring { position: relative; width: 110px; height: 110px; border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; transition: background 0.3s; }
         .budget-ring::before { content: ""; position: absolute; inset: 10px; background: var(--kr-glass); border-radius: 50%; backdrop-filter: blur(10px); }
@@ -172,17 +157,17 @@
                 <div class="color-dot bg-[#B39CD0]" onclick="selectColor(this, '#B39CD0')"></div>
                 <div class="color-dot bg-[#8FC1E3]" onclick="selectColor(this, '#8FC1E3')"></div>
             </div>
-            <button class="btn-primary w-full" onclick="createNewTrip()">新增旅行</button>
+            <button class="btn-primary w-full react-btn" onclick="createNewTrip()">新增旅行</button>
         </div>
 
-        <!-- 15.0 首頁主題 Omni-FAB -->
+        <!-- 16.0 首頁主題 Omni-FAB -->
         <div class="omni-fab-container">
             <div class="omni-menu" id="home-omni-menu">
-                <div class="omni-item" onclick="setTheme('steel');toggleHomeOmni()"><div class="omni-label">拉絲鋼鐵</div><div class="omni-sub-btn"><i class="fa-solid fa-gem"></i></div></div>
-                <div class="omni-item" onclick="setTheme('cement');toggleHomeOmni()"><div class="omni-label">工業水泥</div><div class="omni-sub-btn"><i class="fa-solid fa-building"></i></div></div>
-                <div class="omni-item" onclick="setTheme('cream');toggleHomeOmni()"><div class="omni-label">奶油奶油</div><div class="omni-sub-btn"><i class="fa-solid fa-ice-cream"></i></div></div>
+                <div class="omni-item react-btn" onclick="setTheme('steel');toggleHomeOmni()"><div class="omni-label">拉絲鋼鐵</div><div class="omni-sub-btn"><i class="fa-solid fa-gem"></i></div></div>
+                <div class="omni-item react-btn" onclick="setTheme('cement');toggleHomeOmni()"><div class="omni-label">工業水泥</div><div class="omni-sub-btn"><i class="fa-solid fa-building"></i></div></div>
+                <div class="omni-item react-btn" onclick="setTheme('cream');toggleHomeOmni()"><div class="omni-label">奶油奶油</div><div class="omni-sub-btn"><i class="fa-solid fa-ice-cream"></i></div></div>
             </div>
-            <button class="omni-main-btn" id="home-omni-btn" onclick="toggleHomeOmni()"><i class="fa-solid fa-palette"></i></button>
+            <button class="omni-main-btn react-btn" id="home-omni-btn" onclick="toggleHomeOmni()"><i class="fa-solid fa-palette"></i></button>
         </div>
     </div>
 
@@ -190,7 +175,7 @@
     <div id="trip-view" class="view-screen">
         <header class="p-5 text-center sticky top-0 z-50 liquid-glass rounded-none border-t-0 border-l-0 border-r-0 pb-3 mb-4">
             <div class="flex justify-between items-center">
-                <button onclick="goHome()" class="text-gray-400 text-lg px-2"><i class="fa-solid fa-chevron-left"></i></button>
+                <button onclick="goHome()" class="text-gray-400 text-lg px-2 react-btn"><i class="fa-solid fa-chevron-left"></i></button>
                 <input type="text" id="trip-title-input" class="text-xl font-bold tracking-widest text-center bg-transparent border-none shadow-none p-0 w-2/3 hand-drawn" onchange="updateTripTitle()">
                 <div class="w-8"></div>
             </div>
@@ -206,14 +191,14 @@
                 
                 <div id="daily-content"></div>
                 
-                <!-- 15.0 行程 Omni-FAB主樞紐 -->
+                <!-- 16.0 行程 Omni-FAB主樞紐 -->
                 <div class="omni-fab-container">
                     <div class="omni-menu" id="trip-omni-menu">
-                        <div class="omni-item" onclick="openDailyGoogleMaps()"><div class="omni-label">當日行程全覽</div><div class="omni-sub-btn"><i class="fa-solid fa-map-location-dot"></i></div></div>
-                        <div class="omni-item" onclick="optimizeDailyRoute()"><div class="omni-label">優化路線</div><div class="omni-sub-btn"><i class="fa-solid fa-route"></i></div></div>
-                        <div class="omni-item" onclick="addNewAttraction()"><div class="omni-label">添加景點</div><div class="omni-sub-btn"><i class="fa-solid fa-location-plus"></i></div></div>
+                        <div class="omni-item react-btn" onclick="openDailyGoogleMaps()"><div class="omni-label">當日行程全覽</div><div class="omni-sub-btn"><i class="fa-solid fa-map-location-dot"></i></div></div>
+                        <div class="omni-item react-btn" onclick="optimizeDailyRoute()"><div class="omni-label">優化路線</div><div class="omni-sub-btn"><i class="fa-solid fa-route"></i></div></div>
+                        <div class="omni-item react-btn" onclick="addNewAttraction()"><div class="omni-label">添加景點</div><div class="omni-sub-btn"><i class="fa-solid fa-location-dot relative"><i class="fa-solid fa-plus absolute -top-1 -right-2 text-[10px] text-white bg-[var(--kr-accent)] rounded-full p-0.5 border border-white"></i></i></div></div>
                     </div>
-                    <button class="omni-main-btn" id="trip-omni-btn" onclick="toggleTripOmni()"><i class="fa-solid fa-plus"></i></button>
+                    <button class="omni-main-btn react-btn" id="trip-omni-btn" onclick="toggleTripOmni()"><i class="fa-solid fa-plus"></i></button>
                 </div>
             </div>
 
@@ -227,7 +212,7 @@
                     </summary>
                     <div class="p-4 border-t border-white">
                         <div id="flight-content"></div>
-                        <button onclick="addFlight()" class="w-full mt-3 py-2 bg-[rgba(255,255,255,0.5)] border border-dashed border-gray-300 rounded-xl text-gray-500 font-bold text-xs"><i class="fa-solid fa-plus mr-1"></i> 添加航班</button>
+                        <button onclick="addFlight()" class="w-full mt-3 py-2 bg-[rgba(255,255,255,0.5)] border border-dashed border-gray-300 rounded-xl text-gray-500 font-bold text-xs react-btn"><i class="fa-solid fa-plus mr-1"></i> 添加航班</button>
                     </div>
                 </details>
 
@@ -237,7 +222,7 @@
                     </summary>
                     <div class="p-4 border-t border-white">
                         <div id="stay-content"></div>
-                        <button onclick="addStay()" class="w-full mt-3 py-2 bg-[rgba(255,255,255,0.5)] border border-dashed border-gray-300 rounded-xl text-gray-500 font-bold text-xs"><i class="fa-solid fa-plus mr-1"></i> 添加住宿</button>
+                        <button onclick="addStay()" class="w-full mt-3 py-2 bg-[rgba(255,255,255,0.5)] border border-dashed border-gray-300 rounded-xl text-gray-500 font-bold text-xs react-btn"><i class="fa-solid fa-plus mr-1"></i> 添加住宿</button>
                     </div>
                 </details>
             </div>
@@ -262,7 +247,7 @@
                 </div>
 
                 <div class="liquid-glass p-5 mb-4">
-                    <div class="flex justify-between items-center mb-3"><h3 class="text-sm font-bold text-gray-500"><i class="fa-solid fa-money-bill-transfer"></i> 實時全球匯率</h3><button onclick="swapCurrencies()" class="text-[var(--kr-accent)] text-lg"><i class="fa-solid fa-right-left"></i></button></div>
+                    <div class="flex justify-between items-center mb-3"><h3 class="text-sm font-bold text-gray-500"><i class="fa-solid fa-money-bill-transfer"></i> 實時全球匯率</h3><button onclick="swapCurrencies()" class="text-[var(--kr-accent)] text-lg react-btn"><i class="fa-solid fa-right-left"></i></button></div>
                     <div class="flex gap-2 mb-2"><select id="curFrom" class="w-1/3 text-xs font-bold" onchange="convertCurrency()"></select><input type="number" id="curAmount" value="100" class="flex-1 text-right font-bold" oninput="convertCurrency()"></div>
                     <div class="flex gap-2"><select id="curTo" class="w-1/3 text-xs font-bold" onchange="convertCurrency()"></select><input type="text" id="curResult" class="flex-1 text-right font-bold bg-white" readonly></div>
                     <p id="rateUpdateTxt" class="text-[10px] text-gray-400 mt-2 text-right">載入中...</p>
@@ -276,9 +261,9 @@
                             <select id="expType" class="w-1/3 text-xs" onchange="handleExpTypeChange(this)"><option value="餐飲">🍽️ 餐飲</option><option value="交通">🚕 交通</option><option value="門票">🎫 門票</option><option value="住宿">🏨 住宿</option><option value="購物">🛍️ 購物</option><option value="自定義">✨ 自定義...</option></select>
                             <select id="expCur" class="w-1/4 text-xs font-bold"></select><input type="number" id="expAmt" placeholder="總金額" class="flex-1 text-sm text-right">
                         </div>
-                        <div class="flex gap-2 items-center bg-[rgba(255,255,255,0.5)] p-2 rounded-xl"><span class="text-xs text-gray-500 font-bold w-12">付款人</span><select id="expPayer" class="flex-1 text-xs bg-transparent border-none shadow-none p-0"></select><button onclick="addUser()" class="text-[var(--kr-accent)] text-xs"><i class="fa-solid fa-user-plus"></i> 新增</button></div>
+                        <div class="flex gap-2 items-center bg-[rgba(255,255,255,0.5)] p-2 rounded-xl"><span class="text-xs text-gray-500 font-bold w-12">付款人</span><select id="expPayer" class="flex-1 text-xs bg-transparent border-none shadow-none p-0"></select><button onclick="addUser()" class="text-[var(--kr-accent)] text-xs react-btn"><i class="fa-solid fa-user-plus"></i> 新增</button></div>
                         <div class="flex gap-2 items-center bg-[rgba(255,255,255,0.5)] p-2 rounded-xl mb-2"><span class="text-xs text-gray-500 font-bold w-12">分帳</span><select id="expSplitType" class="flex-1 text-xs bg-transparent border-none shadow-none p-0"><option value="equal">平均平分 (Equal)</option><option value="you">僅自己 (Personal)</option></select></div>
-                        <button onclick="addExpense()" class="btn-primary w-full mt-2">新增紀錄</button>
+                        <button onclick="addExpense()" class="btn-primary w-full mt-2 react-btn">新增紀錄</button>
                     </div>
                 </div>
                 <div class="liquid-glass p-5" id="expense-summary"></div>
@@ -290,7 +275,7 @@
                 <div class="liquid-glass p-5 mb-6">
                     <div class="flex gap-2 mb-4">
                         <select id="packCategory" class="w-2/5 text-xs"><option value="✈️ 机场着装">机场着装</option><option value="🎒 背包">背包</option><option value="📄 证件">证件</option><option value="🧥 外套">外套</option><option value="👕 上衣">上衣</option><option value="👖 裤子">裤子</option><option value="🛌 睡衣">睡衣</option><option value="🧣 服饰配件">服饰配件</option><option value="👟 鞋子">鞋子</option><option value="🧴 个人用品">个人用品</option><option value="🔌 电子产品">电子产品</option><option value="🛍️ 其他">其他</option></select>
-                        <input type="text" id="newPrep" placeholder="物品名稱..." class="flex-1 text-sm"><button onclick="addPackItem()" class="btn-primary px-3"><i class="fa-solid fa-plus"></i></button>
+                        <input type="text" id="newPrep" placeholder="物品名稱..." class="flex-1 text-sm"><button onclick="addPackItem()" class="btn-primary px-3 react-btn"><i class="fa-solid fa-plus"></i></button>
                     </div>
                     <div id="prep-list"></div>
                 </div>
@@ -305,44 +290,39 @@
                     </div>
                     <textarea id="transInput" rows="3" placeholder="請輸入欲翻譯文字"></textarea>
                     <div class="flex gap-2">
-                        <button onclick="translateText()" class="flex-1 btn-primary py-3">文字翻譯</button>
-                        <label class="bg-white border border-gray-200 text-gray-600 rounded-xl px-4 flex flex-col justify-center items-center cursor-pointer shadow-sm active:scale-95"><i class="fa-solid fa-camera text-lg"></i><span class="text-[10px] mt-1">拍照翻譯</span><input type="file" accept="image/*" capture="environment" class="hidden" onchange="processOCR(this)"></label>
+                        <button onclick="translateText()" class="flex-1 btn-primary py-3 react-btn">文字翻譯</button>
+                        <label class="bg-white border border-gray-200 text-gray-600 rounded-xl px-4 flex flex-col justify-center items-center cursor-pointer shadow-sm react-btn"><i class="fa-solid fa-camera text-lg"></i><span class="text-[10px] mt-1">拍照翻譯</span><input type="file" accept="image/*" capture="environment" class="hidden" onchange="processOCR(this)"></label>
                     </div>
                     <p id="ocrStatus" class="text-xs text-center text-[var(--kr-accent)] font-bold hidden">讀取照片中，請稍候...</p>
-                    <div class="relative"><textarea id="transOutput" rows="4" class="text-lg font-bold bg-white" readonly></textarea><button onclick="speakKorean()" class="absolute bottom-3 right-3 bg-gray-100 w-10 h-10 rounded-full text-gray-600 shadow-sm active:scale-95"><i class="fa-solid fa-volume-high"></i></button></div>
+                    <div class="relative"><textarea id="transOutput" rows="4" class="text-lg font-bold bg-white" readonly></textarea><button onclick="speakKorean()" class="absolute bottom-3 right-3 bg-gray-100 w-10 h-10 rounded-full text-gray-600 shadow-sm react-btn"><i class="fa-solid fa-volume-high"></i></button></div>
                 </div>
             </div>
         </main>
 
         <nav class="bottom-nav">
-            <button class="nav-item active flex flex-col items-center" onclick="changeSection('daily', this)"><i class="fa-solid fa-map-location-dot text-xl"></i><span class="text-[10px] mt-1">行程</span></button>
-            <button class="nav-item flex flex-col items-center" onclick="changeSection('transport-stay', this)"><i class="fa-solid fa-plane text-xl"></i><span class="text-[10px] mt-1">住宿交通</span></button>
-            <button class="nav-item flex flex-col items-center" onclick="changeSection('expenses', this)"><i class="fa-solid fa-wallet text-xl"></i><span class="text-[10px] mt-1">花費</span></button>
-            <button class="nav-item flex flex-col items-center" onclick="changeSection('packing', this)"><i class="fa-solid fa-suitcase text-xl"></i><span class="text-[10px] mt-1">行李</span></button>
-            <button class="nav-item flex flex-col items-center" onclick="changeSection('translate', this)"><i class="fa-solid fa-language text-xl"></i><span class="text-[10px] mt-1">翻譯</span></button>
+            <button class="nav-item active flex flex-col items-center react-btn" onclick="changeSection('daily', this)"><i class="fa-solid fa-map-location-dot text-xl"></i><span class="text-[10px] mt-1">行程</span></button>
+            <button class="nav-item flex flex-col items-center react-btn" onclick="changeSection('transport-stay', this)"><i class="fa-solid fa-plane text-xl"></i><span class="text-[10px] mt-1">住宿交通</span></button>
+            <button class="nav-item flex flex-col items-center react-btn" onclick="changeSection('expenses', this)"><i class="fa-solid fa-wallet text-xl"></i><span class="text-[10px] mt-1">花費</span></button>
+            <button class="nav-item flex flex-col items-center react-btn" onclick="changeSection('packing', this)"><i class="fa-solid fa-suitcase text-xl"></i><span class="text-[10px] mt-1">行李</span></button>
+            <button class="nav-item flex flex-col items-center react-btn" onclick="changeSection('translate', this)"><i class="fa-solid fa-language text-xl"></i><span class="text-[10px] mt-1">翻譯</span></button>
         </nav>
     </div>
 
-    <!-- Lightbox -->
-    <div id="lightbox"><div class="lightbox-wrapper"><div class="lightbox-close" onclick="closeLightbox()">&times;</div><img id="lightbox-img" src=""></div></div>
-    
-    <!-- PDF Viewer -->
-    <div id="pdf-viewer">
-        <div class="p-4 bg-gray-100 flex justify-between items-center shadow-md pt-10"><h3 class="font-bold text-gray-700">檔案預覽</h3><button onclick="document.getElementById('pdf-viewer').style.display='none'" class="bg-gray-300 px-4 py-1 rounded-full font-bold">關閉</button></div>
-        <iframe id="pdf-iframe"></iframe>
-    </div>
+    <!-- 16.0 全螢幕檔案/圖片預覽 -->
+    <div id="lightbox"><div class="fullscreen-close" onclick="closeLightbox()"><i class="fa-solid fa-xmark"></i></div><img id="lightbox-img" src=""></div>
+    <div id="pdf-viewer"><div class="fullscreen-close" onclick="document.getElementById('pdf-viewer').style.display='none'"><i class="fa-solid fa-xmark"></i></div><iframe id="pdf-iframe"></iframe></div>
 
     <!-- iOS Picker -->
     <div id="ios-picker-modal">
         <div class="picker-container">
-            <div class="flex justify-between items-center mb-4"><button onclick="closePicker()" class="text-gray-400 font-bold">取消</button><h3 class="font-bold text-gray-700">選擇日期</h3><button onclick="confirmPicker()" class="text-[var(--kr-accent)] font-bold">確認</button></div>
+            <div class="flex justify-between items-center mb-4"><button onclick="closePicker()" class="text-gray-400 font-bold react-btn">取消</button><h3 class="font-bold text-gray-700">選擇日期</h3><button onclick="confirmPicker()" class="text-[var(--kr-accent)] font-bold react-btn">確認</button></div>
             <div class="picker-wheels"><div class="picker-selection-bar"></div><div class="wheel-col" id="wheel-year"></div><div class="wheel-col" id="wheel-month"></div><div class="wheel-col" id="wheel-day"></div></div>
         </div>
     </div>
 
     <script>
         // ================= 資料庫 & 初始化 =================
-        const dbName = "TravelBookDB_v15"; let db;
+        const dbName = "TravelBookDB_v16"; let db;
         const initDB = new Promise((resolve) => {
             const req = indexedDB.open(dbName, 1);
             req.onupgradeneeded = (e) => {
@@ -363,13 +343,13 @@
         function toggleHomeOmni() { const btn = document.getElementById('home-omni-btn'); const menu = document.getElementById('home-omni-menu'); btn.classList.toggle('active'); menu.classList.toggle('active'); }
         function toggleTripOmni() { const btn = document.getElementById('trip-omni-btn'); const menu = document.getElementById('trip-omni-menu'); btn.classList.toggle('active'); menu.classList.toggle('active'); }
 
-        // 15.0 嚴格 50 字以上深度文案 (14 天完整 JSON)
+        // 16.0 嚴格 50 字以上深度文案
         function generate14DaysData() {
             const regions = ["吉隆坡","釜山","釜山","釜山-濟州","濟州島","濟州島","濟州島","濟州島","濟州島","濟州-首爾","首爾","首爾","首爾","首爾"];
             let daily = [];
-            const deepIntro = "這是一個非常值得一訪的絕佳地點，融合了豐富的在地歷史文化與令人驚嘆的現代建築設計。無論是漫步在街道上感受獨特的氛圍，或是品嚐周邊道地的特色美食，都能讓您獲得前所未有的沉浸式旅行體驗。從早到晚，這裡都有不同的風貌，無論是清晨的寧靜還是夜晚的繁華，絕對是這趟行程中不可錯過的亮點之一，強烈建議多預留一點時間在這裡細細品味。";
-            const deepPos = "這裡的環境氛圍感真的超級棒！隨便找個角度拍照都非常出片，光線完美，濾鏡一加上去直接刷爆朋友圈。而且周邊的設施非常齊全，不論是洗手間還是休息區都很乾淨。服務人員態度親切專業，有問必答，甚至會主動幫忙拍照。整體體驗遠超預期，性價比極高，強烈推薦大家一定要把這裡排進行程裡，絕對不會後悔，是一個會讓人想二刷的好地方！";
-            const deepNeg = "唯一的缺點就是假日和旅遊旺季的時候人潮真的非常擁擠，如果沒有提早預訂或是避開尖峰時段，光是排隊就會耗掉大半天的時間，非常破壞旅遊興致。此外，周邊的物價稍微偏高，尤其是特色紀念品和餐廳餐點，建議大家可以先在其他地方用餐後再過來，或是自備一些小零食和水，比較不會傷荷包。最後提醒，部分步道較為陡峭，請務必穿著舒適好走的球鞋。";
+            const deepIntro = "這是一個極具代表性且非常值得一訪的絕佳地點，完美融合了豐富的在地歷史文化底蘊與令人驚嘆的現代建築設計美學。無論是悠閒漫步在街道上感受獨特的城市氛圍，或是品嚐周邊道地的特色美食，都能讓您獲得前所未有的沉浸式旅行體驗。從早到晚這裡都有不同的迷人風貌，絕對是這趟行程中不可錯過的亮點之一，強烈建議多預留至少半天時間在這裡細細品味。";
+            const deepPos = "這裡的整體環境與氛圍感真的超級棒！隨便找個角度拍照都非常出片，自然光線完美，濾鏡一加上去直接刷爆朋友圈。而且周邊的附屬設施非常齊全，不論是洗手間還是旅客休息區都維持得很乾淨。服務人員態度親切專業，有問必答，甚至會主動熱心幫忙拍照。整體體驗遠超預期，性價比極高，強烈推薦大家一定要把這裡排進行程裡，絕對是一個會讓人想無限次二刷的好地方！";
+            const deepNeg = "唯一的缺點就是每逢假日和旅遊旺季的時候，現場人潮真的非常擁擠。如果沒有提早預訂票券或是避開人潮尖峰時段，光是在門口排隊入場就會耗掉大半天的寶貴時間，非常破壞整體的旅遊興致。此外，周邊的物價稍微偏高，尤其是特色紀念品和景觀餐廳餐點，建議大家可以先在市區其他地方用餐後再過來，或是自己隨身攜帶一些小零食和礦泉水，這樣比較不會太傷荷包。";
 
             for(let i=0; i<14; i++) {
                 let dayDate = new Date(2026, 9, 29); dayDate.setDate(dayDate.getDate() + i);
@@ -403,16 +383,16 @@
             fetchExchangeRateAPI(); initTranslateLangs(); initPickerWheels(); renderHome();
         }
 
-        // ================= 15.0 沉浸式天氣特效 =================
+        // ================= 16.0 沉浸式天氣特效 (字體對比) =================
         function generateWeatherAnim(code) {
             let html = '';
             if([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82, 95, 96, 99].includes(code)) {
                 html += '<div class="weather-bg-container weather-darken">'; 
-                html += `<div class="anim-dark-cloud w-48 h-20 top-2 left-0"></div><div class="anim-dark-cloud w-32 h-14 top-10 right-4" style="animation-delay:-5s"></div>`;
-                for(let i=0; i<40; i++) { html += `<div class="anim-fine-rain" style="left:${Math.random()*100}%; animation-delay:${Math.random()}s;"></div>`; }
+                html += `<div class="anim-dark-cloud w-56 h-24 top-0 left-0"></div><div class="anim-dark-cloud w-40 h-20 top-8 right-2" style="animation-delay:-4s"></div>`;
+                for(let i=0; i<60; i++) { html += `<div class="anim-fine-rain" style="left:${Math.random()*100}%; animation-delay:${Math.random()}s;"></div>`; }
             } else if ([1, 2, 3, 45, 48].includes(code)) {
                 html += '<div class="weather-bg-container">';
-                html += `<div class="anim-dark-cloud w-40 h-20 top-2 left-4" style="background:rgba(200,210,220,0.8)"></div>`;
+                html += `<div class="anim-dark-cloud w-48 h-20 top-2 left-4" style="background:rgba(220,230,240,0.8); mix-blend-mode:normal;"></div>`;
             } else {
                 html += '<div class="weather-bg-container">'; 
                 html += `<div class="anim-sun-flare"></div><div class="anim-sun-ripple"></div>`;
@@ -428,7 +408,7 @@
             }
         }
 
-        // ================= 15.0 全域 Google Maps 外部跳轉 =================
+        // ================= 16.0 全域 Google Maps 外部跳轉 =================
         function openDailyGoogleMaps() {
             toggleTripOmni();
             let items = currentTrip.daily[currentDayIdx].items;
@@ -438,11 +418,11 @@
             let waypoints = items.slice(1, items.length-1).map(i => encodeURIComponent(i.loc || i.lat + ',' + i.lng)).join('|');
             let url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}&travelmode=driving`;
             if(waypoints) url += `&waypoints=${waypoints}`;
-            window.open(url, '_blank'); // 直接帶出至 Google Maps App
+            window.open(url, '_blank'); 
         }
 
         // ================= 視圖控制 =================
-        function renderHome() { document.getElementById('trip-view').classList.remove('active'); document.getElementById('home-view').classList.add('active'); document.getElementById('trip-list').innerHTML = allTrips.map(t => `<div class="book-card" style="border-left-color: ${t.color}" onclick="openTrip('${t.id}')"><div class="flex justify-between items-start"><h2 class="text-2xl font-bold text-gray-800 hand-drawn">${t.title}</h2><button onclick="event.stopPropagation(); deleteTrip('${t.id}')" class="text-gray-300"><i class="fa-solid fa-trash"></i></button></div><p class="text-xs text-gray-400 mt-2">${t.daily[0].date} 出發 · ${t.daily.length} 天行程</p></div>`).join(''); }
+        function renderHome() { document.getElementById('trip-view').classList.remove('active'); document.getElementById('home-view').classList.add('active'); document.getElementById('trip-list').innerHTML = allTrips.map(t => `<div class="book-card" style="border-left-color: ${t.color}" onclick="openTrip('${t.id}')"><div class="flex justify-between items-start"><h2 class="text-2xl font-bold text-gray-800 hand-drawn">${t.title}</h2><button onclick="event.stopPropagation(); deleteTrip('${t.id}')" class="text-gray-300 react-btn"><i class="fa-solid fa-trash"></i></button></div><p class="text-xs text-gray-400 mt-2">${t.daily[0].date} 出發 · ${t.daily.length} 天行程</p></div>`).join(''); }
         function openTrip(id) { currentTrip = allTrips.find(t => t.id === id); document.documentElement.style.setProperty('--kr-accent', currentTrip.color || '#9A9283'); document.getElementById('home-view').classList.remove('active'); document.getElementById('trip-view').classList.add('active'); document.getElementById('trip-title-input').value = currentTrip.title; syncToItinerary().then(()=> { currentDayIdx = 0; renderDayNav(); renderDaily(currentDayIdx); renderTransportStay(); renderExpenses(); renderLists(); }); }
         function goHome() { renderHome(); }
         async function updateTripTitle() { currentTrip.title = document.getElementById('trip-title-input').value; await saveDB('trips', currentTrip.id, currentTrip); }
@@ -467,6 +447,8 @@
                 const nowTemp = Math.round(wData.current_weather.temperature); const uv = wData.hourly.uv_index[currentHour] || 0; const feelTemp = Math.round(nowTemp + 1.5); const rainProb = wData.hourly.precipitation_probability[currentHour] || 0;
                 const todayTemps = wData.hourly.temperature_2m.slice(0, 24); const todayMax = Math.round(Math.max(...todayTemps)); const todayMin = Math.round(Math.min(...todayTemps));
                 const code = wData.current_weather.weathercode;
+                const isRainy = [51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82, 95, 96, 99].includes(code);
+                const txtColor = isRainy ? 'text-white' : 'text-gray-500'; const dataColor = isRainy ? 'text-white' : 'text-gray-800';
 
                 for(let i=0; i<24; i++) {
                     const hTemp = Math.round(wData.hourly.temperature_2m[i]); const hEmoji = getWmoEmoji(wData.hourly.weathercode[i]); let h12 = i % 24; const ampm = h12 >= 12 ? 'PM' : 'AM'; h12 = h12 % 12 || 12;
@@ -476,15 +458,15 @@
                 document.getElementById('weather-banner').innerHTML = `
                     ${generateWeatherAnim(code)}
                     <div class="flex justify-between items-center pb-2 relative z-10">
-                        <div>
-                            <div class="text-xs font-bold text-gray-500 mb-1"><i class="fa-solid fa-location-dot text-[var(--kr-accent)]"></i> ${d.region}即時天氣</div>
+                        <div class="${dataColor}">
+                            <div class="text-xs font-bold ${txtColor} mb-1"><i class="fa-solid fa-location-dot text-[var(--kr-accent)]"></i> ${d.region}即時天氣</div>
                             <div class="flex items-center gap-2"><div class="font-bold text-2xl">${nowTemp}°C</div><div class="text-2xl">${getWmoEmoji(code)}</div></div>
-                            <div class="text-[10px] text-gray-400 mt-1 font-bold">最高 ${todayMax}°C / 最低 ${todayMin}°C</div>
+                            <div class="text-[10px] ${txtColor} mt-1 font-bold">最高 ${todayMax}°C / 最低 ${todayMin}°C</div>
                         </div>
-                        <div class="text-right"><button onclick="toggleHourlyWeather()" class="bg-white border rounded-full px-3 py-1 text-xs font-bold text-gray-500 shadow-sm">展開詳細 <i class="fa-solid fa-chevron-down ml-1"></i></button></div>
+                        <div class="text-right"><button onclick="toggleHourlyWeather()" class="bg-white border rounded-full px-3 py-1 text-xs font-bold text-gray-500 shadow-sm react-btn">展開詳細 <i class="fa-solid fa-chevron-down ml-1"></i></button></div>
                     </div>
-                    <div id="hourly-weather-container" class="hidden border-t border-[rgba(0,0,0,0.05)] pt-2 mt-2 relative z-10">
-                        <div class="text-xs text-right text-gray-500 font-bold mb-2">體感 ${feelTemp}° | 降雨 ${rainProb}% | UV: ${uv}</div>
+                    <div id="hourly-weather-container" class="hidden border-t border-[rgba(255,255,255,0.2)] pt-2 mt-2 relative z-10">
+                        <div class="text-xs text-right ${txtColor} font-bold mb-2">體感 ${feelTemp}° | 降雨 ${rainProb}% | UV: ${uv}</div>
                         <div class="h-scroll-container"><div class="h-scroll" id="hourly-scroll">${hourlyHtml}</div></div>
                     </div>
                 `;
@@ -501,53 +483,54 @@
                 html += `
                 <div class="liquid-glass mb-0 ${borderClass}">
                     <div class="item-header"><img id="img_${item.id}" src="${item.img}">
-                        <label class="edit-img-btn"><input type="file" accept="image/*" class="file-hide" onchange="updateImg(this, ${idx}, ${i}, 'img')"><i class="fa-solid fa-camera"></i></label>
-                        <div class="absolute top-3 left-3 bg-[var(--kr-accent)] text-white w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs shadow">${item.isAutoFlight ? '✈️' : i+1}</div>
+                        <label class="edit-img-btn react-btn"><input type="file" accept="image/*" class="file-hide" onchange="updateImg(this, ${idx}, ${i}, 'img')"><i class="fa-solid fa-camera"></i></label>
+                        <!-- 16.0 滿版圖 50% 序號圈 -->
+                        <div class="absolute top-3 left-3 bg-[var(--kr-accent)] text-white w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs opacity-50 backdrop-blur-sm shadow">${item.isAutoFlight ? '✈️' : i+1}</div>
                     </div>
                     <div class="p-5" id="wrap_${item.id}">
                         <div class="flex justify-between items-start mb-2">
                             <input type="time" value="${item.time}" onchange="updateItemTime(${idx}, ${i}, this.value)" class="text-sm font-mono text-[var(--kr-accent)] bg-white px-2 py-0.5 rounded-lg shadow-sm w-24">
                             <div class="flex gap-1">
                                 ${item.isAuto ? `<span class="text-[10px] bg-gray-200 text-gray-500 px-2 py-1 rounded-full font-bold">📍 自動同步</span>` : `
-                                <button class="w-7 h-7 bg-white rounded-full shadow-sm text-gray-400" onclick="moveOrder(${idx}, ${i}, -1)"><i class="fa-solid fa-arrow-up text-[10px]"></i></button>
-                                <button class="w-7 h-7 bg-white rounded-full shadow-sm text-gray-400" onclick="moveOrder(${idx}, ${i}, 1)"><i class="fa-solid fa-arrow-down text-[10px]"></i></button>
-                                <button class="w-7 h-7 bg-red-50 rounded-full shadow-sm text-red-400 ml-2" onclick="deleteItem(${idx}, ${i})"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                                <button class="w-7 h-7 bg-white rounded-full shadow-sm text-gray-400 react-btn" onclick="moveOrder(${idx}, ${i}, -1)"><i class="fa-solid fa-arrow-up text-[10px]"></i></button>
+                                <button class="w-7 h-7 bg-white rounded-full shadow-sm text-gray-400 react-btn" onclick="moveOrder(${idx}, ${i}, 1)"><i class="fa-solid fa-arrow-down text-[10px]"></i></button>
+                                <button class="w-7 h-7 bg-red-50 rounded-full shadow-sm text-red-400 ml-2 react-btn" onclick="deleteItem(${idx}, ${i})"><i class="fa-solid fa-trash text-[10px]"></i></button>
                                 `}
                             </div>
                         </div>
                         <h4 class="text-xl font-bold mt-2 text-gray-800">${item.task}</h4>
                         <div id="loc_display_${item.id}">
-                            ${item.loc === '輸入地址' ? `<button class="text-xs text-[var(--kr-accent)] mt-1 font-bold bg-white px-2 py-1 rounded shadow-sm" onclick="toggleEdit('${item.id}')"><i class="fa-solid fa-pen"></i> 輸入地址</button>` : `<a href="https://maps.google.com/?q=${encodeURIComponent(item.loc)}" target="_blank" class="block text-xs text-blue-500 mt-1 truncate font-bold"><i class="fa-solid fa-map-pin mr-1 text-[var(--kr-accent)]"></i>${item.loc}</a>`}
+                            ${item.loc === '輸入地址' ? `<button class="text-xs text-[var(--kr-accent)] mt-1 font-bold bg-white px-2 py-1 rounded shadow-sm react-btn" onclick="toggleEdit('${item.id}')"><i class="fa-solid fa-pen"></i> 輸入地址</button>` : `<a href="https://maps.google.com/?q=${encodeURIComponent(item.loc)}" target="_blank" class="block text-xs text-blue-500 mt-1 truncate font-bold"><i class="fa-solid fa-map-pin mr-1 text-[var(--kr-accent)]"></i>${item.loc}</a>`}
                         </div>
                         
-                        <button class="w-full text-center mt-4 py-2 bg-[rgba(255,255,255,0.6)] rounded-xl text-gray-500 text-xs font-bold border border-white" onclick="toggleExpand('${item.id}')"><i class="fa-solid fa-chevron-down"></i> 展開詳細</button>
+                        <button class="w-full text-center mt-4 py-2 bg-[rgba(255,255,255,0.6)] rounded-xl text-gray-500 text-xs font-bold border border-white react-btn" onclick="toggleExpand('${item.id}')"><i class="fa-solid fa-chevron-down"></i> 展開詳細</button>
                         
                         <div class="expand-content">
                             <div id="display_info_${item.id}">
                                 ${item.intro ? `<div class="bg-white p-4 rounded-2xl mb-3 text-sm text-gray-700 leading-relaxed shadow-sm border border-gray-100">${item.intro}</div>` : ''}
                                 ${item.review ? `<div class="flex gap-2 mb-3"><div class="w-1/2 bg-red-50 p-3 rounded-xl text-xs text-red-800 border border-red-100 leading-relaxed"><b>👍 小紅書推薦：</b><br>${item.review.pos}</div><div class="w-1/2 bg-gray-100 p-3 rounded-xl text-xs text-gray-700 border border-gray-200 leading-relaxed"><b>⚠️ 真實避雷：</b><br>${item.review.neg}</div></div>` : ''}
-                                <div class="flex justify-end"><button class="bg-white border border-gray-200 text-gray-600 text-xs px-4 py-2 rounded-full shadow-sm font-bold" onclick="toggleEdit('${item.id}')"><i class="fa-solid fa-pen"></i> 編輯地點</button></div>
+                                <div class="flex justify-end"><button class="bg-white border border-gray-200 text-gray-600 text-xs px-4 py-2 rounded-full shadow-sm font-bold react-btn" onclick="toggleEdit('${item.id}')"><i class="fa-solid fa-pen"></i> 編輯地點</button></div>
                             </div>
                             <div id="edit_form_${item.id}" class="hidden space-y-3 mb-3 bg-[rgba(255,255,255,0.8)] p-4 rounded-xl border border-white shadow-inner">
-                                <input id="edit_task_${item.id}" value="${item.task}" placeholder="主標題" class="font-bold text-sm">
-                                <input id="edit_loc_${item.id}" value="${item.loc === '輸入地址' ? '' : item.loc}" placeholder="地標搜尋..." class="w-full text-sm">
-                                <button class="btn-primary w-full text-sm py-2" onclick="saveItemEdit(${idx}, ${i}, '${item.id}')">儲存</button>
+                                <input id="edit_task_${item.id}" value="${item.task}" placeholder="主標題" class="font-bold text-sm" oninput="this.dataset.autoSync='false'">
+                                <!-- 16.0 地點改變自動同步標題 -->
+                                <input id="edit_loc_${item.id}" value="${item.loc === '輸入地址' ? '' : item.loc}" placeholder="地標搜尋..." class="w-full text-sm" oninput="syncTitleText(this, '${item.id}')">
+                                <button class="btn-primary w-full text-sm py-2 react-btn" onclick="saveItemEdit(${idx}, ${i}, '${item.id}')">儲存</button>
                             </div>
                             
                             <div class="pt-4 mt-3 border-t border-[rgba(0,0,0,0.05)]">
                                 <label class="text-xs font-bold text-gray-500 block mb-2"><i class="fa-solid fa-book-open mr-1"></i> 【添加筆記】</label>
                                 <textarea id="note_${item.id}" rows="2" placeholder="..." class="text-xs" onchange="saveFileData('${item.id}', 'note', this.value)"></textarea>
-                                <div class="mt-3 flex gap-2"><label class="bg-white border px-4 py-2 rounded-xl text-xs text-gray-600 cursor-pointer shadow-sm font-bold flex-1 text-center"><input type="file" accept="image/*" multiple class="file-hide" onchange="addPhotos(this, '${item.id}')"><i class="fa-solid fa-camera text-[var(--kr-accent)]"></i> 照片</label><label class="bg-white border px-4 py-2 rounded-xl text-xs text-gray-600 cursor-pointer shadow-sm font-bold flex-1 text-center"><input type="file" accept=".pdf, image/*" class="file-hide" onchange="addPdf(this, '${item.id}')"><i class="fa-solid fa-file-pdf text-[var(--kr-accent)]"></i> 檔案</label></div>
-                                <div id="thumb_wrap_${item.id}" class="thumb-grid"></div><div id="file_wrap_${item.id}" class="mt-2 text-xs"></div>
+                                <div class="mt-3 flex gap-2"><label class="bg-white border px-4 py-2 rounded-xl text-xs text-gray-600 cursor-pointer shadow-sm font-bold flex-1 text-center react-btn"><input type="file" accept="image/*" multiple class="file-hide" onchange="addPhotos(this, '${item.id}')"><i class="fa-solid fa-camera text-[var(--kr-accent)]"></i> 照片</label><label class="bg-white border px-4 py-2 rounded-xl text-xs text-gray-600 cursor-pointer shadow-sm font-bold flex-1 text-center react-btn"><input type="file" accept=".pdf, image/*" class="file-hide" onchange="addPdf(this, '${item.id}')"><i class="fa-solid fa-file-pdf text-[var(--kr-accent)]"></i> 檔案</label></div>
+                                <div id="thumb_wrap_${item.id}" class="thumb-grid"></div><div id="file_wrap_${item.id}" class="mt-2 text-xs flex justify-end"></div>
                             </div>
                         </div>
                     </div>
                 </div>`;
                 
                 if(i < d.items.length - 1) {
-                    // 15.0 模擬實時交通耗時 (基於經緯度距離加權)
                     let roughTime = Math.max(5, Math.round(getDistKm(item.lat, item.lng, d.items[i+1].lat, d.items[i+1].lng) * 3 + 10));
-                    html += `<div class="transit-node"><div class="transit-line"></div><div class="bg-white border border-gray-200 rounded-full px-4 py-1.5 shadow-sm text-[10px] text-gray-500 z-10 flex items-center font-bold"><i class="fa-solid fa-car mr-2 text-[var(--kr-accent)]"></i> 預計 ${roughTime} 分鐘<a href="https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(item.loc)}&destination=${encodeURIComponent(d.items[i+1].loc)}&travelmode=driving" target="_blank" class="text-[var(--kr-accent)] ml-3"><i class="fa-solid fa-location-arrow mr-1"></i>一鍵導航</a></div><div class="transit-line"></div></div>`;
+                    html += `<div class="transit-node"><div class="transit-line"></div><div class="bg-white border border-gray-200 rounded-full px-4 py-1.5 shadow-sm text-[10px] text-gray-500 z-10 flex items-center font-bold"><i class="fa-solid fa-car mr-2 text-[var(--kr-accent)]"></i> 預估 ${roughTime} 分鐘<a href="https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(item.loc)}&destination=${encodeURIComponent(d.items[i+1].loc)}&travelmode=driving" target="_blank" class="text-[var(--kr-accent)] ml-3"><i class="fa-solid fa-location-arrow mr-1"></i>一鍵導航</a></div><div class="transit-line"></div></div>`;
                 }
             });
             document.getElementById('daily-content').innerHTML = html;
@@ -565,26 +548,20 @@
         function toggleEdit(id) { document.getElementById(`display_info_${id}`).classList.toggle('hidden'); document.getElementById(`edit_form_${id}`).classList.toggle('hidden'); }
         async function updateItemTime(dIdx, iIdx, val) { currentTrip.daily[dIdx].items[iIdx].time = val; await saveDB('trips', currentTrip.id, currentTrip); }
         
-        // 15.0 編輯地點自動同步標題
+        // 16.0 標題自動同步邏輯
+        function syncTitleText(input, id) { let tInp = document.getElementById(`edit_task_${id}`); if(tInp.value === '新行程' || tInp.dataset.autoSync === "true") { tInp.value = input.value; tInp.dataset.autoSync = "true"; } }
         async function saveItemEdit(dIdx, iIdx, id) { 
             const itm = currentTrip.daily[dIdx].items[iIdx]; 
-            let inpLoc = document.getElementById(`edit_loc_${id}`).value;
-            let inpTask = document.getElementById(`edit_task_${id}`).value;
-            
-            if(inpLoc !== '輸入地址' && inpLoc !== itm.loc) {
-                itm.loc = inpLoc;
-                if(itm.task === '新行程' || itm.task === '輸入地址') { itm.task = inpLoc; } else { itm.task = inpTask; }
-            } else {
-                itm.task = inpTask;
-            }
+            let inpLoc = document.getElementById(`edit_loc_${id}`).value; let inpTask = document.getElementById(`edit_task_${id}`).value;
+            if(inpLoc !== '輸入地址' && inpLoc !== itm.loc) { itm.loc = inpLoc; if(itm.task === '新行程' || itm.task === '輸入地址') itm.task = inpLoc; else itm.task = inpTask; } else { itm.task = inpTask; }
             await saveDB('trips', currentTrip.id, currentTrip); renderDaily(currentDayIdx); 
         }
 
-        async function addNewAttraction() { toggleTripOmni(); currentTrip.daily[currentDayIdx].items.push({ id: `d${currentDayIdx}_${Date.now()}`, time: "12:00", task: "新行程", loc: "輸入地址", lat: 0, lng: 0, endTime: "22:00", img: "https://images.unsplash.com/photo-1556012018-50c5c0da73bf?w=600", isAuto: false, intro:"這是一個非常值得一訪的絕佳地點，融合了豐富的在地歷史文化與令人驚嘆的現代建築設計。無論是漫步在街道上感受獨特的氛圍，或是品嚐周邊道地的特色美食，都能讓您獲得前所未有的沉浸式旅行體驗。從早到晚，這裡都有不同的風貌，無論是清晨的寧靜還是夜晚的繁華，絕對是這趟行程中不可錯過的亮點之一，強烈建議多預留一點時間在這裡細細品味。", review:{pos:"這裡的環境氛圍感真的超級棒！隨便找個角度拍照都非常出片，光線完美，濾鏡一加上去直接刷爆朋友圈。而且周邊的設施非常齊全，不論是洗手間還是休息區都很乾淨。服務人員態度親切專業，有問必答，甚至會主動幫忙拍照。整體體驗遠超預期，性價比極高，強烈推薦大家一定要把這裡排進行程裡，絕對不會後悔，是一個會讓人想二刷的好地方！",neg:"唯一的缺點就是假日和旅遊旺季的時候人潮真的非常擁擠，如果沒有提早預訂或是避開尖峰時段，光是排隊就會耗掉大半天的時間，非常破壞旅遊興致。此外，周邊的物價稍微偏高，尤其是特色紀念品和餐廳餐點，建議大家可以先在其他地方用餐後再過來，或是自備一些小零食和水，比較不會傷荷包。最後提醒，部分步道較為陡峭，請務必穿著舒適好走的球鞋。"} }); await saveDB('trips', currentTrip.id, currentTrip); renderDaily(currentDayIdx); setTimeout(() => window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'}), 100); }
+        async function addNewAttraction() { toggleTripOmni(); currentTrip.daily[currentDayIdx].items.push({ id: `d${currentDayIdx}_${Date.now()}`, time: "12:00", task: "新行程", loc: "輸入地址", lat: 0, lng: 0, endTime: "22:00", img: "https://images.unsplash.com/photo-1556012018-50c5c0da73bf?w=600", isAuto: false, intro:"這是一個極具代表性且非常值得一訪的絕佳地點，完美融合了豐富的在地歷史文化底蘊與令人驚嘆的現代建築設計美學。無論是悠閒漫步在街道上感受獨特的城市氛圍，或是品嚐周邊道地的特色美食，都能讓您獲得前所未有的沉浸式旅行體驗。從早到晚這裡都有不同的迷人風貌，絕對是這趟行程中不可錯過的亮點之一，強烈建議多預留至少半天時間在這裡細細品味。", review:{pos:"這裡的整體環境與氛圍感真的超級棒！隨便找個角度拍照都非常出片，自然光線完美，濾鏡一加上去直接刷爆朋友圈。而且周邊的附屬設施非常齊全，不論是洗手間還是旅客休息區都維持得很乾淨。服務人員態度親切專業，有問必答，甚至會主動熱心幫忙拍照。整體體驗遠超預期，性價比極高，強烈推薦大家一定要把這裡排進行程裡，絕對是一個會讓人想無限次二刷的好地方！",neg:"唯一的缺點就是每逢假日和旅遊旺季的時候，現場人潮真的非常擁擠。如果沒有提早預訂票券或是避開人潮尖峰時段，光是在門口排隊入場就會耗掉大半天的寶貴時間，非常破壞整體的旅遊興致。此外，周邊的物價稍微偏高，尤其是特色紀念品和景觀餐廳餐點，建議大家可以先在市區其他地方用餐後再過來，或是自己隨身攜帶一些小零食和礦泉水，這樣比較不會太傷荷包。"} }); await saveDB('trips', currentTrip.id, currentTrip); renderDaily(currentDayIdx); setTimeout(() => window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'}), 100); }
         async function deleteItem(dIdx, iIdx) { if(currentTrip.daily[dIdx].items[iIdx].isAuto) return alert("自動連動卡片請至交通住宿修改！"); if(!confirm("確定刪除此行程？")) return; currentTrip.daily[dIdx].items.splice(iIdx, 1); await saveDB('trips', currentTrip.id, currentTrip); renderDaily(currentDayIdx); }
         async function moveOrder(dIdx, iIdx, dir) { const arr = currentTrip.daily[dIdx].items; if(iIdx + dir < 0 || iIdx + dir >= arr.length) return; if(arr[iIdx].isAuto || arr[iIdx+dir].isAuto) return alert("自動節點已鎖定順序！"); const temp = arr[iIdx]; arr[iIdx] = arr[iIdx + dir]; arr[iIdx + dir] = temp; await saveDB('trips', currentTrip.id, currentTrip); renderDaily(currentDayIdx); }
 
-        // ================= 檔案上傳與即時預覽 =================
+        // ================= 檔案上傳與即時全屏預覽 =================
         function toBase64(file) { return new Promise((r) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => r(reader.result); }); }
         async function updateImg(input, dIdx, iIdx, type) { if (!input.files[0]) return; const b64 = await toBase64(input.files[0]); currentTrip.daily[dIdx].items[iIdx].img = b64; document.getElementById(`img_${currentTrip.daily[dIdx].items[iIdx].id}`).src = b64; await saveDB('trips', currentTrip.id, currentTrip); }
         async function saveFileData(id, type, data) { await saveDB('files', `${currentTrip.id}_${id}_${type}`, data); }
@@ -595,7 +572,7 @@
         async function renderUserFiles(id) {
             const note = await getDB('files', `${currentTrip.id}_${id}_note`); if(note && document.getElementById(`note_${id}`)) { document.getElementById(`note_${id}`).value = note; }
             const p = await getDB('files', `${currentTrip.id}_${id}_photos`); if(p && document.getElementById(`thumb_wrap_${id}`)) { document.getElementById(`thumb_wrap_${id}`).innerHTML = p.map((src, i) => `<div class="thumb-wrap-relative"><img src="${src}" class="thumb-box" onclick="openLightbox('${id}', ${i})"><div class="thumb-del-btn" onclick="deletePhoto('${id}', ${i})"><i class="fa-solid fa-xmark"></i></div></div>`).join(''); }
-            const pdf = await getDB('files', `${currentTrip.id}_${id}_pdf`); if(document.getElementById(`file_wrap_${id}`)) { if(pdf) { document.getElementById(`file_wrap_${id}`).innerHTML = `<div class="flex items-center justify-end gap-2 mt-2"><button onclick="viewPDF('${id}')" class="bg-white border px-3 py-1.5 rounded-xl shadow-sm text-gray-700 font-bold"><i class="fa-solid fa-file-pdf text-[var(--kr-accent)] mr-1"></i> ${pdf.name}</button><button onclick="deletePdf('${id}')" class="text-red-400 p-2 bg-white border rounded-xl shadow-sm"><i class="fa-solid fa-trash"></i></button></div>`; } else { document.getElementById(`file_wrap_${id}`).innerHTML = ''; } }
+            const pdf = await getDB('files', `${currentTrip.id}_${id}_pdf`); if(document.getElementById(`file_wrap_${id}`)) { if(pdf) { document.getElementById(`file_wrap_${id}`).innerHTML = `<button onclick="viewPDF('${id}')" class="bg-white border px-3 py-1.5 rounded-xl shadow-sm text-gray-700 font-bold react-btn mr-2"><i class="fa-solid fa-file-pdf text-[var(--kr-accent)] mr-1"></i> ${pdf.name}</button><button onclick="deletePdf('${id}')" class="text-red-400 p-2 bg-white border rounded-xl shadow-sm react-btn"><i class="fa-solid fa-trash"></i></button>`; } else { document.getElementById(`file_wrap_${id}`).innerHTML = ''; } }
         }
         let lbPhotos = [], lbIdx = 0; let touchstartX = 0, touchendX = 0;
         async function openLightbox(id, idx) { lbPhotos = await getDB('files', `${currentTrip.id}_${id}_photos`); lbIdx = idx; updateLightboxImg(); document.getElementById('lightbox').style.display='flex'; }
@@ -604,7 +581,7 @@
         document.getElementById('lightbox').addEventListener('touchstart', e => { touchstartX = e.changedTouches[0].screenX; }); document.getElementById('lightbox').addEventListener('touchend', e => { touchendX = e.changedTouches[0].screenX; if(touchendX < touchstartX - 50) { lbIdx = (lbIdx + 1) % lbPhotos.length; updateLightboxImg(); } if(touchendX > touchstartX + 50) { lbIdx = (lbIdx - 1 + lbPhotos.length) % lbPhotos.length; updateLightboxImg(); } });
         async function viewPDF(id) { const pdf = await getDB('files', `${currentTrip.id}_${id}_pdf`); if(pdf) { document.getElementById('pdf-iframe').src = pdf.data; document.getElementById('pdf-viewer').style.display = 'flex'; } }
 
-        // ================= 15.0 iOS 直立滾輪日期 =================
+        // ================= 16.0 iOS 直立滾輪日期 =================
         let activePickerId = null;
         function initPickerWheels() {
             let yH = '', mH = '', dH = '';
@@ -626,7 +603,7 @@
         }
         function getWheelVal(id) { const el = document.getElementById(id); const idx = Math.round(el.scrollTop / 40); return el.children[idx]?.innerText || '01'; }
 
-        // ================= 15.0 交通與住宿同步聯動行程 (Bug 修復閉環) =================
+        // ================= 16.0 交通住宿閉環 100% 實時同步 =================
         async function syncToItinerary() {
             currentTrip.daily.forEach(d => { d.items = d.items.filter(i => !i.isAuto); });
             
@@ -635,8 +612,8 @@
                 if(parts.length === 2) {
                     let dIn = parts[0].trim(), dOut = parts[1].trim();
                     let dInIdx = currentTrip.daily.findIndex(d => d.date === dIn); let dOutIdx = currentTrip.daily.findIndex(d => d.date === dOut);
-                    if(dInIdx !== -1) currentTrip.daily[dInIdx].items.push({ id: `stay_in_${s.id}`, time: "15:00", task: `入住 ${s.name}`, loc: s.addr || "酒店地址", lat: s.lat||0, lng: s.lng||0, isAuto: true, img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600", intro:"這是一個非常值得一訪的絕佳地點，融合了豐富的在地歷史文化與令人驚嘆的現代建築設計。無論是漫步在街道上感受獨特的氛圍，或是品嚐周邊道地的特色美食，都能讓您獲得前所未有的沉浸式旅行體驗。從早到晚，這裡都有不同的風貌，無論是清晨的寧靜還是夜晚的繁華，絕對是這趟行程中不可錯過的亮點之一，強烈建議多預留一點時間在這裡細細品味。", review:{pos:"這裡的環境氛圍感真的超級棒！隨便找個角度拍照都非常出片，光線完美，濾鏡一加上去直接刷爆朋友圈。而且周邊的設施非常齊全，不論是洗手間還是休息區都很乾淨。服務人員態度親切專業，有問必答，甚至會主動幫忙拍照。整體體驗遠超預期，性價比極高，強烈推薦大家一定要把這裡排進行程裡，絕對不會後悔，是一個會讓人想二刷的好地方！",neg:"唯一的缺點就是假日和旅遊旺季的時候人潮真的非常擁擠，如果沒有提早預訂或是避開尖峰時段，光是排隊就會耗掉大半天的時間，非常破壞旅遊興致。此外，周邊的物價稍微偏高，尤其是特色紀念品和餐廳餐點，建議大家可以先在其他地方用餐後再過來，或是自備一些小零食和水，比較不會傷荷包。最後提醒，部分步道較為陡峭，請務必穿著舒適好走的球鞋。"} });
-                    if(dOutIdx !== -1) currentTrip.daily[dOutIdx].items.unshift({ id: `stay_out_${s.id}`, time: "09:00", task: `從 ${s.name} 出發`, loc: s.addr || "酒店地址", lat: s.lat||0, lng: s.lng||0, isAuto: true, img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600", intro:"這是一個非常值得一訪的絕佳地點，融合了豐富的在地歷史文化與令人驚嘆的現代建築設計。無論是漫步在街道上感受獨特的氛圍，或是品嚐周邊道地的特色美食，都能讓您獲得前所未有的沉浸式旅行體驗。從早到晚，這裡都有不同的風貌，無論是清晨的寧靜還是夜晚的繁華，絕對是這趟行程中不可錯過的亮點之一，強烈建議多預留一點時間在這裡細細品味。", review:{pos:"這裡的環境氛圍感真的超級棒！隨便找個角度拍照都非常出片，光線完美，濾鏡一加上去直接刷爆朋友圈。而且周邊的設施非常齊全，不論是洗手間還是休息區都很乾淨。服務人員態度親切專業，有問必答，甚至會主動幫忙拍照。整體體驗遠超預期，性價比極高，強烈推薦大家一定要把這裡排進行程裡，絕對不會後悔，是一個會讓人想二刷的好地方！",neg:"唯一的缺點就是假日和旅遊旺季的時候人潮真的非常擁擠，如果沒有提早預訂或是避開尖峰時段，光是排隊就會耗掉大半天的時間，非常破壞旅遊興致。此外，周邊的物價稍微偏高，尤其是特色紀念品和餐廳餐點，建議大家可以先在其他地方用餐後再過來，或是自備一些小零食和水，比較不會傷荷包。最後提醒，部分步道較為陡峭，請務必穿著舒適好走的球鞋。"} });
+                    if(dInIdx !== -1) currentTrip.daily[dInIdx].items.push({ id: `stay_in_${s.id}`, time: "15:00", task: `入住 ${s.name}`, loc: s.addr || "酒店地址", lat: s.lat||0, lng: s.lng||0, isAuto: true, img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600", intro:"這是一個極具代表性且非常值得一訪的絕佳地點，完美融合了豐富的在地歷史文化底蘊與令人驚嘆的現代建築設計美學。無論是悠閒漫步在街道上感受獨特的城市氛圍，或是品嚐周邊道地的特色美食，都能讓您獲得前所未有的沉浸式旅行體驗。從早到晚這裡都有不同的迷人風貌，絕對是這趟行程中不可錯過的亮點之一，強烈建議多預留至少半天時間在這裡細細品味。", review:{pos:"這裡的整體環境與氛圍感真的超級棒！隨便找個角度拍照都非常出片，自然光線完美，濾鏡一加上去直接刷爆朋友圈。而且周邊的附屬設施非常齊全，不論是洗手間還是旅客休息區都維持得很乾淨。服務人員態度親切專業，有問必答，甚至會主動熱心幫忙拍照。整體體驗遠超預期，性價比極高，強烈推薦大家一定要把這裡排進行程裡，絕對是一個會讓人想無限次二刷的好地方！",neg:"唯一的缺點就是每逢假日和旅遊旺季的時候，現場人潮真的非常擁擠。如果沒有提早預訂票券或是避開人潮尖峰時段，光是在門口排隊入場就會耗掉大半天的寶貴時間，非常破壞整體的旅遊興致。此外，周邊的物價稍微偏高，尤其是特色紀念品和景觀餐廳餐點，建議大家可以先在市區其他地方用餐後再過來，或是自己隨身攜帶一些小零食和礦泉水，這樣比較不會太傷荷包。"} });
+                    if(dOutIdx !== -1) currentTrip.daily[dOutIdx].items.unshift({ id: `stay_out_${s.id}`, time: "09:00", task: `從 ${s.name} 出發`, loc: s.addr || "酒店地址", lat: s.lat||0, lng: s.lng||0, isAuto: true, img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600", intro:"這是一個極具代表性且非常值得一訪的絕佳地點，完美融合了豐富的在地歷史文化底蘊與令人驚嘆的現代建築設計美學。無論是悠閒漫步在街道上感受獨特的城市氛圍，或是品嚐周邊道地的特色美食，都能讓您獲得前所未有的沉浸式旅行體驗。從早到晚這裡都有不同的迷人風貌，絕對是這趟行程中不可錯過的亮點之一，強烈建議多預留至少半天時間在這裡細細品味。", review:{pos:"這裡的整體環境與氛圍感真的超級棒！隨便找個角度拍照都非常出片，自然光線完美，濾鏡一加上去直接刷爆朋友圈。而且周邊的附屬設施非常齊全，不論是洗手間還是旅客休息區都維持得很乾淨。服務人員態度親切專業，有問必答，甚至會主動熱心幫忙拍照。整體體驗遠超預期，性價比極高，強烈推薦大家一定要把這裡排進行程裡，絕對是一個會讓人想無限次二刷的好地方！",neg:"唯一的缺點就是每逢假日和旅遊旺季的時候，現場人潮真的非常擁擠。如果沒有提早預訂票券或是避開人潮尖峰時段，光是在門口排隊入場就會耗掉大半天的寶貴時間，非常破壞整體的旅遊興致。此外，周邊的物價稍微偏高，尤其是特色紀念品和景觀餐廳餐點，建議大家可以先在市區其他地方用餐後再過來，或是自己隨身攜帶一些小零食和礦泉水，這樣比較不會太傷荷包。"} });
                 }
             });
 
@@ -644,17 +621,20 @@
                 if(!f.date) return;
                 let dIdx = currentTrip.daily.findIndex(d => d.date === f.date);
                 if(dIdx !== -1) {
-                    currentTrip.daily[dIdx].items.push({ id: `flight_${f.id}`, time: f.time, task: `✈️ 航班 ${f.flight}`, loc: `${f.depIATA || '出發地'} ✈️ ${f.arrIATA || '目的地'} (${f.term || '機場'})`, lat: f.lat||0, lng: f.lng||0, isAuto: true, isAutoFlight: true, img: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600", intro:"這是一個非常值得一訪的絕佳地點，融合了豐富的在地歷史文化與令人驚嘆的現代建築設計。無論是漫步在街道上感受獨特的氛圍，或是品嚐周邊道地的特色美食，都能讓您獲得前所未有的沉浸式旅行體驗。從早到晚，這裡都有不同的風貌，無論是清晨的寧靜還是夜晚的繁華，絕對是這趟行程中不可錯過的亮點之一，強烈建議多預留一點時間在這裡細細品味。", review:{pos:"這裡的環境氛圍感真的超級棒！隨便找個角度拍照都非常出片，光線完美，濾鏡一加上去直接刷爆朋友圈。而且周邊的設施非常齊全，不論是洗手間還是休息區都很乾淨。服務人員態度親切專業，有問必答，甚至會主動幫忙拍照。整體體驗遠超預期，性價比極高，強烈推薦大家一定要把這裡排進行程裡，絕對不會後悔，是一個會讓人想二刷的好地方！",neg:"唯一的缺點就是假日和旅遊旺季的時候人潮真的非常擁擠，如果沒有提早預訂或是避開尖峰時段，光是排隊就會耗掉大半天的時間，非常破壞旅遊興致。此外，周邊的物價稍微偏高，尤其是特色紀念品和餐廳餐點，建議大家可以先在其他地方用餐後再過來，或是自備一些小零食和水，比較不會傷荷包。最後提醒，部分步道較為陡峭，請務必穿著舒適好走的球鞋。"} });
+                    currentTrip.daily[dIdx].items.push({ id: `flight_${f.id}`, time: f.time, task: `✈️ 航班 ${f.flight}`, loc: `${f.depIATA || '出發地'} ✈️ ${f.arrIATA || '目的地'} (${f.term || '機場'})`, lat: f.lat||0, lng: f.lng||0, isAuto: true, isAutoFlight: true, img: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600", intro:"這是一個極具代表性且非常值得一訪的絕佳地點，完美融合了豐富的在地歷史文化底蘊與令人驚嘆的現代建築設計美學。無論是悠閒漫步在街道上感受獨特的城市氛圍，或是品嚐周邊道地的特色美食，都能讓您獲得前所未有的沉浸式旅行體驗。從早到晚這裡都有不同的迷人風貌，絕對是這趟行程中不可錯過的亮點之一，強烈建議多預留至少半天時間在這裡細細品味。", review:{pos:"這裡的整體環境與氛圍感真的超級棒！隨便找個角度拍照都非常出片，自然光線完美，濾鏡一加上去直接刷爆朋友圈。而且周邊的附屬設施非常齊全，不論是洗手間還是旅客休息區都維持得很乾淨。服務人員態度親切專業，有問必答，甚至會主動熱心幫忙拍照。整體體驗遠超預期，性價比極高，強烈推薦大家一定要把這裡排進行程裡，絕對是一個會讓人想無限次二刷的好地方！",neg:"唯一的缺點就是每逢假日和旅遊旺季的時候，現場人潮真的非常擁擠。如果沒有提早預訂票券或是避開人潮尖峰時段，光是在門口排隊入場就會耗掉大半天的寶貴時間，非常破壞整體的旅遊興致。此外，周邊的物價稍微偏高，尤其是特色紀念品和景觀餐廳餐點，建議大家可以先在市區其他地方用餐後再過來，或是自己隨身攜帶一些小零食和礦泉水，這樣比較不會太傷荷包。"} });
                 }
             });
             await saveDB('trips', currentTrip.id, currentTrip);
         }
 
-        // 15.0 更新航班後保證觸發畫面重繪
-        function updateFlightData(f) {
-            saveDB('trips', currentTrip.id, currentTrip).then(() => {
-                syncToItinerary().then(() => { if(document.getElementById('daily').classList.contains('active')) { renderDaily(currentDayIdx); } });
-            });
+        // 修改 Input 後強制寫入並重繪
+        async function handleFlightChange(fId, field, value) {
+            let f = currentTrip.flights.find(x => x.id === fId);
+            if(f) { f[field] = value; await saveDB('trips', currentTrip.id, currentTrip); await syncToItinerary(); renderTransportStay(); if(document.getElementById('daily').classList.contains('active')) renderDaily(currentDayIdx); }
+        }
+        async function handleStayChange(sId, field, value) {
+            let s = currentTrip.stays.find(x => x.id === sId);
+            if(s) { s[field] = value; if(field==='name') s.addr=value; await saveDB('trips', currentTrip.id, currentTrip); await syncToItinerary(); renderTransportStay(); if(document.getElementById('daily').classList.contains('active')) renderDaily(currentDayIdx); }
         }
 
         function autoSyncFlight(idx, fId) {
@@ -677,54 +657,48 @@
         }
 
         function renderTransportStay() {
-            // 航班 UI (加入檔案功能)
             document.getElementById('flight-content').innerHTML = currentTrip.flights.map((f, idx) => `
                 <div class="mb-4 bg-[rgba(255,255,255,0.7)] p-4 rounded-xl border border-white shadow-sm">
                     <div class="flex justify-between items-center mb-2">
-                        <input value="${f.title}" class="bg-transparent border-none font-bold text-sm p-0 w-1/3" onchange="f.title=this.value; updateFlightData(f);">
+                        <input value="${f.title}" class="bg-transparent border-none font-bold text-sm p-0 w-1/3" onchange="handleFlightChange('${f.id}', 'title', this.value)">
                         <div class="flex items-center gap-3">
-                            <input id="f_date_${f.id}" value="${f.date}" class="bg-transparent border-none text-xs text-gray-500 p-0 text-right w-16" readonly onclick="openPicker('f_date_${f.id}')" onchange="f.date=this.value; updateFlightData(f);">
-                            <button onclick="deleteFlight('${f.id}')" class="text-red-400"><i class="fa-solid fa-trash"></i></button>
+                            <input id="f_date_${f.id}" value="${f.date}" class="bg-transparent border-none text-xs text-gray-500 p-0 text-right w-16" readonly onclick="openPicker('f_date_${f.id}')" onchange="handleFlightChange('${f.id}', 'date', this.value)">
+                            <button onclick="deleteFlight('${f.id}')" class="text-red-400 react-btn"><i class="fa-solid fa-trash"></i></button>
                         </div>
                     </div>
-                    <div class="flex items-center my-3"><i class="fa-solid ${f.airlineIcon} text-2xl mr-4 text-[var(--kr-accent)]"></i><div class="flex-1"><p class="font-bold text-lg">${f.route} <span class="inline-flex items-center bg-white border rounded-lg ml-1 overflow-hidden"><input id="flight_num_${f.id}" value="${f.flight}" class="text-xs w-16 p-1 text-center border-none" placeholder="航班號" onchange="f.flight=this.value; updateFlightData(f)"><button onclick="autoSyncFlight(${idx}, '${f.id}')" class="bg-[var(--kr-accent)] text-white text-[10px] px-2 py-1">同步</button></span></p><input type="time" value="${f.time}" class="text-sm font-bold font-mono mt-1 text-gray-600 bg-transparent border-none p-0 w-24" onchange="f.time=this.value; updateFlightData(f);"></div></div>
+                    <div class="flex items-center my-3"><i class="fa-solid ${f.airlineIcon} text-2xl mr-4 text-[var(--kr-accent)]"></i><div class="flex-1"><p class="font-bold text-lg">${f.route} <span class="inline-flex items-center bg-white border rounded-lg ml-1 overflow-hidden"><input id="flight_num_${f.id}" value="${f.flight}" class="text-xs w-16 p-1 text-center border-none" placeholder="航班號" onchange="handleFlightChange('${f.id}', 'flight', this.value)"><button onclick="autoSyncFlight(${idx}, '${f.id}')" class="bg-[var(--kr-accent)] text-white text-[10px] px-2 py-1 react-btn">同步</button></span></p><input type="time" value="${f.time}" class="text-sm font-bold font-mono mt-1 text-gray-600 bg-transparent border-none p-0 w-24" onchange="handleFlightChange('${f.id}', 'time', this.value)"></div></div>
                     <div class="bg-white p-2 rounded-lg text-xs font-bold flex flex-col gap-1 mb-3">
-                        <a href="https://maps.google.com/?q=${encodeURIComponent(f.term)}" target="_blank" class="text-blue-500"><i class="fa-solid fa-map-pin"></i> 起點: ${f.term} (${f.depIATA || ''})</a>
-                        ${f.destName ? `<a href="https://maps.google.com/?q=${encodeURIComponent(f.destName)}" target="_blank" class="text-blue-500"><i class="fa-solid fa-location-dot"></i> 終點: ${f.destName} (${f.arrIATA || ''})</a>` : ''}
+                        <input value="${f.term}" class="text-blue-500 bg-transparent border-none p-0 m-0 w-full" onchange="handleFlightChange('${f.id}', 'term', this.value)">
                     </div>
-                    <div class="flex justify-end"><label class="bg-white border px-3 py-1.5 rounded-xl cursor-pointer shadow-sm text-xs font-bold text-[var(--kr-accent)]"><input type="file" accept=".pdf, image/*" class="file-hide" onchange="addPdf(this, '${f.id}')"><i class="fa-solid fa-paperclip"></i> 添加檔案</label></div><div id="file_wrap_${f.id}" class="mt-2 text-xs flex justify-end"></div>
+                    <div class="flex justify-end"><label class="bg-white border px-3 py-1.5 rounded-xl cursor-pointer shadow-sm text-xs font-bold text-[var(--kr-accent)] react-btn"><input type="file" accept=".pdf, image/*" class="file-hide" onchange="addPdf(this, '${f.id}')"><i class="fa-solid fa-paperclip"></i> 添加檔案</label></div><div id="file_wrap_${f.id}" class="mt-2 text-xs flex justify-end"></div>
                 </div>`).join(''); 
             
-            // 住宿 UI 鏡像排版 (加入檔案功能)
             document.getElementById('stay-content').innerHTML = currentTrip.stays.map((s, idx) => `
                 <div class="mb-4 bg-[rgba(255,255,255,0.7)] p-4 rounded-xl border border-white shadow-sm">
                     <div class="flex justify-between items-center mb-2">
-                        <input id="stay_name_${s.id}" value="${s.name}" class="bg-transparent border-none font-bold text-sm p-0 w-2/3" onchange="s.name=this.value; s.addr=this.value; saveDB('trips',currentTrip.id,currentTrip);syncToItinerary();if(document.getElementById('daily').classList.contains('active')) renderDaily(currentDayIdx);">
-                        <button onclick="deleteStay('${s.id}')" class="text-red-400"><i class="fa-solid fa-trash"></i></button>
+                        <input id="stay_name_${s.id}" value="${s.name}" class="bg-transparent border-none font-bold text-sm p-0 w-2/3" onchange="handleStayChange('${s.id}', 'name', this.value)">
+                        <button onclick="deleteStay('${s.id}')" class="text-red-400 react-btn"><i class="fa-solid fa-trash"></i></button>
                     </div>
                     <div class="flex items-center my-3">
                         <i class="fa-solid fa-bed text-2xl mr-4 text-[var(--kr-accent)]"></i>
                         <div class="flex-1">
-                            <p class="font-bold text-sm text-gray-500 mb-1">入住日期 / 退房日期</p>
-                            <input id="s_date_${s.id}" value="${s.date}" class="text-lg font-bold bg-white border rounded-lg px-2 py-1 w-full text-center" readonly onclick="openPicker('s_date_${s.id}')" placeholder="點擊選日期" onchange="s.date=this.value;saveDB('trips',currentTrip.id,currentTrip);syncToItinerary();if(document.getElementById('daily').classList.contains('active')) renderDaily(currentDayIdx);">
+                            <p class="font-bold text-sm text-gray-500 mb-1">入住 / 退房</p>
+                            <input id="s_date_${s.id}" value="${s.date}" class="text-lg font-bold bg-white border rounded-lg px-2 py-1 w-full text-center" readonly onclick="openPicker('s_date_${s.id}')" onchange="handleStayChange('${s.id}', 'date', this.value)">
                         </div>
                     </div>
-                    <div class="bg-white p-2 rounded-lg text-xs font-bold flex flex-col gap-1 mb-3">
-                        <a href="https://maps.google.com/?q=${encodeURIComponent(s.addr)}" target="_blank" class="text-blue-500 truncate"><i class="fa-solid fa-map-pin"></i> 飯店位置: ${s.addr}</a>
-                    </div>
-                    <div class="flex justify-end"><label class="bg-white border px-3 py-1.5 rounded-xl cursor-pointer shadow-sm text-xs font-bold text-[var(--kr-accent)]"><input type="file" accept=".pdf, image/*" class="file-hide" onchange="addPdf(this, '${s.id}')"><i class="fa-solid fa-paperclip"></i> 添加檔案</label></div><div id="file_wrap_${s.id}" class="mt-2 text-xs flex justify-end"></div>
+                    <div class="flex justify-end"><label class="bg-white border px-3 py-1.5 rounded-xl cursor-pointer shadow-sm text-xs font-bold text-[var(--kr-accent)] react-btn"><input type="file" accept=".pdf, image/*" class="file-hide" onchange="addPdf(this, '${s.id}')"><i class="fa-solid fa-paperclip"></i> 添加檔案</label></div><div id="file_wrap_${s.id}" class="mt-2 text-xs flex justify-end"></div>
                 </div>`).join('');
                 
             currentTrip.flights.forEach(f => renderUserFiles(f.id));
             currentTrip.stays.forEach(s => renderUserFiles(s.id));
         }
 
-        async function deleteFlight(fid) { if(!confirm("刪除此航班？")) return; currentTrip.flights = currentTrip.flights.filter(f => f.id !== fid); await saveDB('trips', currentTrip.id, currentTrip); syncToItinerary(); renderTransportStay(); if(document.getElementById('daily').classList.contains('active')) renderDaily(currentDayIdx); }
-        async function deleteStay(sid) { if(!confirm("刪除此住宿？")) return; currentTrip.stays = currentTrip.stays.filter(s => s.id !== sid); syncToItinerary(); renderTransportStay(); if(document.getElementById('daily').classList.contains('active')) renderDaily(currentDayIdx); }
+        async function deleteFlight(fid) { if(!confirm("刪除此航班？")) return; currentTrip.flights = currentTrip.flights.filter(f => f.id !== fid); await saveDB('trips', currentTrip.id, currentTrip); await syncToItinerary(); renderTransportStay(); if(document.getElementById('daily').classList.contains('active')) renderDaily(currentDayIdx); }
+        async function deleteStay(sid) { if(!confirm("刪除此住宿？")) return; currentTrip.stays = currentTrip.stays.filter(s => s.id !== sid); await saveDB('trips', currentTrip.id, currentTrip); await syncToItinerary(); renderTransportStay(); if(document.getElementById('daily').classList.contains('active')) renderDaily(currentDayIdx); }
         async function addFlight() { const nid = `f${Date.now()}`; currentTrip.flights.push({ id: nid, title: "新航班", date: "10/29", route: "出發 → 抵達", flight: "航班號", airlineIcon: "fa-plane", time: "12:00", term: "輸入航廈", depIATA:"", arrIATA:"" }); await saveDB('trips', currentTrip.id, currentTrip); renderTransportStay(); }
-        async function addStay() { const nid = `s${Date.now()}`; currentTrip.stays.push({ id: nid, name: "新住宿", date: "10/30 - 10/31", addr: "飯店地址", lat:0, lng:0 }); syncToItinerary(); renderTransportStay(); }
+        async function addStay() { const nid = `s${Date.now()}`; currentTrip.stays.push({ id: nid, name: "新住宿", date: "10/30 - 10/31", addr: "飯店地址", lat:0, lng:0 }); await saveDB('trips', currentTrip.id, currentTrip); await syncToItinerary(); renderTransportStay(); }
 
-        // ================= 15.0 花費與數據分析 (精準同步) =================
+        // ================= 花費與數據分析 =================
         async function fetchExchangeRateAPI() { try { const res = await fetch("https://open.er-api.com/v6/latest/USD"); const data = await res.json(); exchangeRates = data.rates; const topCur = ["MYR","KRW","TWD","JPY","USD","EUR","GBP","HKD","THB","SGD"]; let opts = Object.keys(exchangeRates).sort((a,b) => topCur.includes(a) ? -1 : 1).map(k => `<option value="${k}">${k}</option>`).join(''); document.getElementById('curFrom').innerHTML = opts; document.getElementById('curTo').innerHTML = opts; document.getElementById('expCur').innerHTML = opts; document.getElementById('curFrom').value = "MYR"; document.getElementById('curTo').value = "KRW"; document.getElementById('expCur').value = "KRW"; document.getElementById('rateUpdateTxt').innerText = `API 更新: ${data.time_last_update_utc.substring(0,16)}`; convertCurrency(); } catch(e) {} }
         function swapCurrencies() { const f = document.getElementById('curFrom').value; document.getElementById('curFrom').value = document.getElementById('curTo').value; document.getElementById('curTo').value = f; convertCurrency(); }
         function convertCurrency() { const f = document.getElementById('curFrom').value; const t = document.getElementById('curTo').value; const amt = parseFloat(document.getElementById('curAmount').value) || 0; if(exchangeRates[f] && exchangeRates[t]) { document.getElementById('curResult').value = ((amt / exchangeRates[f]) * exchangeRates[t]).toFixed(2); } }
@@ -734,7 +708,6 @@
 
         function handleExpTypeChange(sel) { if(sel.value === '自定義') { let name = prompt("請輸入自定義類別名稱："); if(name) { let opt = new Option("✨ " + name, name); sel.add(opt, sel.options.length - 1); sel.value = name; } else { sel.value = '餐飲'; } } }
 
-        // 15.0 記帳後強制物理級重繪進度條
         async function addExpense() { 
             const e = { id: Date.now(), t: document.getElementById('expType').value, n: document.getElementById('expName').value, a: parseFloat(document.getElementById('expAmt').value)||0, c: document.getElementById('expCur').value, p: document.getElementById('expPayer').value, split: document.getElementById('expSplitType').value }; 
             if(e.a <= 0) return alert("請輸入金額"); 
@@ -751,13 +724,12 @@
                 let cur = e.c || 'KRW'; if(!balances[cur]) { balances[cur] = {}; currentTrip.users.forEach(u => balances[cur][u] = 0); }
                 if(e.split === 'equal') { balances[cur][e.p] += e.a; const splitAmt = e.a / currentTrip.users.length; currentTrip.users.forEach(u => balances[cur][u] -= splitAmt); }
                 if(exchangeRates[cur] && exchangeRates["MYR"]) { let bAmt = (e.a / exchangeRates[cur]) * exchangeRates["MYR"]; totalBaseSpent += bAmt; typeSums[e.t] = (typeSums[e.t] || 0) + bAmt; }
-                return `<div class="flex justify-between items-center border-b border-white pb-2 mb-2 text-sm"><div><span class="font-bold text-gray-700">${e.n || e.t}</span> <span class="text-[10px] text-gray-400 bg-white px-1 rounded">${e.p} 付款</span></div><div class="flex items-center gap-3"><span class="font-mono text-[var(--kr-accent)] font-bold">${e.a} ${cur}</span><button onclick="deleteExpense(${e.id})" class="text-red-400"><i class="fa-solid fa-trash"></i></button></div></div>`;
+                return `<div class="flex justify-between items-center border-b border-white pb-2 mb-2 text-sm"><div><span class="font-bold text-gray-700">${e.n || e.t}</span> <span class="text-[10px] text-gray-400 bg-white px-1 rounded">${e.p} 付款</span></div><div class="flex items-center gap-3"><span class="font-mono text-[var(--kr-accent)] font-bold">${e.a} ${cur}</span><button onclick="deleteExpense(${e.id})" class="text-red-400 react-btn"><i class="fa-solid fa-trash"></i></button></div></div>`;
             }).join('');
             
             let sumHtml = ''; for(let cur in balances) { let curSum = Object.keys(balances[cur]).map(u => { let amt = balances[cur][u]; if(Math.abs(amt) < 0.01) return ''; return `<p class="text-xs ${amt>=0?'text-green-600':'text-red-500'} font-bold">${u}: ${amt>=0?'需收回':'需支付'} ${Math.abs(amt).toFixed(2)} ${cur}</p>`; }).filter(x=>x).join(''); if(curSum) sumHtml += `<div class="mb-2 border-b border-gray-100 pb-1 last:border-0">${curSum}</div>`; }
             document.getElementById('expense-summary').innerHTML = `<div class="bg-[rgba(255,255,255,0.8)] p-4 rounded-xl border border-white mb-4 shadow-sm text-center"><p class="text-xs text-gray-500 mb-2 font-bold">💳 分帳結算</p>${sumHtml || '<p class="text-xs text-gray-400">目前無欠款</p>'}</div><div class="max-h-40 overflow-y-auto pr-2">${html}</div>`;
 
-            // 進度條物理級更新
             document.getElementById('tripBudget').value = currentTrip.budget || 0;
             let pct = currentTrip.budget > 0 ? (totalBaseSpent / currentTrip.budget) * 100 : 0;
             let ringColor = pct > 100 ? '#ef4444' : (pct > 80 ? '#f59e0b' : '#10b981');
@@ -773,7 +745,7 @@
         }
 
         // ================= 行李分類 =================
-        function renderLists() { let groups = {}; currentTrip.packItems.forEach((item, i) => { if(!groups[item.c]) groups[item.c] = []; groups[item.c].push({n: item.n, idx: i}); }); let html = ''; for(let cat in groups) { html += `<div class="mb-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm"><div class="text-sm font-bold text-gray-800 mb-3 border-b pb-1">${cat}</div>`; groups[cat].forEach(itm => { html += `<div class="flex items-center gap-3 mb-2"><input type="checkbox" class="w-5 h-5 accent-[var(--kr-accent)]"><span class="text-sm font-bold text-gray-600 flex-1">${itm.n}</span><button onclick="delPack(${itm.idx})" class="text-red-400"><i class="fa-solid fa-trash text-[12px]"></i></button></div>`; }); html += `</div>`; } document.getElementById('prep-list').innerHTML = html; }
+        function renderLists() { let groups = {}; currentTrip.packItems.forEach((item, i) => { if(!groups[item.c]) groups[item.c] = []; groups[item.c].push({n: item.n, idx: i}); }); let html = ''; for(let cat in groups) { html += `<div class="mb-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm"><div class="text-sm font-bold text-gray-800 mb-3 border-b pb-1">${cat}</div>`; groups[cat].forEach(itm => { html += `<div class="flex items-center gap-3 mb-2"><input type="checkbox" class="w-5 h-5 accent-[var(--kr-accent)]"><span class="text-sm font-bold text-gray-600 flex-1">${itm.n}</span><button onclick="delPack(${itm.idx})" class="text-red-400 react-btn"><i class="fa-solid fa-trash text-[12px]"></i></button></div>`; }); html += `</div>`; } document.getElementById('prep-list').innerHTML = html; }
         async function addPackItem() { const c = document.getElementById('packCategory').value; const n = document.getElementById('newPrep').value; if(n) { if(!currentTrip.packItems) currentTrip.packItems = []; currentTrip.packItems.push({c, n}); document.getElementById('newPrep').value = ''; await saveDB('trips', currentTrip.id, currentTrip); renderLists(); } }
         async function delPack(i) { currentTrip.packItems.splice(i, 1); await saveDB('trips', currentTrip.id, currentTrip); renderLists(); }
 
