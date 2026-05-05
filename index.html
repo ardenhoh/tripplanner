@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>我的旅行繪本</title>
-    <!-- Favicon -->
     <link rel="icon" href="https://www.shutterstock.com/image-vector/airplane-vector-isolated-emoticon-emoji-600nw-2627946825.jpg">
     <link rel="apple-touch-icon" href="https://www.shutterstock.com/image-vector/airplane-vector-isolated-emoticon-emoji-600nw-2627946825.jpg">
     
@@ -13,7 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
     
     <style>
-        /* ================= 17.0 極致質感主題變數 ================= */
+        /* ================= 18.0 極致質感主題變數 ================= */
         :root {
             --kr-cream: #F5F3EC; --kr-text: #4A4641; --kr-accent: #9A9283;
             --kr-glass: rgba(255, 255, 255, 0.4); --kr-glass-border: rgba(255, 255, 255, 0.8);
@@ -29,44 +28,42 @@
         body, input, textarea, select, button, .hand-drawn { font-family: Arial, sans-serif !important; }
         body { background: var(--kr-cream); background-image: var(--kr-bg-texture); color: var(--kr-text); background-attachment: fixed; -webkit-tap-highlight-color: transparent; transition: background 0.5s ease, color 0.5s ease; min-height: 100vh; }
 
-        .liquid-glass { background: var(--kr-card-bg); backdrop-filter: saturate(150%) blur(40px); -webkit-backdrop-filter: saturate(150%) blur(40px); border: 1px solid var(--kr-glass-border); box-shadow: var(--kr-shadow); border-radius: 24px; position: relative; z-index: 10; transition: border-color 0.3s; }
+        .liquid-glass { background: var(--kr-card-bg); backdrop-filter: saturate(150%) blur(40px); border: 1px solid var(--kr-glass-border); box-shadow: var(--kr-shadow); border-radius: 24px; position: relative; z-index: 10; }
 
-        /* 視圖切換 */
         .view-screen { display: none; min-height: 100vh; padding-bottom: 110px; animation: fadeIn 0.4s ease; }
         .view-screen.active { display: block; }
         .tab-section { display: none; animation: fadeIn 0.3s ease; }
         .tab-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* 底部導航 */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: rgba(245, 243, 236, 0.85); backdrop-filter: saturate(200%) blur(30px); border-top: 1px solid rgba(255,255,255,0.8); display: flex; justify-content: space-around; padding: 12px 0 25px 0; z-index: 1000; }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: rgba(245, 243, 236, 0.85); backdrop-filter: blur(30px); border-top: 1px solid rgba(255,255,255,0.8); display: flex; justify-content: space-around; padding: 12px 0 25px 0; z-index: 1000; }
         .nav-item { color: #C2BCB3; transition: 0.3s; position: relative; }
         .nav-item.active { color: var(--kr-text); transform: translateY(-4px); }
         .nav-item.active::after { content:''; position:absolute; bottom:-6px; left:50%; transform:translateX(-50%); width:4px; height:4px; background:var(--kr-accent); border-radius:50%; }
 
-        /* 17.0 小時天氣 Compact 化 (減少 50% 內距) */
-        .h-scroll-container { margin: 0 -10px; padding: 5px 10px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; scroll-behavior: smooth; }
+        /* 18.0 小時天氣 Compact 化 (邊距減少 50%) */
+        .h-scroll-container { margin: 0 -5px; padding: 2px 5px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; scroll-behavior: smooth; }
         .h-scroll-container::-webkit-scrollbar { display: none; }
-        .h-scroll { display: flex; gap: 8px; width: max-content; padding-bottom: 2px; }
-        .day-btn { flex: 0 0 65px; scroll-snap-align: center; padding: 10px 0; border-radius: 16px; background: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.8); color: #999; text-align: center; font-size: 0.8rem; transition: 0.3s; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: none !important; }
+        .h-scroll { display: flex; gap: 6px; width: max-content; padding-bottom: 2px; }
+        .day-btn { flex: 0 0 65px; scroll-snap-align: center; padding: 10px 0; border-radius: 16px; background: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.8); color: #999; text-align: center; font-size: 0.8rem; cursor: pointer; box-shadow: none !important; }
         .day-btn.active { background: var(--kr-accent); color: #fff; border-color: var(--kr-accent); transform: scale(1.05); font-weight: bold; }
-        .hourly-item { flex: 0 0 50px; text-align: center; font-size: 0.7rem; padding: 4px 0; border-radius: 12px; transition: 0.3s; background: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.3); scroll-snap-align: center; box-shadow: none !important; }
+        .hourly-item { flex: 0 0 50px; text-align: center; font-size: 0.7rem; padding: 4px 0; border-radius: 12px; background: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.3); scroll-snap-align: center; box-shadow: none !important; }
         .hourly-item.active-hour { background: var(--kr-accent); color: white; font-weight: bold; transform: scale(1.1); border-color: transparent; }
 
-        /* ================= 17.0 沉浸式物理級天氣 (光學與流體重構) ================= */
+        /* ================= 18.0 沉浸式物理級天氣 (光學與單向雲流重塑) ================= */
         .weather-bg-container { position: absolute; inset: 0; overflow: hidden; border-radius: 24px; z-index: -1; pointer-events: none; transition: background-color 0.8s ease; }
-        .weather-darken { background-color: rgba(40, 50, 65, 0.8); } 
-        /* 晴天：超重羽化 Lens Flare 與隨機物理波紋 */
-        .anim-sun-flare { position: absolute; top: -80px; left: -80px; width: 350px; height: 350px; background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,240,160,0.6) 20%, rgba(255,200,80,0.2) 40%, transparent 65%); filter: blur(60px); animation: lensPulse 6s ease-in-out infinite alternate; mix-blend-mode: screen; }
+        .weather-darken { background-color: rgba(30, 40, 55, 0.85); } 
+        /* 晴天：超重羽化 blur(60px) 與實時折射波紋 */
+        .anim-sun-flare { position: absolute; top: -80px; left: -80px; width: 350px; height: 350px; background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,240,150,0.6) 20%, rgba(255,200,50,0.2) 40%, transparent 65%); filter: blur(60px); animation: lensPulse 5s ease-in-out infinite alternate; mix-blend-mode: screen; }
         .anim-sun-ripple { position: absolute; top: 15px; left: 15px; width: 90px; height: 90px; border-radius: 50%; box-shadow: 0 0 60px 40px rgba(255,255,255,0.7); animation: ripplePulse 2.5s linear infinite; }
-        /* 雨天：無盡單向雲流與多重遮罩層次 */
-        .anim-one-way-cloud { position: absolute; background: rgba(140, 150, 160, 0.85); border-radius: 100px; box-shadow: 40px 30px 0 10px rgba(120, 130, 140, 0.8), 80px 10px 0 20px rgba(100, 110, 120, 0.9); filter: blur(12px); width: 200px; height: 80px; animation: cloudDrift 12s linear infinite; mix-blend-mode: multiply; }
-        .anim-fine-rain { position: absolute; background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.6) 100%); width: 0.8px; height: 50px; animation: rainFall 0.4s linear infinite; }
+        /* 雨天：無盡單向雲流 (從左至右漂移至消失後重置) */
+        .anim-one-way-cloud { position: absolute; background: rgba(130, 140, 150, 0.85); border-radius: 100px; box-shadow: 40px 20px 0 10px rgba(110, 120, 130, 0.8), 80px 5px 0 15px rgba(90, 100, 110, 0.9); filter: blur(10px); width: 180px; height: 70px; animation: endlessDrift 15s linear infinite; mix-blend-mode: multiply; }
+        .anim-fine-rain { position: absolute; background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.7) 100%); width: 0.8px; height: 50px; animation: rainFall 0.4s linear infinite; }
         
-        @keyframes lensPulse { 0% { transform: scale(1) translate(0, 0); opacity: 0.7; } 100% { transform: scale(1.3) translate(15px, 15px); opacity: 1; } }
-        @keyframes ripplePulse { 0% { transform: scale(0.6); opacity: 1; } 100% { transform: scale(2.5); opacity: 0; } }
-        /* 單向雲流：由左至右至消失，無縫重置 */
-        @keyframes cloudDrift { 0% { transform: translateX(-250px); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { transform: translateX(120vw); opacity: 0; } }
+        @keyframes lensPulse { 0% { transform: scale(1) translate(0, 0); opacity: 0.7; } 100% { transform: scale(1.3) translate(10px, 10px); opacity: 1; } }
+        @keyframes ripplePulse { 0% { transform: scale(0.6); opacity: 1; } 100% { transform: scale(2.4); opacity: 0; } }
+        /* 18.0 單向雲流：由左至右至完全消失，無縫重置 */
+        @keyframes endlessDrift { 0% { transform: translateX(-200px); opacity: 0; } 5% { opacity: 1; } 90% { opacity: 1; } 100% { transform: translateX(120vw); opacity: 0; } }
         @keyframes rainFall { 0% { transform: translateY(-50px) rotate(15deg); opacity: 0; } 15% { opacity: 1; } 100% { transform: translateY(250px) rotate(15deg); opacity: 0; } }
 
         .item-header { position: relative; width: 100%; height: 180px; border-radius: 24px 24px 0 0; overflow: hidden; background: #e0e0e0; }
@@ -75,9 +72,9 @@
         .react-btn:active { transform: scale(0.9); opacity: 0.8; }
         .edit-img-btn { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.7); color: var(--kr-text); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 20; }
         
-        /* 17.0 序號圈圈 50% 不透明度 */
-        .idx-circle { position: absolute; top: 12px; left: 12px; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; z-index: 20; background: rgba(154, 146, 131, 0.5); backdrop-filter: blur(5px); box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
-        .idx-circle span { color: white; opacity: 1; }
+        /* 18.0 序號圈圈 50% 不透明度背景，內部字體/Icon 100% */
+        .idx-circle { position: absolute; top: 12px; left: 12px; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; z-index: 20; background: rgba(154, 146, 131, 0.5); box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+        .idx-circle span, .idx-circle i { color: white; opacity: 1 !important; }
 
         .transit-node { display: flex; flex-direction: column; align-items: center; margin: -15px 0; position: relative; z-index: 1; }
         .transit-line { width: 2px; height: 45px; background: repeating-linear-gradient(to bottom, #d1d1d1 0, #d1d1d1 4px, transparent 4px, transparent 8px); }
@@ -89,16 +86,17 @@
         .file-hide { display: none; }
         .btn-primary { background: var(--kr-accent); color: white; padding: 10px 18px; border-radius: 14px; font-size: 0.85rem; font-weight: bold; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
         
-        /* ================= 17.0 Omni-FAB (流體彈射與智慧標籤消失) ================= */
-        .omni-fab-container { position: fixed; bottom: 85px; right: 20px; z-index: 900; display: flex; flex-direction: column-reverse; align-items: flex-end; }
+        /* ================= 18.0 Omni-FAB (流體彈射與智慧標籤) ================= */
+        .omni-fab-container { position: fixed; bottom: 20px; right: 20px; z-index: 900; display: flex; flex-direction: column-reverse; align-items: flex-end; }
         .omni-main-btn { background: var(--kr-text); color: white; width: 56px; height: 56px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; box-shadow: 0 8px 25px rgba(0,0,0,0.3); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 2; border: 2px solid rgba(255,255,255,0.2); }
         .omni-main-btn.active { transform: rotate(45deg); background: var(--kr-accent); }
         
-        .omni-menu { display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px; opacity: 0; pointer-events: none; transform: translateY(20px); transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); align-items: flex-end; transform-origin: bottom right; }
+        /* 流體彈出：translateY(20px) 到 0 */
+        .omni-menu { display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px; opacity: 0; pointer-events: none; transform: translateY(20px); transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); align-items: flex-end; }
         .omni-menu.active { opacity: 1; pointer-events: auto; transform: translateY(0); }
         .omni-item { display: flex; align-items: center; gap: 12px; cursor: pointer; }
         
-        /* 強虛化絕對居中標籤，3秒消失動畫 */
+        /* 強虛化絕對置中標籤，3秒消失動畫 */
         .omni-label { 
             background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); 
             color: var(--kr-text); border-radius: 10px; font-size: 13px; font-weight: bold; 
@@ -107,7 +105,7 @@
             display: flex; align-items: center; justify-content: center; text-align: center;
         }
         .omni-menu.active .omni-label { animation: smartFadeOut 0.5s ease-in forwards; animation-delay: 3s; }
-        @keyframes smartFadeOut { to { opacity: 0; filter: blur(5px); transform: translateX(10px); pointer-events: none; } }
+        @keyframes smartFadeOut { to { opacity: 0; filter: blur(8px); transform: translateX(10px); pointer-events: none; } }
         .omni-sub-btn { background: white; color: var(--kr-accent); width: 44px; height: 44px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.1rem; box-shadow: 0 6px 15px rgba(0,0,0,0.15); }
 
         .book-card { background: var(--kr-card-bg); backdrop-filter: blur(20px); border-radius: 12px 24px 24px 12px; padding: 20px; box-shadow: 5px 5px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; border-left: 12px solid var(--kr-accent); position: relative; overflow: hidden; transition: 0.3s; margin-bottom: 15px; border-top: 1px solid rgba(255,255,255,0.5); }
@@ -117,13 +115,13 @@
         .thumb-box { width: 60px; height: 60px; border-radius: 10px; object-fit: cover; cursor: pointer; border: 1px solid #eee; }
         .thumb-del-btn { position: absolute; top: -6px; right: -6px; background: #ef4444; color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 10px; display: flex; align-items: center; justify-content: center; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
-        /* ================= 17.0 全屏檔案預覽 (Pinch & Drag) ================= */
+        /* ================= 18.0 全屏檔案預覽 (Pinch & Drag) ================= */
         #fullscreen-preview { display: none; position: fixed; inset: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.95); z-index: 5000; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(15px); overflow: hidden; }
         #preview-wrapper { width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; }
         #preview-img { max-width: 100%; max-height: 100%; object-fit: contain; transform-origin: center; transition: transform 0.1s ease-out; cursor: grab; }
         #preview-iframe { width: 100vw; height: 100vh; border: none; background: white; }
-        /* 關閉按鈕固定於右上角安全區域 */
-        .close-fullscreen { position: absolute; top: 25px; right: 25px; background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; z-index: 5100; border: 1px solid rgba(255,255,255,0.4); box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        /* 關閉按鈕固定於右上角安全區域 (無視滾動) */
+        .close-fullscreen { position: fixed; top: 25px; right: 25px; background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; z-index: 5100; border: 1px solid rgba(255,255,255,0.4); box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
 
         .budget-ring { position: relative; width: 110px; height: 110px; border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; transition: background 0.3s; }
         .budget-ring::before { content: ""; position: absolute; inset: 10px; background: var(--kr-glass); border-radius: 50%; backdrop-filter: blur(10px); }
@@ -161,7 +159,7 @@
             <button class="btn-primary w-full react-btn" onclick="createNewTrip()">新增旅行</button>
         </div>
 
-        <!-- 17.0 首頁主題 Omni-FAB -->
+        <!-- 18.0 首頁主題 Omni-FAB -->
         <div class="omni-fab-container">
             <div class="omni-menu" id="home-omni-menu">
                 <div class="omni-item react-btn" onclick="setTheme('steel');toggleHomeOmni()"><div class="omni-label">拉絲鋼鐵</div><div class="omni-sub-btn"><i class="fa-solid fa-gem"></i></div></div>
@@ -190,7 +188,7 @@
                 <div id="weather-banner" class="liquid-glass p-5 mb-4 relative overflow-hidden"></div>
                 <div id="daily-content"></div>
                 
-                <!-- 17.0 行程 Omni-FAB主樞紐 -->
+                <!-- 18.0 行程 Omni-FAB主樞紐 -->
                 <div class="omni-fab-container">
                     <div class="omni-menu" id="trip-omni-menu">
                         <div class="omni-item react-btn" onclick="openDailyGoogleMaps()"><div class="omni-label">當日行程全覽</div><div class="omni-sub-btn"><i class="fa-solid fa-map-location-dot"></i></div></div>
@@ -307,7 +305,7 @@
         </nav>
     </div>
 
-    <!-- 17.0 全屏檔案預覽 Modal (Pinch & Drag) -->
+    <!-- 18.0 全屏檔案預覽 Modal (Pinch & Drag) -->
     <div id="fullscreen-preview" onclick="closePreview()">
         <div class="close-fullscreen react-btn" onclick="event.stopPropagation(); closePreview()"><i class="fa-solid fa-xmark"></i></div>
         <div id="preview-wrapper" onclick="event.stopPropagation()">
@@ -326,7 +324,7 @@
 
     <script>
         // ================= 資料庫 & 初始化 =================
-        const dbName = "TravelBookDB_v17"; let db;
+        const dbName = "TravelBookDB_v18"; let db;
         const initDB = new Promise((resolve) => {
             const req = indexedDB.open(dbName, 1);
             req.onupgradeneeded = (e) => {
@@ -347,13 +345,13 @@
         function toggleHomeOmni() { const btn = document.getElementById('home-omni-btn'); const menu = document.getElementById('home-omni-menu'); btn.classList.toggle('active'); menu.classList.toggle('active'); }
         function toggleTripOmni() { const btn = document.getElementById('trip-omni-btn'); const menu = document.getElementById('trip-omni-menu'); btn.classList.toggle('active'); menu.classList.toggle('active'); }
 
-        // 17.0 嚴格 50 字以上深度文案 (專業分析師視角)
+        // 18.0 嚴格 50 字以上深度約束文案 (專業分析師視角與 Bauhaus 觀察)
         function generate14DaysData() {
             const regions = ["吉隆坡","釜山","釜山","釜山-濟州","濟州島","濟州島","濟州島","濟州島","濟州島","濟州-首爾","首爾","首爾","首爾","首爾"];
             let daily = [];
-            const deepIntro = "這是一個極具代表性且非常值得一訪的絕佳地點，完美融合了豐富的在地歷史文化底蘊與令人驚嘆的現代建築設計美學。無論是悠閒漫步在街道上感受獨特的城市氛圍，或是品嚐周邊道地的特色美食，都能讓您獲得前所未有的沉浸式旅行體驗。從早到晚這裡都有不同的迷人風貌，絕對是這趟行程中不可錯過的亮點之一，強烈建議多預留至少半天時間在這裡細細品味，挖掘更多有趣的細節。";
-            const deepPos = "這裡的整體環境與氛圍感真的超級棒！隨便找個角度拍照都非常出片，自然光線完美，濾鏡一加上去直接刷爆朋友圈。而且周邊的附屬設施非常齊全，不論是洗手間還是旅客休息區都維持得很乾淨。服務人員態度親切專業，有問必答，甚至會主動熱心幫忙拍照。整體體驗遠超預期，性價比極高，強烈推薦大家一定要把這裡排進行程裡，絕對是一個會讓人想無限次二刷的好地方！";
-            const deepNeg = "唯一的缺點就是每逢假日和旅遊旺季的時候，現場人潮真的非常擁擠。如果沒有提早預訂票券或是避開人潮尖峰時段，光是在門口排隊入場就會耗掉大半天的寶貴時間，非常破壞整體的旅遊興致。此外，周邊的物價稍微偏高，尤其是特色紀念品和景觀餐廳餐點，建議大家可以先在市區其他地方用餐後再過來，或是自己隨身攜帶一些小零食和礦泉水，這樣比較不會太傷荷包。";
+            const deepIntro = "這是一個極具指標性且充滿包浩斯工業設計美學的建築地標，完美融合了在地歷史的深厚底蘊與現代金屬結構的幾何張力。無論是早晨的光影變化還是夜間的燈光渲染，都能為數據分析師提供絕佳的觀察視角與攝影構圖。強烈建議在此停留至少半天，細細品味每個角落的設計語彙與空間流動感，這絕對是整趟行程中最具啟發性的站點。";
+            const deepPos = "現場的光線折射與材質紋理真的無可挑剔！每一個轉角都像是精心計算過的取景框，隨手一拍都是自帶濾鏡的高級大片，發到小紅書絕對能收穫滿滿的讚。周邊的配套設施也極度完善，不管是俐落乾淨的洗手間，還是提供手沖咖啡的休息區，都展現了極高的服務水準與細節控的堅持，絕對是追求生活質感的旅人必訪清單！";
+            const deepNeg = "唯一需要特別留意的是，這裡在週末與連續假日時的遊客流量極大，排隊動線有時會顯得稍微擁擠混亂，強烈建議務必提前在線上預約購票，或者刻意避開下午的尖峰時段。另外，周邊的文創商品和特色餐飲定價確實偏高，如果預算有限，不妨先在市區其他高性價比的餐廳用餐後再過來，將預算保留給真正值得收藏的紀念品。";
 
             for(let i=0; i<14; i++) {
                 let dayDate = new Date(2026, 9, 29); dayDate.setDate(dayDate.getDate() + i);
@@ -376,7 +374,7 @@
 
         const defaultTrip = {
             id: Date.now().toString(), title: "2026 苦盡柑來 🍊", color: "#9A9283", users: ["我"], budget: 50000,
-            flights: [ { id:"f0", title: "去程", date: "10/29", route: "KUL → HAN", flight: "VN680", airlineIcon: "fa-plane-departure", time: "19:10", term: "KLIA T1", lat: 21.21, lng: 105.80, destName: "內排國際機場", depIATA: "KUL", arrIATA: "HAN" } ],
+            flights: [ { id:"f0", title: "去程", date: "10/29", route: "KUL ✈️ ICN", flight: "VN680", airlineIcon: "fa-plane-departure", time: "19:10", term: "KLIA T1", lat: 21.21, lng: 105.80, destName: "內排國際機場", depIATA: "KUL", arrIATA: "HAN" } ],
             stays: [ { id:"s0", name: "Ramada Encore Haeundae", date: "10/30 - 11/01", addr: "釜山海雲台區", lat: 35.1631, lng: 129.1582 } ],
             expenses: [], packItems: [{c:"📄 证件", n:"護照正本"}], daily: generate14DaysData()
         };
@@ -387,12 +385,12 @@
             fetchExchangeRateAPI(); initTranslateLangs(); initPickerWheels(); renderHome();
         }
 
-        // ================= 17.0 沉浸式天氣特效 (字體強制高對比白) =================
+        // ================= 18.0 沉浸式天氣特效 (文字強制高對比純白) =================
         function generateWeatherAnim(code) {
             let html = '';
             if([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82, 95, 96, 99].includes(code)) {
                 html += '<div class="weather-bg-container weather-darken">'; 
-                html += `<div class="anim-one-way-cloud" style="top: -10px;"></div><div class="anim-one-way-cloud" style="top: 20px; animation-delay: -6s; transform: scale(0.8); opacity: 0.7;"></div>`;
+                html += `<div class="anim-one-way-cloud" style="top: -10px; animation-delay: 0s;"></div><div class="anim-one-way-cloud" style="top: 25px; animation-delay: -7s; transform: scale(0.85); opacity: 0.7;"></div>`;
                 for(let i=0; i<60; i++) { html += `<div class="anim-fine-rain" style="left:${Math.random()*100}%; animation-delay:${Math.random()}s;"></div>`; }
             } else if ([1, 2, 3, 45, 48].includes(code)) {
                 html += '<div class="weather-bg-container">';
@@ -412,7 +410,7 @@
             }
         }
 
-        // ================= 17.0 全域 Google Maps 外部跳轉 =================
+        // ================= 18.0 全域 Google Maps 外部跳轉 =================
         function openDailyGoogleMaps() {
             toggleTripOmni();
             let items = currentTrip.daily[currentDayIdx].items;
@@ -452,6 +450,7 @@
                 const todayTemps = wData.hourly.temperature_2m.slice(0, 24); const todayMax = Math.round(Math.max(...todayTemps)); const todayMin = Math.round(Math.min(...todayTemps));
                 const code = wData.current_weather.weathercode;
                 const isRainy = [51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82, 95, 96, 99].includes(code);
+                // 18.0 強制轉換為純白字體
                 const txtColor = isRainy ? 'text-white' : 'text-gray-500'; const dataColor = isRainy ? 'text-white' : 'text-gray-800';
 
                 for(let i=0; i<24; i++) {
@@ -488,7 +487,7 @@
                 <div class="liquid-glass mb-0 ${borderClass}">
                     <div class="item-header"><img id="img_${item.id}" src="${item.img}">
                         <label class="edit-img-btn react-btn"><input type="file" accept="image/*" class="file-hide" onchange="updateImg(this, ${idx}, ${i}, 'img')"><i class="fa-solid fa-camera"></i></label>
-                        <!-- 17.0 滿版圖 50% 序號圈, 100% icon -->
+                        <!-- 18.0 滿版圖 50% 序號圈, 內部 100% -->
                         <div class="idx-circle"><span>${item.isAutoFlight ? '✈️' : i+1}</span></div>
                     </div>
                     <div class="p-5" id="wrap_${item.id}">
@@ -559,11 +558,11 @@
             await saveDB('trips', currentTrip.id, currentTrip); renderDaily(currentDayIdx); 
         }
 
-        async function addNewAttraction() { toggleTripOmni(); currentTrip.daily[currentDayIdx].items.push({ id: `d${currentDayIdx}_${Date.now()}`, time: "12:00", task: "新行程", loc: "輸入地址", lat: 0, lng: 0, endTime: "22:00", img: "https://images.unsplash.com/photo-1556012018-50c5c0da73bf?w=600", isAuto: false, intro:"這是一個極具代表性且非常值得一訪的絕佳地點，完美融合了豐富的在地歷史文化底蘊與令人驚嘆的現代建築設計美學。無論是悠閒漫步在街道上感受獨特的城市氛圍，或是品嚐周邊道地的特色美食，都能讓您獲得前所未有的沉浸式旅行體驗。從早到晚這裡都有不同的迷人風貌，絕對是這趟行程中不可錯過的亮點之一，強烈建議多預留至少半天時間在這裡細細品味。", review:{pos:"這裡的整體環境與氛圍感真的超級棒！隨便找個角度拍照都非常出片，自然光線完美，濾鏡一加上去直接刷爆朋友圈。而且周邊的附屬設施非常齊全，不論是洗手間還是旅客休息區都維持得很乾淨。服務人員態度親切專業，有問必答，甚至會主動熱心幫忙拍照。整體體驗遠超預期，性價比極高，強烈推薦大家一定要把這裡排進行程裡，絕對是一個會讓人想無限次二刷的好地方！",neg:"唯一的缺點就是每逢假日和旅遊旺季的時候，現場人潮真的非常擁擠。如果沒有提早預訂票券或是避開人潮尖峰時段，光是在門口排隊入場就會耗掉大半天的寶貴時間，非常破壞整體的旅遊興致。此外，周邊的物價稍微偏高，尤其是特色紀念品和景觀餐廳餐點，建議大家可以先在市區其他地方用餐後再過來，或是自己隨身攜帶一些小零食和礦泉水，這樣比較不會太傷荷包。"} }); await saveDB('trips', currentTrip.id, currentTrip); renderDaily(currentDayIdx); setTimeout(() => window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'}), 100); }
+        async function addNewAttraction() { toggleTripOmni(); currentTrip.daily[currentDayIdx].items.push({ id: `d${currentDayIdx}_${Date.now()}`, time: "12:00", task: "新行程", loc: "輸入地址", lat: 0, lng: 0, endTime: "22:00", img: "https://images.unsplash.com/photo-1556012018-50c5c0da73bf?w=600", isAuto: false, intro:"這是一個極具指標性且充滿包浩斯工業設計美學的建築地標，完美融合了在地歷史的深厚底蘊與現代金屬結構的幾何張力。無論是早晨的光影變化還是夜間的燈光渲染，都能為數據分析師提供絕佳的觀察視角與攝影構圖。強烈建議在此停留至少半天，細細品味每個角落的設計語彙與空間流動感，這絕對是整趟行程中最具啟發性的站點。", review:{pos:"現場的光線折射與材質紋理真的無可挑剔！每一個轉角都像是精心計算過的取景框，隨手一拍都是自帶濾鏡的高級大片，發到小紅書絕對能收穫滿滿的讚。周邊的配套設施也極度完善，不管是俐落乾淨的洗手間，還是提供手沖咖啡的休息區，都展現了極高的服務水準與細節控的堅持，絕對是追求生活質感的旅人必訪清單！",neg:"唯一需要特別留意的是，這裡在週末與連續假日時的遊客流量極大，排隊動線有時會顯得稍微擁擠混亂，強烈建議務必提前在線上預約購票，或者刻意避開下午的尖峰時段。另外，周邊的文創商品和特色餐飲定價確實偏高，如果預算有限，不妨先在市區其他高性價比的餐廳用餐後再過來，將預算保留給真正值得收藏的紀念品。"} }); await saveDB('trips', currentTrip.id, currentTrip); renderDaily(currentDayIdx); setTimeout(() => window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'}), 100); }
         async function deleteItem(dIdx, iIdx) { if(currentTrip.daily[dIdx].items[iIdx].isAuto) return alert("自動連動卡片請至交通住宿修改！"); if(!confirm("確定刪除此行程？")) return; currentTrip.daily[dIdx].items.splice(iIdx, 1); await saveDB('trips', currentTrip.id, currentTrip); renderDaily(currentDayIdx); }
         async function moveOrder(dIdx, iIdx, dir) { const arr = currentTrip.daily[dIdx].items; if(iIdx + dir < 0 || iIdx + dir >= arr.length) return; if(arr[iIdx].isAuto || arr[iIdx+dir].isAuto) return alert("自動節點已鎖定順序！"); const temp = arr[iIdx]; arr[iIdx] = arr[iIdx + dir]; arr[iIdx + dir] = temp; await saveDB('trips', currentTrip.id, currentTrip); renderDaily(currentDayIdx); }
 
-        // ================= 檔案上傳與即時全屏預覽 (17.0 Pinch to Zoom) =================
+        // ================= 檔案上傳與即時全屏預覽 (18.0 Pinch to Zoom) =================
         function toBase64(file) { return new Promise((r) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => r(reader.result); }); }
         async function updateImg(input, dIdx, iIdx, type) { if (!input.files[0]) return; const b64 = await toBase64(input.files[0]); currentTrip.daily[dIdx].items[iIdx].img = b64; document.getElementById(`img_${currentTrip.daily[dIdx].items[iIdx].id}`).src = b64; await saveDB('trips', currentTrip.id, currentTrip); }
         async function saveFileData(id, type, data) { await saveDB('files', `${currentTrip.id}_${id}_${type}`, data); }
@@ -577,7 +576,7 @@
             const pdf = await getDB('files', `${currentTrip.id}_${id}_pdf`); if(document.getElementById(`file_wrap_${id}`)) { if(pdf) { document.getElementById(`file_wrap_${id}`).innerHTML = `<button onclick="openPreview('${pdf.data}', 'pdf')" class="bg-white border px-3 py-1.5 rounded-xl shadow-sm text-gray-700 font-bold react-btn mr-2"><i class="fa-solid fa-file-pdf text-[var(--kr-accent)] mr-1"></i> ${pdf.name}</button><button onclick="deletePdf('${id}')" class="text-red-400 p-2 bg-white border rounded-xl shadow-sm react-btn"><i class="fa-solid fa-trash"></i></button>`; } else { document.getElementById(`file_wrap_${id}`).innerHTML = ''; } }
         }
 
-        // 17.0 全螢幕預覽與手勢邏輯
+        // 18.0 全螢幕預覽與手勢邏輯 (Pinch to Zoom & Drag)
         function openPreview(src, type) {
             const modal = document.getElementById('fullscreen-preview');
             const img = document.getElementById('preview-img');
@@ -588,7 +587,6 @@
         }
         function closePreview() { document.getElementById('fullscreen-preview').style.display = 'none'; }
         
-        // 雙指縮放與拖曳 (Pinch & Drag)
         const pvImg = document.getElementById('preview-img');
         let currentScale = 1, initialDist = 0, currentX = 0, currentY = 0, initialX = 0, initialY = 0, isDragging = false;
         function resetZoom() { currentScale = 1; currentX = 0; currentY = 0; pvImg.style.transform = `translate(0px, 0px) scale(1)`; }
@@ -597,19 +595,20 @@
             else if(e.touches.length === 1) { isDragging = true; initialX = e.touches[0].pageX - currentX; initialY = e.touches[0].pageY - currentY; }
         });
         pvImg.addEventListener('touchmove', (e) => {
-            e.preventDefault();
             if(e.touches.length === 2) {
+                e.preventDefault();
                 const dist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
                 currentScale = Math.max(1, Math.min(dist / initialDist, 4));
                 pvImg.style.transform = `translate(${currentX}px, ${currentY}px) scale(${currentScale})`;
             } else if (e.touches.length === 1 && isDragging && currentScale > 1) {
+                e.preventDefault();
                 currentX = e.touches[0].pageX - initialX; currentY = e.touches[0].pageY - initialY;
                 pvImg.style.transform = `translate(${currentX}px, ${currentY}px) scale(${currentScale})`;
             }
         });
         pvImg.addEventListener('touchend', (e) => { if(e.touches.length < 2) isDragging = false; });
 
-        // ================= 17.0 iOS 直立滾輪日期 =================
+        // ================= 18.0 iOS 直立滾輪日期 =================
         let activePickerId = null;
         function initPickerWheels() {
             let yH = '', mH = '', dH = '';
@@ -619,16 +618,18 @@
             document.getElementById('wheel-year').innerHTML = yH; document.getElementById('wheel-month').innerHTML = mH; document.getElementById('wheel-day').innerHTML = dH;
         }
         function openPicker(id) { activePickerId = id; document.getElementById('ios-picker-modal').style.display = 'flex'; }
+        function openPickerForStay(id, side) { document.getElementById('ios-picker-modal').dataset.editSide = side; activePickerId = `s_date_${id}`; openPicker(activePickerId); }
         function closePicker() { document.getElementById('ios-picker-modal').style.display = 'none'; }
         function confirmPicker() {
             let y = getWheelVal('wheel-year'), m = getWheelVal('wheel-month'), d = getWheelVal('wheel-day');
             if(activePickerId && document.getElementById(activePickerId)) {
                 let el = document.getElementById(activePickerId); let newVal = `${m}/${d}`;
-                // 17.0 支援雙向日期修改
-                if(el.value.includes(' - ')) {
+                // 18.0 支援住宿的雙向日期實時修改 (In / Out)
+                if(activePickerId.startsWith('s_date_')) {
+                    let side = document.getElementById('ios-picker-modal').dataset.editSide;
                     let parts = el.value.split('-');
-                    // 根據 activePickerId 的後綴判斷修改入住還是退房
-                    el.value = el.dataset.editSide === 'out' ? `${parts[0].trim()} - ${newVal}` : `${newVal} - ${parts[1].trim()}`;
+                    if(side === 'in') el.value = `${newVal} - ${parts[1] ? parts[1].trim() : newVal}`;
+                    else el.value = `${parts[0] ? parts[0].trim() : newVal} - ${newVal}`;
                 } else { el.value = newVal; }
                 el.dispatchEvent(new Event('change'));
             }
@@ -636,7 +637,7 @@
         }
         function getWheelVal(id) { const el = document.getElementById(id); const idx = Math.round(el.scrollTop / 40); return el.children[idx]?.innerText || '01'; }
 
-        // ================= 17.0 交通住宿閉環 100% 實時同步 =================
+        // ================= 18.0 交通住宿閉環 100% 實時同步 =================
         async function syncToItinerary() {
             currentTrip.daily.forEach(d => { d.items = d.items.filter(i => !i.isAuto); });
             
@@ -645,8 +646,8 @@
                 if(parts.length === 2) {
                     let dIn = parts[0].trim(), dOut = parts[1].trim();
                     let dInIdx = currentTrip.daily.findIndex(d => d.date === dIn); let dOutIdx = currentTrip.daily.findIndex(d => d.date === dOut);
-                    if(dInIdx !== -1) currentTrip.daily[dInIdx].items.push({ id: `stay_in_${s.id}`, time: "15:00", task: `入住 ${s.name}`, loc: s.addr || "酒店地址", lat: s.lat||0, lng: s.lng||0, isAuto: true, img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600", intro:"這是一個極具代表性且非常值得一訪的絕佳地點，完美融合了豐富的在地歷史文化底蘊與令人驚嘆的現代建築設計美學。無論是悠閒漫步在街道上感受獨特的城市氛圍，或是品嚐周邊道地的特色美食，都能讓您獲得前所未有的沉浸式旅行體驗。從早到晚這裡都有不同的迷人風貌，絕對是這趟行程中不可錯過的亮點之一，強烈建議多預留至少半天時間在這裡細細品味。", review:{pos:"這裡的整體環境與氛圍感真的超級棒！隨便找個角度拍照都非常出片，自然光線完美，濾鏡一加上去直接刷爆朋友圈。而且周邊的附屬設施非常齊全，不論是洗手間還是旅客休息區都維持得很乾淨。服務人員態度親切專業，有問必答，甚至會主動熱心幫忙拍照。整體體驗遠超預期，性價比極高，強烈推薦大家一定要把這裡排進行程裡，絕對是一個會讓人想無限次二刷的好地方！",neg:"唯一的缺點就是每逢假日和旅遊旺季的時候，現場人潮真的非常擁擠。如果沒有提早預訂票券或是避開人潮尖峰時段，光是在門口排隊入場就會耗掉大半天的寶貴時間，非常破壞整體的旅遊興致。此外，周邊的物價稍微偏高，尤其是特色紀念品和景觀餐廳餐點，建議大家可以先在市區其他地方用餐後再過來，或是自己隨身攜帶一些小零食和礦泉水，這樣比較不會太傷荷包。"} });
-                    if(dOutIdx !== -1) currentTrip.daily[dOutIdx].items.unshift({ id: `stay_out_${s.id}`, time: "09:00", task: `從 ${s.name} 出發`, loc: s.addr || "酒店地址", lat: s.lat||0, lng: s.lng||0, isAuto: true, img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600", intro:"這是一個極具代表性且非常值得一訪的絕佳地點，完美融合了豐富的在地歷史文化底蘊與令人驚嘆的現代建築設計美學。無論是悠閒漫步在街道上感受獨特的城市氛圍，或是品嚐周邊道地的特色美食，都能讓您獲得前所未有的沉浸式旅行體驗。從早到晚這裡都有不同的迷人風貌，絕對是這趟行程中不可錯過的亮點之一，強烈建議多預留至少半天時間在這裡細細品味。", review:{pos:"這裡的整體環境與氛圍感真的超級棒！隨便找個角度拍照都非常出片，自然光線完美，濾鏡一加上去直接刷爆朋友圈。而且周邊的附屬設施非常齊全，不論是洗手間還是旅客休息區都維持得很乾淨。服務人員態度親切專業，有問必答，甚至會主動熱心幫忙拍照。整體體驗遠超預期，性價比極高，強烈推薦大家一定要把這裡排進行程裡，絕對是一個會讓人想無限次二刷的好地方！",neg:"唯一的缺點就是每逢假日和旅遊旺季的時候，現場人潮真的非常擁擠。如果沒有提早預訂票券或是避開人潮尖峰時段，光是在門口排隊入場就會耗掉大半天的寶貴時間，非常破壞整體的旅遊興致。此外，周邊的物價稍微偏高，尤其是特色紀念品和景觀餐廳餐點，建議大家可以先在市區其他地方用餐後再過來，或是自己隨身攜帶一些小零食和礦泉水，這樣比較不會太傷荷包。"} });
+                    if(dInIdx !== -1) currentTrip.daily[dInIdx].items.push({ id: `stay_in_${s.id}`, time: "15:00", task: `入住 ${s.name}`, loc: s.addr || "酒店地址", lat: s.lat||0, lng: s.lng||0, isAuto: true, img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600", intro:"這是一個極具指標性且充滿包浩斯工業設計美學的建築地標，完美融合了在地歷史的深厚底蘊與現代金屬結構的幾何張力。無論是早晨的光影變化還是夜間的燈光渲染，都能為數據分析師提供絕佳的觀察視角與攝影構圖。強烈建議在此停留至少半天，細細品味每個角落的設計語彙與空間流動感，這絕對是整趟行程中最具啟發性的站點。", review:{pos:"現場的光線折射與材質紋理真的無可挑剔！每一個轉角都像是精心計算過的取景框，隨手一拍都是自帶濾鏡的高級大片，發到小紅書絕對能收穫滿滿的讚。周邊的配套設施也極度完善，不管是俐落乾淨的洗手間，還是提供手沖咖啡的休息區，都展現了極高的服務水準與細節控的堅持，絕對是追求生活質感的旅人必訪清單！",neg:"唯一需要特別留意的是，這裡在週末與連續假日時的遊客流量極大，排隊動線有時會顯得稍微擁擠混亂，強烈建議務必提前在線上預約購票，或者刻意避開下午的尖峰時段。另外，周邊的文創商品和特色餐飲定價確實偏高，如果預算有限，不妨先在市區其他高性價比的餐廳用餐後再過來，將預算保留給真正值得收藏的紀念品。"} });
+                    if(dOutIdx !== -1) currentTrip.daily[dOutIdx].items.unshift({ id: `stay_out_${s.id}`, time: "09:00", task: `從 ${s.name} 出發`, loc: s.addr || "酒店地址", lat: s.lat||0, lng: s.lng||0, isAuto: true, img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600", intro:"這是一個極具指標性且充滿包浩斯工業設計美學的建築地標，完美融合了在地歷史的深厚底蘊與現代金屬結構的幾何張力。無論是早晨的光影變化還是夜間的燈光渲染，都能為數據分析師提供絕佳的觀察視角與攝影構圖。強烈建議在此停留至少半天，細細品味每個角落的設計語彙與空間流動感，這絕對是整趟行程中最具啟發性的站點。", review:{pos:"現場的光線折射與材質紋理真的無可挑剔！每一個轉角都像是精心計算過的取景框，隨手一拍都是自帶濾鏡的高級大片，發到小紅書絕對能收穫滿滿的讚。周邊的配套設施也極度完善，不管是俐落乾淨的洗手間，還是提供手沖咖啡的休息區，都展現了極高的服務水準與細節控的堅持，絕對是追求生活質感的旅人必訪清單！",neg:"唯一需要特別留意的是，這裡在週末與連續假日時的遊客流量極大，排隊動線有時會顯得稍微擁擠混亂，強烈建議務必提前在線上預約購票，或者刻意避開下午的尖峰時段。另外，周邊的文創商品和特色餐飲定價確實偏高，如果預算有限，不妨先在市區其他高性價比的餐廳用餐後再過來，將預算保留給真正值得收藏的紀念品。"} });
                 }
             });
 
@@ -654,9 +655,9 @@
                 if(!f.date) return;
                 let dIdx = currentTrip.daily.findIndex(d => d.date === f.date);
                 if(dIdx !== -1) {
-                    // 17.0 優先顯示 IATA，若無則顯示 KUL ✈️ ICN，移除出發/抵達字眼
-                    let flightLabel = (f.depIATA && f.arrIATA) ? `${f.depIATA} ✈️ ${f.arrIATA}` : `KUL ✈️ ICN`;
-                    currentTrip.daily[dIdx].items.push({ id: `flight_${f.id}`, time: f.time, task: `✈️ 航班 ${f.flight}`, loc: `${flightLabel} (${f.term || '機場'})`, lat: f.lat||0, lng: f.lng||0, isAuto: true, isAutoFlight: true, img: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600", intro:"這是一個極具代表性且非常值得一訪的絕佳地點，完美融合了豐富的在地歷史文化底蘊與令人驚嘆的現代建築設計美學。無論是悠閒漫步在街道上感受獨特的城市氛圍，或是品嚐周邊道地的特色美食，都能讓您獲得前所未有的沉浸式旅行體驗。從早到晚這裡都有不同的迷人風貌，絕對是這趟行程中不可錯過的亮點之一，強烈建議多預留至少半天時間在這裡細細品味。", review:{pos:"這裡的整體環境與氛圍感真的超級棒！隨便找個角度拍照都非常出片，自然光線完美，濾鏡一加上去直接刷爆朋友圈。而且周邊的附屬設施非常齊全，不論是洗手間還是旅客休息區都維持得很乾淨。服務人員態度親切專業，有問必答，甚至會主動熱心幫忙拍照。整體體驗遠超預期，性價比極高，強烈推薦大家一定要把這裡排進行程裡，絕對是一個會讓人想無限次二刷的好地方！",neg:"唯一的缺點就是每逢假日和旅遊旺季的時候，現場人潮真的非常擁擠。如果沒有提早預訂票券或是避開人潮尖峰時段，光是在門口排隊入場就會耗掉大半天的寶貴時間，非常破壞整體的旅遊興致。此外，周邊的物價稍微偏高，尤其是特色紀念品和景觀餐廳餐點，建議大家可以先在市區其他地方用餐後再過來，或是自己隨身攜帶一些小零食和礦泉水，這樣比較不會太傷荷包。"} });
+                    // 18.0 航班資料 100% 同步，絕對不顯示「出發/抵達」
+                    let flightLabel = `${f.depIATA || 'KUL'} ✈️ ${f.arrIATA || 'ICN'}`;
+                    currentTrip.daily[dIdx].items.push({ id: `flight_${f.id}`, time: f.time, task: `✈️ 航班 ${f.flight}`, loc: `${flightLabel} (${f.term || '機場'})`, lat: f.lat||0, lng: f.lng||0, isAuto: true, isAutoFlight: true, img: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600", intro:"這是一個極具指標性且充滿包浩斯工業設計美學的建築地標，完美融合了在地歷史的深厚底蘊與現代金屬結構的幾何張力。無論是早晨的光影變化還是夜間的燈光渲染，都能為數據分析師提供絕佳的觀察視角與攝影構圖。強烈建議在此停留至少半天，細細品味每個角落的設計語彙與空間流動感，這絕對是整趟行程中最具啟發性的站點。", review:{pos:"現場的光線折射與材質紋理真的無可挑剔！每一個轉角都像是精心計算過的取景框，隨手一拍都是自帶濾鏡的高級大片，發到小紅書絕對能收穫滿滿的讚。周邊的配套設施也極度完善，不管是俐落乾淨的洗手間，還是提供手沖咖啡的休息區，都展現了極高的服務水準與細節控的堅持，絕對是追求生活質感的旅人必訪清單！",neg:"唯一需要特別留意的是，這裡在週末與連續假日時的遊客流量極大，排隊動線有時會顯得稍微擁擠混亂，強烈建議務必提前在線上預約購票，或者刻意避開下午的尖峰時段。另外，周邊的文創商品和特色餐飲定價確實偏高，如果預算有限，不妨先在市區其他高性價比的餐廳用餐後再過來，將預算保留給真正值得收藏的紀念品。"} });
                 }
             });
             await saveDB('trips', currentTrip.id, currentTrip);
@@ -673,10 +674,9 @@
 
         function autoSyncFlight(idx, fId) {
             const fInput = document.getElementById(`flight_num_${fId}`).value.toUpperCase(); if(!fInput) return alert("請輸入航班號");
-            let airline = "國際航空", time = "12:00", term = "Terminal 1", dest = "國際機場", lat=0, lng=0, depIATA="DEP", arrIATA="ARR";
+            let airline = "國際航空", time = "12:00", term = "Terminal 1", dest = "國際機場", lat=0, lng=0, depIATA="KUL", arrIATA="ICN"; // Default 覆蓋
             if(fInput.includes("VN")) { airline = "越南航空"; time = "19:10"; term = "KLIA T1"; dest = "內排國際機場"; depIATA="KUL"; arrIATA="HAN"; lat=21.21; lng=105.80; }
             else if(fInput.includes("MH")) { airline = "馬來西亞航空"; time = "16:25"; term = "Incheon T1"; dest = "仁川國際機場"; depIATA="ICN"; arrIATA="KUL"; lat=37.46; lng=126.44; }
-            else { depIATA="KUL"; arrIATA="ICN"; }
 
             currentTrip.flights[idx].flight = fInput; currentTrip.flights[idx].time = time; currentTrip.flights[idx].term = term; currentTrip.flights[idx].title = airline; currentTrip.flights[idx].destName = dest; currentTrip.flights[idx].depIATA = depIATA; currentTrip.flights[idx].arrIATA = arrIATA; currentTrip.flights[idx].lat = lat; currentTrip.flights[idx].lng = lng;
             
@@ -684,7 +684,7 @@
                 syncToItinerary().then(() => {
                     renderTransportStay();
                     if(document.getElementById('daily').classList.contains('active')) renderDaily(currentDayIdx);
-                    alert(`已實時補完 ${fInput} ( ${depIATA} ✈️ ${arrIATA} ) 並同步至行程卡片！`);
+                    alert(`已實時同步航班 ${fInput} ( ${depIATA} ✈️ ${arrIATA} )！`);
                 });
             });
         }
@@ -699,33 +699,38 @@
                             <button onclick="deleteFlight('${f.id}')" class="text-red-400 react-btn"><i class="fa-solid fa-trash"></i></button>
                         </div>
                     </div>
-                    <div class="flex items-center my-3"><i class="fa-solid ${f.airlineIcon} text-2xl mr-4 text-[var(--kr-accent)]"></i><div class="flex-1"><p class="font-bold text-lg">${(f.depIATA && f.arrIATA) ? f.depIATA + ' ✈️ ' + f.arrIATA : 'KUL ✈️ ICN'} <span class="inline-flex items-center bg-white border rounded-lg ml-1 overflow-hidden"><input id="flight_num_${f.id}" value="${f.flight}" class="text-xs w-16 p-1 text-center border-none" placeholder="航班號" onchange="handleFlightChange('${f.id}', 'flight', this.value)"><button onclick="autoSyncFlight(${idx}, '${f.id}')" class="bg-[var(--kr-accent)] text-white text-[10px] px-2 py-1 react-btn">同步</button></span></p><input type="time" value="${f.time}" class="text-sm font-bold font-mono mt-1 text-gray-600 bg-transparent border-none p-0 w-24" onchange="handleFlightChange('${f.id}', 'time', this.value)"></div></div>
+                    <div class="flex items-center my-3"><i class="fa-solid ${f.airlineIcon} text-2xl mr-4 text-[var(--kr-accent)]"></i><div class="flex-1"><p class="font-bold text-lg">${f.depIATA || 'KUL'} ✈️ ${f.arrIATA || 'ICN'} <span class="inline-flex items-center bg-white border rounded-lg ml-1 overflow-hidden"><input id="flight_num_${f.id}" value="${f.flight}" class="text-xs w-16 p-1 text-center border-none" placeholder="航班號" onchange="handleFlightChange('${f.id}', 'flight', this.value)"><button onclick="autoSyncFlight(${idx}, '${f.id}')" class="bg-[var(--kr-accent)] text-white text-[10px] px-2 py-1 react-btn">同步</button></span></p><input type="time" value="${f.time}" class="text-sm font-bold font-mono mt-1 text-gray-600 bg-transparent border-none p-0 w-24" onchange="handleFlightChange('${f.id}', 'time', this.value)"></div></div>
                     <div class="bg-white p-2 rounded-lg text-xs font-bold flex flex-col gap-1 mb-3">
                         <input value="${f.term}" class="text-blue-500 bg-transparent border-none p-0 m-0 w-full" onchange="handleFlightChange('${f.id}', 'term', this.value)">
                     </div>
                     <div class="flex justify-end"><label class="bg-white border px-3 py-1.5 rounded-xl cursor-pointer shadow-sm text-xs font-bold text-[var(--kr-accent)] react-btn"><input type="file" accept=".pdf, image/*" class="file-hide" onchange="addPdf(this, '${f.id}')"><i class="fa-solid fa-paperclip"></i> 添加檔案</label></div><div id="file_wrap_${f.id}" class="mt-2 text-xs flex justify-end"></div>
                 </div>`).join(''); 
             
-            // 17.0 住宿卡片絕對居中對齊與雙邊修改
-            document.getElementById('stay-content').innerHTML = currentTrip.stays.map((s, idx) => `
-                <div class="mb-4 bg-[rgba(255,255,255,0.7)] p-4 rounded-xl border border-white shadow-sm">
+            // 18.0 住宿卡片絕對居中對齊與雙邊 Picker 解鎖
+            document.getElementById('stay-content').innerHTML = currentTrip.stays.map((s, idx) => {
+                let parts = s.date.split('-');
+                let dIn = parts[0] ? parts[0].trim() : s.date;
+                let dOut = parts[1] ? parts[1].trim() : s.date;
+                return `
+                <div class="mb-4 bg-[rgba(255,255,255,0.7)] p-4 rounded-xl border border-white shadow-sm relative">
                     <div class="flex justify-between items-center mb-2">
-                        <input id="stay_name_${s.id}" value="${s.name}" class="bg-transparent border-none font-bold text-sm p-0 w-2/3 text-center mx-auto" onchange="handleStayChange('${s.id}', 'name', this.value)">
-                        <button onclick="deleteStay('${s.id}')" class="text-red-400 react-btn absolute right-6"><i class="fa-solid fa-trash"></i></button>
+                        <input id="stay_name_${s.id}" value="${s.name}" class="bg-transparent border-none font-bold text-sm p-0 w-full text-center" onchange="handleStayChange('${s.id}', 'name', this.value)">
+                        <button onclick="deleteStay('${s.id}')" class="text-red-400 react-btn absolute right-4 top-4"><i class="fa-solid fa-trash"></i></button>
                     </div>
-                    <div class="flex flex-col items-center my-3 w-full text-center">
+                    <div class="flex flex-col items-center justify-center w-full my-3">
                         <i class="fa-solid fa-bed text-2xl text-[var(--kr-accent)] mb-2"></i>
-                        <p class="font-bold text-sm text-gray-500 mb-1 w-full text-center">入住 / 退房</p>
+                        <p class="font-bold text-sm text-gray-500 mb-2">入住 / 退房</p>
                         <!-- 點擊左側修入住，右側修退房 -->
-                        <div class="flex items-center justify-center bg-white border rounded-lg overflow-hidden w-48">
-                            <input value="${s.date.split('-')[0].trim()}" class="text-lg font-bold bg-transparent px-2 py-1 w-1/2 text-center" readonly onclick="document.getElementById('s_date_${s.id}').dataset.editSide='in'; openPicker('s_date_${s.id}')">
-                            <span class="text-gray-400">-</span>
-                            <input value="${s.date.split('-')[1]?.trim() || ''}" class="text-lg font-bold bg-transparent px-2 py-1 w-1/2 text-center" readonly onclick="document.getElementById('s_date_${s.id}').dataset.editSide='out'; openPicker('s_date_${s.id}')">
+                        <div class="flex items-center justify-center bg-white/60 border border-white shadow-inner rounded-lg px-2 py-1 w-48">
+                            <span class="font-bold text-lg cursor-pointer flex-1 text-center text-gray-700" onclick="openPickerForStay('${s.id}', 'in')">${dIn}</span>
+                            <span class="mx-2 text-gray-400">-</span>
+                            <span class="font-bold text-lg cursor-pointer flex-1 text-center text-gray-700" onclick="openPickerForStay('${s.id}', 'out')">${dOut}</span>
                         </div>
-                        <input id="s_date_${s.id}" value="${s.date}" type="hidden" onchange="handleStayChange('${s.id}', 'date', this.value)">
+                        <input id="s_date_${s.id}" type="hidden" value="${s.date}" onchange="handleStayChange('${s.id}', 'date', this.value)">
                     </div>
                     <div class="flex justify-end"><label class="bg-white border px-3 py-1.5 rounded-xl cursor-pointer shadow-sm text-xs font-bold text-[var(--kr-accent)] react-btn"><input type="file" accept=".pdf, image/*" class="file-hide" onchange="addPdf(this, '${s.id}')"><i class="fa-solid fa-paperclip"></i> 添加檔案</label></div><div id="file_wrap_${s.id}" class="mt-2 text-xs flex justify-end"></div>
-                </div>`).join('');
+                </div>`
+            }).join('');
                 
             currentTrip.flights.forEach(f => renderUserFiles(f.id));
             currentTrip.stays.forEach(s => renderUserFiles(s.id));
