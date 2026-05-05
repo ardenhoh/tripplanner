@@ -12,11 +12,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
     
-    <!-- 12.0 Apple MapKit JS -->
-    <script src="https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.js"></script>
+    <!-- 13.0 Mapbox GL JS 替換 Apple MapKit -->
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
     
     <style>
-        /* 12.0 主題色變數 */
         :root {
             --kr-cream: #F5F3EC;
             --kr-text: #4A4641;
@@ -27,11 +27,8 @@
             --kr-metal-bg: none;
         }
 
-        /* 奶油 Cream (預設) */
         body.theme-cream { --kr-cream: #F5F3EC; --kr-text: #4A4641; --kr-accent: #9A9283; }
-        /* 水泥 Cement */
         body.theme-cement { --kr-cream: #E0E0E0; --kr-text: #333333; --kr-accent: #666666; --kr-glass: rgba(255, 255, 255, 0.3); }
-        /* 鋼鐵 Steel (金屬紋理) */
         body.theme-steel { 
             --kr-cream: #CFD4D9; --kr-text: #1C2331; --kr-accent: #4B5563; 
             --kr-glass: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(200,205,210,0.6) 50%, rgba(255,255,255,0.4) 100%);
@@ -39,31 +36,11 @@
         }
 
         /* 全域字體統一為 Arial */
-        body {
-            background-color: var(--kr-cream);
-            color: var(--kr-text);
-            font-family: Arial, sans-serif;
-            background-image: radial-gradient(circle at 50% -20%, #ffffff 0%, transparent 80%);
-            background-attachment: fixed;
-            -webkit-tap-highlight-color: transparent;
-            transition: background-color 0.4s ease;
-        }
+        body { background-color: var(--kr-cream); color: var(--kr-text); font-family: Arial, sans-serif; background-image: radial-gradient(circle at 50% -20%, #ffffff 0%, transparent 80%); background-attachment: fixed; -webkit-tap-highlight-color: transparent; transition: background-color 0.4s ease; }
         .hand-drawn { font-family: Arial, sans-serif; }
 
-        .liquid-glass { 
-            background: var(--kr-glass); 
-            backdrop-filter: saturate(200%) blur(40px); -webkit-backdrop-filter: saturate(200%) blur(40px); 
-            border: 1px solid var(--kr-glass-border); 
-            box-shadow: var(--kr-shadow), inset 0 1px 1px rgba(255,255,255,0.6); 
-            border-radius: 24px; position: relative; z-index: 10; 
-            transition: border-color 0.3s; 
-        }
-        
-        /* 鋼鐵模式特有金屬疊加層 */
-        body.theme-steel .liquid-glass::after {
-            content: ""; position: absolute; inset: 0; border-radius: 24px;
-            background: var(--kr-metal-bg); pointer-events: none; opacity: 0.5; z-index: -1;
-        }
+        .liquid-glass { background: var(--kr-glass); backdrop-filter: saturate(200%) blur(40px); -webkit-backdrop-filter: saturate(200%) blur(40px); border: 1px solid var(--kr-glass-border); box-shadow: var(--kr-shadow), inset 0 1px 1px rgba(255,255,255,0.6); border-radius: 24px; position: relative; z-index: 10; transition: border-color 0.3s; }
+        body.theme-steel .liquid-glass::after { content: ""; position: absolute; inset: 0; border-radius: 24px; background: var(--kr-metal-bg); pointer-events: none; opacity: 0.5; z-index: -1; }
 
         .view-screen { display: none; min-height: 100vh; padding-bottom: 110px; animation: fadeIn 0.4s ease; }
         .view-screen.active { display: block; }
@@ -76,7 +53,7 @@
         .nav-item.active { color: var(--kr-text); transform: translateY(-4px); }
         .nav-item.active::after { content:''; position:absolute; bottom:-6px; left:50%; transform:translateX(-50%); width:4px; height:4px; background:var(--kr-accent); border-radius:50%; }
 
-        .h-scroll-container { margin: 0 -20px; padding: 10px 20px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+        .h-scroll-container { margin: 0 -20px; padding: 10px 20px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; scroll-behavior: smooth; }
         .h-scroll-container::-webkit-scrollbar { display: none; }
         .h-scroll { display: flex; gap: 12px; width: max-content; padding-bottom: 5px; }
         
@@ -86,13 +63,22 @@
         .hourly-item { flex: 0 0 60px; text-align: center; font-size: 0.75rem; padding: 8px 0; border-radius: 16px; transition: 0.3s; background: rgba(255,255,255,0.4); border: 1px solid transparent; scroll-snap-align: center; }
         .hourly-item.active-hour { background: var(--kr-accent); color: white; box-shadow: 0 6px 15px rgba(0,0,0,0.15); font-weight: bold; transform: scale(1.1); border-color: rgba(255,255,255,0.3); }
 
+        /* 13.0 天氣動態背景 (Apple Weather Style) */
+        .weather-bg-container { position: absolute; inset: 0; overflow: hidden; border-radius: 24px; z-index: -1; pointer-events: none; opacity: 0.6; }
+        .anim-rain { position: absolute; background: rgba(255,255,255,0.6); width: 2px; height: 15px; animation: drop 0.8s linear infinite; }
+        .anim-snow { position: absolute; background: white; width: 6px; height: 6px; border-radius: 50%; animation: drop 2.5s linear infinite; }
+        .anim-cloud { position: absolute; background: rgba(255,255,255,0.8); border-radius: 50px; filter: blur(4px); animation: float 12s ease-in-out infinite alternate; }
+        .anim-sun { position: absolute; top: -30px; right: -30px; width: 150px; height: 150px; background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, transparent 60%); animation: pulseSun 4s infinite alternate; }
+        @keyframes drop { 0% { transform: translateY(-20px); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(150px); opacity: 0; } }
+        @keyframes float { 0% { transform: translateX(-10px); } 100% { transform: translateX(30px); } }
+        @keyframes pulseSun { 0% { transform: scale(1); opacity: 0.6; } 100% { transform: scale(1.1); opacity: 1; } }
+
         .item-header { position: relative; width: 100%; height: 180px; border-radius: 24px 24px 0 0; overflow: hidden; background: #e0e0e0; }
         .item-header img { width: 100%; height: 100%; object-fit: cover; }
         .edit-img-btn { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.7); color: var(--kr-text); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(10px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 20; }
         
         .transit-node { display: flex; flex-direction: column; align-items: center; margin: -15px 0; position: relative; z-index: 1; }
         .transit-line { width: 2px; height: 45px; background: repeating-linear-gradient(to bottom, #d1d1d1 0, #d1d1d1 4px, transparent 4px, transparent 8px); }
-
         .expand-content { display: none; margin-top: 15px; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 15px; }
         .expanded .expand-content { display: block; animation: fadeIn 0.3s ease; }
         
@@ -120,14 +106,18 @@
         #lightbox img { width: 100%; height: 100%; object-fit: contain; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .lightbox-close { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; z-index: 2010; }
         
-        /* 12.0 摺疊與圖表樣式 */
-        #trip-map { height: 220px; width: 100%; border-radius: 20px; z-index: 5; margin-top: 15px; border: 1px solid rgba(255,255,255,0.8); box-shadow: var(--kr-shadow); background: #e9e5dc; display: none; align-items: center; justify-content: center; color: #9A9283; font-weight: bold; text-align: center; font-size: 12px; }
+        #pdf-viewer { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 2000; flex-direction: column; }
+        #pdf-iframe { flex: 1; width: 100%; border: none; }
+        
+        /* 13.0 Mapbox GL 容器 */
+        #trip-map { height: 220px; width: 100%; border-radius: 20px; z-index: 5; margin-top: 15px; border: 1px solid rgba(255,255,255,0.8); box-shadow: var(--kr-shadow); background: #e9e5dc; display: none; overflow: hidden; position: relative; }
+        .mapboxgl-ctrl-bottom-right, .mapboxgl-ctrl-bottom-left { display: none !important; }
+
         .budget-ring { position: relative; width: 110px; height: 110px; border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; transition: background 0.3s; }
         .budget-ring::before { content: ""; position: absolute; inset: 10px; background: var(--kr-glass); border-radius: 50%; backdrop-filter: blur(10px); }
         .donut-chart { width: 120px; height: 120px; border-radius: 50%; background: #ccc; position: relative; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px auto; box-shadow: var(--kr-shadow); }
         .donut-chart::before { content: ""; position: absolute; inset: 25px; background: var(--kr-cream); border-radius: 50%; }
 
-        /* 12.0 iOS 直立滾輪選擇器 Modal */
         #ios-picker-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 3000; align-items: flex-end; }
         .picker-container { width: 100%; background: var(--kr-cream); border-radius: 24px 24px 0 0; padding: 20px; padding-bottom: 40px; box-shadow: 0 -10px 40px rgba(0,0,0,0.1); }
         .picker-wheels { display: flex; justify-content: space-between; height: 150px; position: relative; mask-image: linear-gradient(to bottom, transparent, black 30%, black 70%, transparent); -webkit-mask-image: linear-gradient(to bottom, transparent, black 30%, black 70%, transparent); }
@@ -135,8 +125,6 @@
         .wheel-col::-webkit-scrollbar { display: none; }
         .wheel-item { height: 40px; line-height: 40px; scroll-snap-align: center; font-size: 1.1rem; font-weight: bold; color: var(--kr-text); transition: 0.2s; }
         .picker-selection-bar { position: absolute; top: 55px; left: 0; right: 0; height: 40px; border-top: 1px solid rgba(0,0,0,0.1); border-bottom: 1px solid rgba(0,0,0,0.1); pointer-events: none; z-index: -1; background: rgba(0,0,0,0.03); }
-        
-        .pac-container { border-radius: 12px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1); font-family: Arial, sans-serif; }
     </style>
 </head>
 <body class="theme-cream">
@@ -146,7 +134,6 @@
         <h1 class="text-3xl font-bold mb-1 hand-drawn tracking-wider">My Travel Books ✈️</h1>
         <p class="text-gray-500 text-sm mb-4">選擇一本旅行繪本開始規劃</p>
 
-        <!-- 12.0 工業美學主題切換 -->
         <div class="flex gap-2 mb-8 bg-[rgba(255,255,255,0.5)] p-1.5 rounded-xl border border-white shadow-sm w-max">
             <button onclick="setTheme('cream')" class="text-[10px] px-3 py-1.5 rounded-lg font-bold bg-[#F5F3EC] text-[#4A4641] shadow-sm">奶油 Cream</button>
             <button onclick="setTheme('cement')" class="text-[10px] px-3 py-1.5 rounded-lg font-bold bg-[#E0E0E0] text-[#333]">水泥 Cement</button>
@@ -187,11 +174,11 @@
                     <div class="h-scroll" id="day-selector"></div>
                 </div>
                 
-                <!-- 12.0 摺疊式天氣與地圖 -->
-                <div id="weather-banner" class="liquid-glass p-5 mb-4"></div>
+                <!-- 13.0 天氣與 Mapbox 摺疊區塊 -->
+                <div id="weather-banner" class="liquid-glass p-5 mb-4 relative"></div>
                 
-                <button onclick="toggleMap()" class="w-full text-center py-2 bg-[rgba(255,255,255,0.6)] rounded-xl text-gray-500 text-xs font-bold border border-white mb-4 shadow-sm"><i class="fa-solid fa-map-location-dot"></i> 展開 Apple Map 全覽</button>
-                <div id="trip-map">讀取 Apple Maps 中...<br>(需要有效 JWT Token)</div>
+                <button onclick="toggleMap()" class="w-full text-center py-2 bg-[rgba(255,255,255,0.6)] rounded-xl text-gray-500 text-xs font-bold border border-white mb-4 shadow-sm"><i class="fa-solid fa-map-location-dot"></i> 展開 Mapbox 全覽</button>
+                <div id="trip-map"></div>
 
                 <div id="daily-content"></div>
                 
@@ -232,7 +219,6 @@
             <div id="expenses" class="tab-section">
                 <h2 class="text-xl font-bold mb-6 text-center hand-drawn">花費記帳 💰</h2>
                 
-                <!-- 12.0 預算百分比與消費分佈圖 -->
                 <div class="liquid-glass p-5 mb-4 text-center">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-sm font-bold text-gray-500"><i class="fa-solid fa-chart-pie"></i> 消費分析</h3>
@@ -276,7 +262,6 @@
                     <div class="space-y-2">
                         <input type="text" id="expName" placeholder="花費名稱 (例如: 晚餐)" class="text-sm font-bold">
                         <div class="flex gap-2">
-                            <!-- 12.0 類別新增購物與自定義 -->
                             <select id="expType" class="w-1/3 text-xs" onchange="handleExpTypeChange(this)">
                                 <option value="餐飲">🍽️ 餐飲</option><option value="交通">🚕 交通</option>
                                 <option value="門票">🎫 門票</option><option value="住宿">🏨 住宿</option>
@@ -297,7 +282,6 @@
                         <button onclick="addExpense()" class="btn-primary w-full mt-2">新增紀錄</button>
                     </div>
                 </div>
-
                 <div class="liquid-glass p-5" id="expense-summary"></div>
             </div>
 
@@ -342,7 +326,6 @@
                     </div>
                 </div>
             </div>
-
         </main>
 
         <nav class="bottom-nav">
@@ -354,15 +337,13 @@
         </nav>
     </div>
 
-    <!-- Lightbox -->
+    <!-- Lightbox & PDF Viewer -->
     <div id="lightbox">
         <div class="lightbox-wrapper">
             <div class="lightbox-close" onclick="closeLightbox()">&times;</div>
             <img id="lightbox-img" src="">
         </div>
     </div>
-    
-    <!-- PDF Viewer -->
     <div id="pdf-viewer">
         <div class="p-4 bg-gray-100 flex justify-between items-center shadow-md pt-10">
             <h3 class="font-bold text-gray-700">檔案檢視</h3>
@@ -371,7 +352,7 @@
         <iframe id="pdf-iframe"></iframe>
     </div>
 
-    <!-- 12.0 iOS 直立滾輪選擇器 Modal -->
+    <!-- 13.0 iOS 直立滾輪選擇器 Modal -->
     <div id="ios-picker-modal">
         <div class="picker-container">
             <div class="flex justify-between items-center mb-4">
@@ -390,8 +371,7 @@
 
     <script>
         // ================= 資料庫 & 初始化 =================
-        const dbName = "TravelBookDB_v12";
-        let db;
+        const dbName = "TravelBookDB_v13"; let db;
         const initDB = new Promise((resolve) => {
             const req = indexedDB.open(dbName, 1);
             req.onupgradeneeded = (e) => {
@@ -407,12 +387,11 @@
         async function getAllDB(store) { await initDB; return new Promise(r => { const tx = db.transaction(store, 'readonly'); const req = tx.objectStore(store).getAll(); req.onsuccess = () => r(req.result.map(x=>x.data)); }); }
 
         let allTrips = []; let currentTrip = null; let currentDayIdx = 0; let selectedNewColor = "#9A9283"; let exchangeRates = {};
-        let aMap = null; // Apple MapKit Instance
+        let mbMap = null; // Mapbox Instance
         
-        // 12.0 主題切換
         function setTheme(themeName) { document.body.className = `theme-${themeName}`; }
 
-        // 12.0 全景點內容 AI 填充 (14天完整 JSON)
+        // 13.0 全自動填充內容 JSON (14 Days)
         function generate14DaysData() {
             const regions = ["吉隆坡","釜山","釜山","釜山-濟州","濟州島","濟州島","濟州島","濟州島","濟州島","濟州-首爾","首爾","首爾","首爾","首爾"];
             let daily = [];
@@ -441,10 +420,9 @@
 
         const defaultTrip = {
             id: Date.now().toString(), title: "2026 苦盡柑來 🍊", color: "#9A9283", users: ["我"], budget: 50000,
-            flights: [ { id:"f0", title: "去程", date: "10/29", route: "KUL → HAN", flight: "VN680", airlineIcon: "fa-plane-departure", time: "19:10", term: "KLIA T1", lat: 2.7456, lng: 101.7072, destName: "內排國際機場" } ],
+            flights: [ { id:"f0", title: "去程", date: "10/29", route: "KUL → HAN", flight: "VN680", airlineIcon: "fa-plane-departure", time: "19:10", term: "KLIA T1", lat: 21.21, lng: 105.80, destName: "內排國際機場", depIATA: "KUL", arrIATA: "HAN" } ],
             stays: [ { id:"s0", name: "Ramada Encore Haeundae", date: "10/30 - 11/01", addr: "釜山海雲台區", lat: 35.1631, lng: 129.1582 } ],
-            expenses: [], packItems: [{c:"📄 证件", n:"護照正本"}],
-            daily: generate14DaysData()
+            expenses: [], packItems: [{c:"📄 证件", n:"護照正本"}], daily: generate14DaysData()
         };
 
         async function init() {
@@ -453,49 +431,108 @@
             fetchExchangeRateAPI(); initTranslateLangs(); initPickerWheels(); renderHome();
         }
 
-        // ================= 12.0 Apple MapKit JS =================
-        function initAppleMaps(lat, lng, items) {
-            if (typeof mapkit === 'undefined') return;
-            try {
-                if(!mapkit.isInitialized) {
-                    mapkit.init({
-                        authorizationCallback: function(done) {
-                            // ⚠️ 請填寫您的 Apple Developer MapKit JWT Token
-                            done("YOUR_APPLE_MAPKIT_JWT_TOKEN");
-                        }
+        // ================= 13.0 Mapbox GL JS =================
+        function initMapbox(lat, lng, items) {
+            if (typeof mapboxgl === 'undefined') return;
+            const mapEl = document.getElementById('trip-map');
+            
+            // 如果地圖區塊隱藏，不初始化以防 Canvas 大小錯誤
+            if(mapEl.style.display !== 'block') return;
+
+            if(!mbMap) {
+                // ⚠️ 請填寫 Mapbox Access Token
+                mapboxgl.accessToken = 'YOUR_MAPBOX_ACCESS_TOKEN';
+                try {
+                    mbMap = new mapboxgl.Map({
+                        container: 'trip-map', style: 'mapbox://styles/mapbox/light-v11', center: [lng, lat], zoom: 12
                     });
+                } catch(e) {
+                    mapEl.innerHTML = `<div class="p-4 bg-gray-100 rounded-xl">Mapbox 需有效的 Access Token。<br>請在代碼中替換 Token。</div>`;
+                    return;
                 }
-                const Coordinate = mapkit.Coordinate;
-                if(!aMap) { aMap = new mapkit.Map("trip-map"); }
-                
-                aMap.region = new mapkit.CoordinateRegion(new Coordinate(lat, lng), new mapkit.CoordinateSpan(0.1, 0.1));
-                
-                aMap.annotations = [];
-                items.forEach((item, i) => {
-                    if(item.lat && item.lng) {
-                        let ann = new mapkit.MarkerAnnotation(new Coordinate(item.lat, item.lng), {
-                            title: item.task, subtitle: item.loc, color: item.isAuto ? "#D8A48F" : "#9A9283", glyphText: (i+1).toString()
-                        });
-                        aMap.addAnnotation(ann);
-                    }
-                });
-            } catch(e) {
-                document.getElementById('trip-map').innerHTML = `<div class="p-4 bg-gray-100 rounded-xl">Apple MapKit 需有效的 JWT Token 才能顯示。<br>請在代碼中替換 Token。</div>`;
+            }
+            
+            if(!mbMap) return;
+            
+            // 清理舊 markers
+            const existingMarkers = document.querySelectorAll('.mapboxgl-marker');
+            existingMarkers.forEach(m => m.remove());
+            
+            let bounds = new mapboxgl.LngLatBounds();
+            let coords = [];
+
+            items.forEach((item, i) => {
+                if(item.lat && item.lng) {
+                    const el = document.createElement('div');
+                    el.className = 'w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold shadow';
+                    el.style.backgroundColor = item.isAuto ? '#D8A48F' : '#9A9283';
+                    el.innerText = item.isAutoFlight ? '✈️' : (i+1);
+                    
+                    new mapboxgl.Marker(el).setLngLat([item.lng, item.lat]).addTo(mbMap);
+                    coords.push([item.lng, item.lat]);
+                    bounds.extend([item.lng, item.lat]);
+                }
+            });
+
+            if(coords.length > 0) { mbMap.fitBounds(bounds, { padding: 30, maxZoom: 14 }); }
+            
+            mbMap.on('load', () => {
+                if(mbMap.getSource('route')) {
+                    mbMap.getSource('route').setData({ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: coords }});
+                } else if (coords.length > 1) {
+                    mbMap.addSource('route', { type: 'geojson', data: { type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: coords } } });
+                    mbMap.addLayer({ id: 'route', type: 'line', source: 'route', layout: { 'line-join': 'round', 'line-cap': 'round' }, paint: { 'line-color': '#9A9283', 'line-width': 3, 'line-dasharray': [2, 2] } });
+                }
+            });
+        }
+
+        function toggleMap() { 
+            const m = document.getElementById('trip-map'); 
+            m.style.display = m.style.display === 'block' ? 'none' : 'block';
+            if(m.style.display === 'block') {
+                const d = currentTrip.daily[currentDayIdx];
+                let lat = 35.1, lon = 129.0; if(d.items.length > 0 && d.items[0].lat) { lat = d.items[0].lat; lon = d.items[0].lng; }
+                initMapbox(lat, lon, d.items);
             }
         }
 
-        function toggleMap() { const m = document.getElementById('trip-map'); m.style.display = m.style.display === 'flex' ? 'none' : 'flex'; }
-        function toggleHourlyWeather() { const h = document.getElementById('hourly-weather-container'); h.classList.toggle('hidden'); }
+        // 13.0 天氣動態特效產生器
+        function generateWeatherAnim(code) {
+            let html = '<div class="weather-bg-container">';
+            if([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82, 95, 96, 99].includes(code)) {
+                // 雨天
+                for(let i=0; i<20; i++) { html += `<div class="anim-rain" style="left:${Math.random()*100}%; animation-delay:${Math.random()}s;"></div>`; }
+            } else if ([71, 73, 75, 77, 85, 86].includes(code)) {
+                // 雪天
+                for(let i=0; i<30; i++) { html += `<div class="anim-snow" style="left:${Math.random()*100}%; animation-delay:${Math.random()*2}s;"></div>`; }
+            } else if ([1, 2, 3, 45, 48].includes(code)) {
+                // 雲
+                html += `<div class="anim-cloud w-32 h-16 top-4 left-4"></div><div class="anim-cloud w-24 h-12 top-10 right-4" style="animation-delay:-4s"></div>`;
+            } else {
+                // 晴天
+                html += `<div class="anim-sun"></div>`;
+            }
+            html += '</div>'; return html;
+        }
+
+        // 13.0 智慧自動捲動 (永久內嵌腳本)
+        function toggleHourlyWeather() { 
+            const h = document.getElementById('hourly-weather-container'); 
+            h.classList.toggle('hidden'); 
+            if (!h.classList.contains('hidden')) {
+                // 13.0 自動偵測當前時間並平滑位移
+                setTimeout(() => {
+                    const activeHour = h.querySelector('.active-hour');
+                    if (activeHour) activeHour.scrollIntoView({behavior: 'smooth', inline: 'center', block: 'nearest'});
+                }, 100);
+            }
+        }
 
         // ================= 視圖控制 =================
         function renderHome() {
             document.getElementById('trip-view').classList.remove('active'); document.getElementById('home-view').classList.add('active');
             document.getElementById('trip-list').innerHTML = allTrips.map(t => `<div class="book-card" style="border-left-color: ${t.color}" onclick="openTrip('${t.id}')"><div class="flex justify-between items-start"><h2 class="text-2xl font-bold text-gray-800 hand-drawn">${t.title}</h2><button onclick="event.stopPropagation(); deleteTrip('${t.id}')" class="text-gray-300"><i class="fa-solid fa-trash"></i></button></div><p class="text-xs text-gray-400 mt-2">${t.daily[0].date} 出發 · ${t.daily.length} 天行程</p></div>`).join('');
         }
-
-        function selectColor(el, color) { document.querySelectorAll('.color-dot').forEach(d=>d.style.borderColor='white'); el.style.borderColor='gray'; selectedNewColor = color; }
-        async function createNewTrip() { const title = document.getElementById('new-trip-title').value || "新旅行繪本"; let nt = JSON.parse(JSON.stringify(defaultTrip)); nt.id = Date.now().toString(); nt.title = title; nt.color = selectedNewColor; await saveDB('trips', nt.id, nt); allTrips.push(nt); renderHome(); document.getElementById('new-trip-title').value = ''; }
-        async function deleteTrip(id) { if(!confirm("捨不得這本繪本嗎？確定刪除？")) return; allTrips = allTrips.filter(t => t.id !== id); const tx = db.transaction('trips', 'readwrite'); tx.objectStore('trips').delete(id); renderHome(); }
 
         function openTrip(id) { currentTrip = allTrips.find(t => t.id === id); document.documentElement.style.setProperty('--kr-accent', currentTrip.color || '#9A9283'); document.getElementById('home-view').classList.remove('active'); document.getElementById('trip-view').classList.add('active'); document.getElementById('trip-title-input').value = currentTrip.title; syncToItinerary(); currentDayIdx = 0; renderDayNav(); renderDaily(currentDayIdx); renderTransportStay(); renderExpenses(); renderLists(); }
         function goHome() { renderHome(); }
@@ -506,7 +543,7 @@
             nav.innerHTML = currentTrip.daily.map((d, i) => `<div class="day-btn ${i === currentDayIdx ? 'active' : ''}" onclick="selectDay(${i})"><span class="font-bold">${d.day}</span><span class="text-[10px] mt-1">${d.date}</span><span class="text-[10px] opacity-80">${d.dayName}</span></div>`).join('');
             setTimeout(() => { const a = nav.querySelector('.active'); if(a) a.scrollIntoView({behavior: 'smooth', inline: 'center', block:'nearest'}); }, 100);
         }
-        function selectDay(i) { currentDayIdx = i; renderDayNav(); renderDaily(i); }
+        function selectDay(i) { currentDayIdx = i; document.getElementById('trip-map').style.display='none'; renderDayNav(); renderDaily(i); }
 
         function getWmoEmoji(code) { if ([0].includes(code)) return '☀️'; if ([1, 2].includes(code)) return '🌤️'; if ([3].includes(code)) return '☁️'; if ([45, 48].includes(code)) return '🌫️'; if ([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return '🌧️'; if ([71, 73, 75, 77, 85, 86].includes(code)) return '❄️'; if ([95, 96, 99].includes(code)) return '⛈️'; return '🌥️'; }
         async function fetchWeather(lat, lon) { try { const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,precipitation_probability,weathercode,uv_index`); return await res.json(); } catch(e) { return null; } }
@@ -520,32 +557,31 @@
             if(wData) {
                 const nowTemp = Math.round(wData.current_weather.temperature); const uv = wData.hourly.uv_index[currentHour] || 0; const feelTemp = Math.round(nowTemp + 1.5); const rainProb = wData.hourly.precipitation_probability[currentHour] || 0;
                 const todayTemps = wData.hourly.temperature_2m.slice(0, 24); const todayMax = Math.round(Math.max(...todayTemps)); const todayMin = Math.round(Math.min(...todayTemps));
-                
+                const code = wData.current_weather.weathercode;
+
                 for(let i=0; i<24; i++) {
                     const hTemp = Math.round(wData.hourly.temperature_2m[i]); const hEmoji = getWmoEmoji(wData.hourly.weathercode[i]); let h12 = i % 24; const ampm = h12 >= 12 ? 'PM' : 'AM'; h12 = h12 % 12 || 12;
                     const isActive = i === currentHour ? 'active-hour' : ''; hourlyHtml += `<div class="hourly-item ${isActive}"><div class="mb-1 ${isActive?'':'opacity-70'}">${h12} ${ampm}</div><div class="mb-1 text-lg">${hEmoji}</div><div>${hTemp}°</div></div>`;
                 }
 
-                // 12.0 摺疊式天氣版面
+                // 13.0 天氣動態層 + 摺疊控制
                 document.getElementById('weather-banner').innerHTML = `
-                    <div class="flex justify-between items-center pb-2">
+                    ${generateWeatherAnim(code)}
+                    <div class="flex justify-between items-center pb-2 relative z-10">
                         <div>
                             <div class="text-xs font-bold text-gray-500 mb-1"><i class="fa-solid fa-location-dot text-[var(--kr-accent)]"></i> ${d.region}即時天氣</div>
-                            <div class="flex items-center gap-2"><div class="font-bold text-2xl">${nowTemp}°C</div><div class="text-2xl">${getWmoEmoji(wData.current_weather.weathercode)}</div></div>
+                            <div class="flex items-center gap-2"><div class="font-bold text-2xl">${nowTemp}°C</div><div class="text-2xl">${getWmoEmoji(code)}</div></div>
                             <div class="text-[10px] text-gray-400 mt-1 font-bold">最高 ${todayMax}°C / 最低 ${todayMin}°C</div>
                         </div>
                         <div class="text-right"><button onclick="toggleHourlyWeather()" class="bg-white border rounded-full px-3 py-1 text-xs font-bold text-gray-500 shadow-sm">展開詳細 <i class="fa-solid fa-chevron-down ml-1"></i></button></div>
                     </div>
-                    <div id="hourly-weather-container" class="hidden border-t border-[rgba(0,0,0,0.05)] pt-2 mt-2">
+                    <div id="hourly-weather-container" class="hidden border-t border-[rgba(0,0,0,0.05)] pt-2 mt-2 relative z-10">
                         <div class="text-xs text-right text-gray-500 font-bold mb-2">體感 ${feelTemp}° | 降雨 ${rainProb}% | UV: ${uv}</div>
                         <div class="h-scroll-container"><div class="h-scroll" id="hourly-scroll">${hourlyHtml}</div></div>
                     </div>
-                    ${rainProb > 40 ? `<div class="bg-blue-100 text-blue-600 px-3 py-1.5 rounded-xl text-xs font-bold mt-2 animate-pulse text-center">☔ 今日降雨機率高，請帶傘</div>` : ''}
+                    ${rainProb > 40 ? `<div class="bg-blue-100 text-blue-600 px-3 py-1.5 rounded-xl text-xs font-bold mt-2 animate-pulse text-center relative z-10">☔ 今日降雨機率高，請帶傘</div>` : ''}
                 `;
             }
-            setTimeout(() => { const hs = document.getElementById('hourly-scroll'); if(hs) { const a = hs.querySelector('.active-hour'); if(a) a.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'}); } }, 300);
-
-            initAppleMaps(lat, lon, d.items);
 
             let html = '';
             d.items.forEach((item, i) => {
@@ -574,7 +610,7 @@
                         </div>
                         <h4 class="text-xl font-bold mt-2 text-gray-800">${item.task}</h4>
                         <div id="loc_display_${item.id}">
-                            ${item.loc === '輸入地址' ? `<button class="text-xs text-[var(--kr-accent)] mt-1 font-bold bg-white px-2 py-1 rounded shadow-sm" onclick="toggleEdit('${item.id}')"><i class="fa-solid fa-pen"></i> 輸入地址</button>` : `<a href="https://maps.apple.com/?q=${encodeURIComponent(item.loc)}" target="_blank" class="block text-xs text-blue-500 mt-1 truncate font-bold"><i class="fa-solid fa-map-pin mr-1 text-[var(--kr-accent)]"></i>${item.loc}</a>`}
+                            ${item.loc === '輸入地址' ? `<button class="text-xs text-[var(--kr-accent)] mt-1 font-bold bg-white px-2 py-1 rounded shadow-sm" onclick="toggleEdit('${item.id}')"><i class="fa-solid fa-pen"></i> 輸入地址</button>` : `<a href="https://maps.google.com/?q=${encodeURIComponent(item.loc)}" target="_blank" class="block text-xs text-blue-500 mt-1 truncate font-bold"><i class="fa-solid fa-map-pin mr-1 text-[var(--kr-accent)]"></i>${item.loc}</a>`}
                         </div>
                         
                         <button class="w-full text-center mt-4 py-2 bg-[rgba(255,255,255,0.6)] rounded-xl text-gray-500 text-xs font-bold border border-white" onclick="toggleExpand('${item.id}')"><i class="fa-solid fa-chevron-down"></i> 展開詳細</button>
@@ -590,6 +626,8 @@
                                 <input id="edit_loc_${item.id}" value="${item.loc === '輸入地址' ? '' : item.loc}" placeholder="地標搜尋..." class="w-full text-sm">
                                 <button class="btn-primary w-full text-sm py-2" onclick="saveItemEdit(${idx}, ${i}, '${item.id}')">儲存</button>
                             </div>
+                            
+                            <!-- 13.0 檔案與筆記精確縮減至展開內容中 -->
                             <div class="pt-4 mt-3 border-t border-[rgba(0,0,0,0.05)]">
                                 <label class="text-xs font-bold text-gray-500 block mb-2"><i class="fa-solid fa-book-open mr-1"></i> 【添加筆記】</label>
                                 <textarea id="note_${item.id}" rows="2" placeholder="..." class="text-xs" onchange="saveFileData('${item.id}', 'note', this.value)"></textarea>
@@ -602,7 +640,7 @@
                 
                 if(i < d.items.length - 1) {
                     let roughTime = Math.max(5, Math.round(getDistKm(item.lat, item.lng, d.items[i+1].lat, d.items[i+1].lng)/30*60));
-                    html += `<div class="transit-node"><div class="transit-line"></div><div class="bg-white border border-gray-200 rounded-full px-4 py-1.5 shadow-sm text-[10px] text-gray-500 z-10 flex items-center font-bold"><i class="fa-solid fa-train-subway mr-2 text-[var(--kr-accent)]"></i> 預計 ${roughTime} 分<a href="https://maps.apple.com/?saddr=${item.lat},${item.lng}&daddr=${d.items[i+1].lat},${d.items[i+1].lng}&dirflg=r" target="_blank" class="text-[var(--kr-accent)] ml-3"><i class="fa-solid fa-location-arrow mr-1"></i>一鍵導航</a></div><div class="transit-line"></div></div>`;
+                    html += `<div class="transit-node"><div class="transit-line"></div><div class="bg-white border border-gray-200 rounded-full px-4 py-1.5 shadow-sm text-[10px] text-gray-500 z-10 flex items-center font-bold"><i class="fa-solid fa-train-subway mr-2 text-[var(--kr-accent)]"></i> 預計 ${roughTime} 分<a href="https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(item.loc)}&destination=${encodeURIComponent(d.items[i+1].loc)}&travelmode=transit" target="_blank" class="text-[var(--kr-accent)] ml-3"><i class="fa-solid fa-location-arrow mr-1"></i>一鍵導航</a></div><div class="transit-line"></div></div>`;
                 }
             });
             document.getElementById('daily-content').innerHTML = html;
@@ -644,7 +682,7 @@
         document.getElementById('lightbox').addEventListener('touchstart', e => { touchstartX = e.changedTouches[0].screenX; }); document.getElementById('lightbox').addEventListener('touchend', e => { touchendX = e.changedTouches[0].screenX; if(touchendX < touchstartX - 50) { lbIdx = (lbIdx + 1) % lbPhotos.length; updateLightboxImg(); } if(touchendX > touchstartX + 50) { lbIdx = (lbIdx - 1 + lbPhotos.length) % lbPhotos.length; updateLightboxImg(); } });
         async function viewPDF(id) { const pdf = await getDB('files', `${currentTrip.id}_${id}_pdf`); if(pdf) { document.getElementById('pdf-iframe').src = pdf.data; document.getElementById('pdf-viewer').style.display = 'flex'; } }
 
-        // ================= 12.0 iOS 直立滾輪日期 =================
+        // ================= 13.0 iOS 直立滾輪日期 =================
         let activePickerId = null;
         function initPickerWheels() {
             let yH = '', mH = '', dH = '';
@@ -658,8 +696,7 @@
         function confirmPicker() {
             let y = getWheelVal('wheel-year'), m = getWheelVal('wheel-month'), d = getWheelVal('wheel-day');
             if(activePickerId && document.getElementById(activePickerId)) {
-                let el = document.getElementById(activePickerId);
-                let newVal = `${m}/${d}`; // 簡化為 MM/DD
+                let el = document.getElementById(activePickerId); let newVal = `${m}/${d}`;
                 if(el.value.includes(' - ')) { el.value = el.value.split('-')[0].trim() + ' - ' + newVal; } else { el.value = newVal; }
                 el.dispatchEvent(new Event('change'));
             }
@@ -667,11 +704,10 @@
         }
         function getWheelVal(id) { const el = document.getElementById(id); const idx = Math.round(el.scrollTop / 40); return el.children[idx]?.innerText || '01'; }
 
-        // ================= 12.0 交通與住宿同步聯動行程 =================
+        // ================= 13.0 交通與住宿同步聯動行程 =================
         async function syncToItinerary() {
-            currentTrip.daily.forEach(d => { d.items = d.items.filter(i => !i.isAuto); }); // 清除舊連動
+            currentTrip.daily.forEach(d => { d.items = d.items.filter(i => !i.isAuto); });
             
-            // 住宿連動
             currentTrip.stays.forEach(s => {
                 if(!s.date || !s.name) return; let parts = s.date.split('-');
                 if(parts.length === 2) {
@@ -682,28 +718,31 @@
                 }
             });
 
-            // 航班連動
             currentTrip.flights.forEach(f => {
                 if(!f.date) return;
                 let dIdx = currentTrip.daily.findIndex(d => d.date === f.date);
                 if(dIdx !== -1) {
-                    currentTrip.daily[dIdx].items.push({ id: `flight_${f.id}`, time: f.time, task: `✈️ 航班 ${f.flight}`, loc: f.term || "機場", lat: f.lat||0, lng: f.lng||0, isAuto: true, isAutoFlight: true, img: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600", intro:`搭乘 ${f.title} 前往目的地。`, review:{pos:"快速",neg:"安檢久"} });
+                    currentTrip.daily[dIdx].items.push({ id: `flight_${f.id}`, time: f.time, task: `✈️ 航班 ${f.flight}`, loc: `${f.depIATA || '出發地'} ✈️ ${f.arrIATA || '目的地'} (${f.term || '機場'})`, lat: f.lat||0, lng: f.lng||0, isAuto: true, isAutoFlight: true, img: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600", intro:`搭乘 ${f.title} 前往目的地。`, review:{pos:"快速",neg:"安檢久"} });
                 }
             });
             await saveDB('trips', currentTrip.id, currentTrip);
         }
 
-        // 12.0 航班自動補完
+        // 13.0 航班 IATA 代碼自動同步
         function autoSyncFlight(idx, fId) {
             const fInput = document.getElementById(`flight_num_${fId}`).value.toUpperCase(); if(!fInput) return alert("請輸入航班號");
-            let airline = "國際航空", time = "12:00", term = "Terminal 1", dest = "國際機場", lat=0, lng=0;
-            if(fInput.includes("VN")) { airline = "越南航空"; time = "19:10"; term = "KLIA T1"; dest = "內排國際機場"; lat=2.74; lng=101.7; }
-            else if(fInput.includes("MH")) { airline = "馬來西亞航空"; time = "16:25"; term = "Incheon T1"; dest = "仁川國際機場"; lat=37.46; lng=126.44; }
-            currentTrip.flights[idx].flight = fInput; currentTrip.flights[idx].time = time; currentTrip.flights[idx].term = term; currentTrip.flights[idx].title = airline; currentTrip.flights[idx].destName = dest; currentTrip.flights[idx].lat = lat; currentTrip.flights[idx].lng = lng;
-            saveDB('trips', currentTrip.id, currentTrip); syncToItinerary(); renderTransportStay(); alert(`已補完 ${fInput} 航班與地點資訊！`);
+            let airline = "國際航空", time = "12:00", term = "Terminal 1", dest = "國際機場", lat=0, lng=0, depIATA="DEP", arrIATA="ARR";
+            
+            if(fInput.includes("VN")) { airline = "越南航空"; time = "19:10"; term = "KLIA T1"; dest = "內排國際機場"; depIATA="KUL"; arrIATA="HAN"; lat=21.21; lng=105.80; }
+            else if(fInput.includes("MH")) { airline = "馬來西亞航空"; time = "16:25"; term = "Incheon T1"; dest = "仁川國際機場"; depIATA="ICN"; arrIATA="KUL"; lat=37.46; lng=126.44; }
+            else { depIATA="KUL"; arrIATA="ICN"; }
+
+            currentTrip.flights[idx].flight = fInput; currentTrip.flights[idx].time = time; currentTrip.flights[idx].term = term; currentTrip.flights[idx].title = airline; currentTrip.flights[idx].destName = dest; currentTrip.flights[idx].depIATA = depIATA; currentTrip.flights[idx].arrIATA = arrIATA; currentTrip.flights[idx].lat = lat; currentTrip.flights[idx].lng = lng;
+            saveDB('trips', currentTrip.id, currentTrip); syncToItinerary(); renderTransportStay(); alert(`已補完 ${fInput} ( ${depIATA} ✈️ ${arrIATA} ) 航班與地點資訊！`);
         }
 
         function renderTransportStay() {
+            // 13.0 移除全局檔案檢視
             document.getElementById('flight-content').innerHTML = currentTrip.flights.map((f, idx) => `
                 <div class="mb-4 bg-[rgba(255,255,255,0.7)] p-4 rounded-xl border border-white shadow-sm">
                     <div class="flex justify-between items-center mb-2">
@@ -715,12 +754,10 @@
                     </div>
                     <div class="flex items-center my-3"><i class="fa-solid ${f.airlineIcon} text-2xl mr-4 text-[var(--kr-accent)]"></i><div class="flex-1"><p class="font-bold text-lg">${f.route} <span class="inline-flex items-center bg-white border rounded-lg ml-1 overflow-hidden"><input id="flight_num_${f.id}" value="${f.flight}" class="text-xs w-16 p-1 text-center border-none" placeholder="航班號"><button onclick="autoSyncFlight(${idx}, '${f.id}')" class="bg-[var(--kr-accent)] text-white text-[10px] px-2 py-1">同步</button></span></p><input type="time" value="${f.time}" class="text-sm font-bold font-mono mt-1 text-gray-600 bg-transparent border-none p-0 w-24"></div></div>
                     <div class="bg-white p-2 rounded-lg text-xs font-bold flex flex-col gap-1">
-                        <a href="https://maps.apple.com/?q=${encodeURIComponent(f.term)}" target="_blank" class="text-blue-500"><i class="fa-solid fa-map-pin"></i> 起點: ${f.term}</a>
-                        ${f.destName ? `<a href="https://maps.apple.com/?q=${encodeURIComponent(f.destName)}" target="_blank" class="text-blue-500"><i class="fa-solid fa-location-dot"></i> 終點: ${f.destName}</a>` : ''}
+                        <a href="https://maps.google.com/?q=${encodeURIComponent(f.term)}" target="_blank" class="text-blue-500"><i class="fa-solid fa-map-pin"></i> 起點: ${f.term} (${f.depIATA || ''})</a>
+                        ${f.destName ? `<a href="https://maps.google.com/?q=${encodeURIComponent(f.destName)}" target="_blank" class="text-blue-500"><i class="fa-solid fa-location-dot"></i> 終點: ${f.destName} (${f.arrIATA || ''})</a>` : ''}
                     </div>
-                    <div class="flex justify-end mt-2"><label class="cursor-pointer text-[var(--kr-accent)] text-xs font-bold"><input type="file" accept=".pdf" class="file-hide" onchange="addPdf(this, '${f.id}')"><i class="fa-solid fa-file-pdf"></i> 添加檔案</label></div><div id="file_wrap_${f.id}" class="mt-2 text-xs flex justify-end"></div>
                 </div>`).join(''); 
-            currentTrip.flights.forEach(f => renderUserFiles(f.id));
 
             document.getElementById('stay-content').innerHTML = currentTrip.stays.map(s => `
                 <div class="mb-5 bg-[rgba(255,255,255,0.7)] p-4 rounded-xl border border-white shadow-sm">
@@ -729,10 +766,8 @@
                         <button onclick="deleteStay('${s.id}')" class="text-red-400 ml-2"><i class="fa-solid fa-trash"></i></button>
                     </div>
                     <input id="stay_name_${s.id}" value="${s.name}" class="w-full text-sm font-bold p-2 mb-2 bg-white rounded-lg border-none" onchange="s.name=this.value; s.addr=this.value; saveDB('trips',currentTrip.id,currentTrip);syncToItinerary()">
-                    <div class="bg-white p-2 rounded-lg text-xs font-bold flex items-center justify-between mb-2"><a href="https://maps.apple.com/?q=${encodeURIComponent(s.addr)}" target="_blank" class="text-blue-500 truncate w-full"><i class="fa-solid fa-map-pin"></i> ${s.addr}</a></div>
-                    <div class="flex justify-end"><label class="bg-white px-3 py-1.5 rounded-xl cursor-pointer shadow-sm text-xs font-bold text-[var(--kr-accent)] border"><input type="file" accept=".pdf" class="file-hide" onchange="addPdf(this, '${s.id}')"><i class="fa-solid fa-file-pdf"></i> 添加檔案</label></div><div id="file_wrap_${s.id}" class="mt-2 text-xs flex justify-end"></div>
+                    <div class="bg-white p-2 rounded-lg text-xs font-bold flex items-center justify-between mb-2"><a href="https://maps.google.com/?q=${encodeURIComponent(s.addr)}" target="_blank" class="text-blue-500 truncate w-full"><i class="fa-solid fa-map-pin"></i> ${s.addr}</a></div>
                 </div>`).join('');
-            currentTrip.stays.forEach(s => renderUserFiles(s.id));
         }
 
         async function deleteFlight(fid) { if(!confirm("刪除此航班？")) return; currentTrip.flights = currentTrip.flights.filter(f => f.id !== fid); await saveDB('trips', currentTrip.id, currentTrip); syncToItinerary(); renderTransportStay(); }
@@ -740,48 +775,31 @@
         async function addFlight() { const nid = `f${Date.now()}`; currentTrip.flights.push({ id: nid, title: "新航班", date: "10/29", route: "出發 → 抵達", flight: "航班號", airlineIcon: "fa-plane", time: "12:00", term: "輸入航廈" }); await saveDB('trips', currentTrip.id, currentTrip); renderTransportStay(); }
         async function addStay() { const nid = `s${Date.now()}`; currentTrip.stays.push({ id: nid, name: "新住宿", date: "10/30 - 10/31", addr: "飯店地址", lat:0, lng:0 }); syncToItinerary(); renderTransportStay(); }
 
-        // ================= 12.0 花費與數據分析 =================
-        async function fetchExchangeRateAPI() {
-            try { const res = await fetch("https://open.er-api.com/v6/latest/USD"); const data = await res.json(); exchangeRates = data.rates; const topCur = ["MYR","KRW","TWD","JPY","USD","EUR","GBP","HKD","THB","SGD"]; let opts = Object.keys(exchangeRates).sort((a,b) => topCur.includes(a) ? -1 : 1).map(k => `<option value="${k}">${k}</option>`).join(''); document.getElementById('curFrom').innerHTML = opts; document.getElementById('curTo').innerHTML = opts; document.getElementById('expCur').innerHTML = opts; document.getElementById('curFrom').value = "MYR"; document.getElementById('curTo').value = "KRW"; document.getElementById('expCur').value = "KRW"; document.getElementById('rateUpdateTxt').innerText = `API 更新: ${data.time_last_update_utc.substring(0,16)}`; convertCurrency(); } catch(e) {}
-        }
+        // ================= 花費與數據分析 =================
+        async function fetchExchangeRateAPI() { try { const res = await fetch("https://open.er-api.com/v6/latest/USD"); const data = await res.json(); exchangeRates = data.rates; const topCur = ["MYR","KRW","TWD","JPY","USD","EUR","GBP","HKD","THB","SGD"]; let opts = Object.keys(exchangeRates).sort((a,b) => topCur.includes(a) ? -1 : 1).map(k => `<option value="${k}">${k}</option>`).join(''); document.getElementById('curFrom').innerHTML = opts; document.getElementById('curTo').innerHTML = opts; document.getElementById('expCur').innerHTML = opts; document.getElementById('curFrom').value = "MYR"; document.getElementById('curTo').value = "KRW"; document.getElementById('expCur').value = "KRW"; document.getElementById('rateUpdateTxt').innerText = `API 更新: ${data.time_last_update_utc.substring(0,16)}`; convertCurrency(); } catch(e) {} }
         function swapCurrencies() { const f = document.getElementById('curFrom').value; document.getElementById('curFrom').value = document.getElementById('curTo').value; document.getElementById('curTo').value = f; convertCurrency(); }
         function convertCurrency() { const f = document.getElementById('curFrom').value; const t = document.getElementById('curTo').value; const amt = parseFloat(document.getElementById('curAmount').value) || 0; if(exchangeRates[f] && exchangeRates[t]) { document.getElementById('curResult').value = ((amt / exchangeRates[f]) * exchangeRates[t]).toFixed(2); } }
         function renderUserSelects() { document.getElementById('expPayer').innerHTML = currentTrip.users.map(u => `<option value="${u}">${u}</option>`).join(''); }
         function addUser() { const u = prompt("輸入新增用戶名稱:"); if(u) { currentTrip.users.push(u); saveDB('trips', currentTrip.id, currentTrip); renderUserSelects(); } }
         async function updateBudget(val) { currentTrip.budget = parseFloat(val); await saveDB('trips', currentTrip.id, currentTrip); renderExpenses(); }
 
-        function handleExpTypeChange(sel) {
-            if(sel.value === '自定義') {
-                let name = prompt("請輸入自定義類別名稱：");
-                if(name) { let opt = new Option("✨ " + name, name); sel.add(opt, sel.options.length - 1); sel.value = name; } else { sel.value = '餐飲'; }
-            }
-        }
+        function handleExpTypeChange(sel) { if(sel.value === '自定義') { let name = prompt("請輸入自定義類別名稱："); if(name) { let opt = new Option("✨ " + name, name); sel.add(opt, sel.options.length - 1); sel.value = name; } else { sel.value = '餐飲'; } } }
 
-        async function addExpense() {
-            const e = { id: Date.now(), t: document.getElementById('expType').value, n: document.getElementById('expName').value, a: parseFloat(document.getElementById('expAmt').value)||0, c: document.getElementById('expCur').value, p: document.getElementById('expPayer').value, split: document.getElementById('expSplitType').value };
-            if(e.a <= 0) return alert("請輸入金額"); currentTrip.expenses.push(e); await saveDB('trips', currentTrip.id, currentTrip); document.getElementById('expName').value=''; document.getElementById('expAmt').value=''; renderExpenses();
-        }
+        async function addExpense() { const e = { id: Date.now(), t: document.getElementById('expType').value, n: document.getElementById('expName').value, a: parseFloat(document.getElementById('expAmt').value)||0, c: document.getElementById('expCur').value, p: document.getElementById('expPayer').value, split: document.getElementById('expSplitType').value }; if(e.a <= 0) return alert("請輸入金額"); currentTrip.expenses.push(e); await saveDB('trips', currentTrip.id, currentTrip); document.getElementById('expName').value=''; document.getElementById('expAmt').value=''; renderExpenses(); }
         async function deleteExpense(eid) { if(!confirm("刪除此筆花費？")) return; currentTrip.expenses = currentTrip.expenses.filter(e => e.id !== eid); await saveDB('trips', currentTrip.id, currentTrip); renderExpenses(); }
 
         function renderExpenses() {
             renderUserSelects(); let balances = {}; let totalBaseSpent = 0; let typeSums = {};
-            
             let html = currentTrip.expenses.map(e => {
-                let cur = e.c || 'KRW';
-                if(!balances[cur]) { balances[cur] = {}; currentTrip.users.forEach(u => balances[cur][u] = 0); }
+                let cur = e.c || 'KRW'; if(!balances[cur]) { balances[cur] = {}; currentTrip.users.forEach(u => balances[cur][u] = 0); }
                 if(e.split === 'equal') { balances[cur][e.p] += e.a; const splitAmt = e.a / currentTrip.users.length; currentTrip.users.forEach(u => balances[cur][u] -= splitAmt); }
-                if(exchangeRates[cur] && exchangeRates["MYR"]) { 
-                    let bAmt = (e.a / exchangeRates[cur]) * exchangeRates["MYR"];
-                    totalBaseSpent += bAmt; 
-                    typeSums[e.t] = (typeSums[e.t] || 0) + bAmt;
-                }
+                if(exchangeRates[cur] && exchangeRates["MYR"]) { let bAmt = (e.a / exchangeRates[cur]) * exchangeRates["MYR"]; totalBaseSpent += bAmt; typeSums[e.t] = (typeSums[e.t] || 0) + bAmt; }
                 return `<div class="flex justify-between items-center border-b border-white pb-2 mb-2 text-sm"><div><span class="font-bold text-gray-700">${e.n || e.t}</span> <span class="text-[10px] text-gray-400 bg-white px-1 rounded">${e.p} 付款</span></div><div class="flex items-center gap-3"><span class="font-mono text-[var(--kr-accent)] font-bold">${e.a} ${cur}</span><button onclick="deleteExpense(${e.id})" class="text-red-400"><i class="fa-solid fa-trash"></i></button></div></div>`;
             }).join('');
             
             let sumHtml = ''; for(let cur in balances) { let curSum = Object.keys(balances[cur]).map(u => { let amt = balances[cur][u]; if(Math.abs(amt) < 0.01) return ''; return `<p class="text-xs ${amt>=0?'text-green-600':'text-red-500'} font-bold">${u}: ${amt>=0?'需收回':'需支付'} ${Math.abs(amt).toFixed(2)} ${cur}</p>`; }).filter(x=>x).join(''); if(curSum) sumHtml += `<div class="mb-2 border-b border-gray-100 pb-1 last:border-0">${curSum}</div>`; }
             document.getElementById('expense-summary').innerHTML = `<div class="bg-[rgba(255,255,255,0.8)] p-4 rounded-xl border border-white mb-4 shadow-sm text-center"><p class="text-xs text-gray-500 mb-2 font-bold">💳 分帳結算</p>${sumHtml || '<p class="text-xs text-gray-400">目前無欠款</p>'}</div><div class="max-h-40 overflow-y-auto pr-2">${html}</div>`;
 
-            // 預算百分比
             document.getElementById('tripBudget').value = currentTrip.budget || 0;
             let pct = currentTrip.budget > 0 ? (totalBaseSpent / currentTrip.budget) * 100 : 0;
             let ringColor = pct > 100 ? '#ef4444' : (pct > 80 ? '#f59e0b' : '#10b981');
@@ -789,21 +807,11 @@
             document.getElementById('total-spent-display').style.color = pct > 100 ? '#ef4444' : '#4A4641';
             document.getElementById('budget-ring-el').style.background = `conic-gradient(${ringColor} ${Math.min(pct, 100)}%, #ddd 0%)`;
 
-            // 圓餅圖
             if(Object.keys(typeSums).length > 0) {
-                let conicStr = []; let currentDeg = 0; const colors = ['#D8A48F','#A39B8B','#A8E6CF','#B39CD0','#8FC1E3','#FFD1DC'];
-                let legendHtml = ''; let cIdx = 0;
-                for(let t in typeSums) {
-                    let p = (typeSums[t] / totalBaseSpent) * 100;
-                    conicStr.push(`${colors[cIdx%colors.length]} ${currentDeg}% ${currentDeg + p}%`);
-                    legendHtml += `<div class="mb-1"><span class="inline-block w-2 h-2 rounded-full mr-1" style="background:${colors[cIdx%colors.length]}"></span>${t.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '').trim()} ${p.toFixed(0)}%</div>`;
-                    currentDeg += p; cIdx++;
-                }
-                document.getElementById('expense-donut').style.background = `conic-gradient(${conicStr.join(', ')})`;
-                document.getElementById('expense-legend').innerHTML = legendHtml;
-            } else {
-                document.getElementById('expense-donut').style.background = '#ccc'; document.getElementById('expense-legend').innerHTML = '無數據';
-            }
+                let conicStr = []; let currentDeg = 0; const colors = ['#D8A48F','#A39B8B','#A8E6CF','#B39CD0','#8FC1E3','#FFD1DC']; let legendHtml = ''; let cIdx = 0;
+                for(let t in typeSums) { let p = (typeSums[t] / totalBaseSpent) * 100; conicStr.push(`${colors[cIdx%colors.length]} ${currentDeg}% ${currentDeg + p}%`); legendHtml += `<div class="mb-1"><span class="inline-block w-2 h-2 rounded-full mr-1" style="background:${colors[cIdx%colors.length]}"></span>${t.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '').trim()} ${p.toFixed(0)}%</div>`; currentDeg += p; cIdx++; }
+                document.getElementById('expense-donut').style.background = `conic-gradient(${conicStr.join(', ')})`; document.getElementById('expense-legend').innerHTML = legendHtml;
+            } else { document.getElementById('expense-donut').style.background = '#ccc'; document.getElementById('expense-legend').innerHTML = '無數據'; }
         }
 
         // ================= 行李分類 =================
