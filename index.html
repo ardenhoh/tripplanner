@@ -3,1202 +3,341 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>我的旅行繪本｜行程編輯器</title>
+  <title>Travel Log | 旅行繪本</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js" defer></script>
   <style>
-    :root{
-      --bg:#f5f3ec;
-      --card:rgba(255,255,255,.68);
-      --card2:rgba(255,255,255,.82);
-      --text:#3f3a33;
-      --muted:#7a7165;
-      --accent:#9A9283;
-      --accent2:#6d8ea0;
-      --line:rgba(255,255,255,.85);
-      --shadow:0 12px 35px rgba(0,0,0,.08);
-      --shadow-strong:0 18px 50px rgba(0,0,0,.14);
+    :root {
+      --apple-bg: #f5f5f7;
+      --apple-text: #1d1d1f;
+      --apple-secondary: #86868b;
+      --apple-blue: #0071e3;
+      --glass: rgba(255, 255, 255, 0.7);
     }
-    body{
-      background: radial-gradient(circle at top, rgba(255,255,255,.92), transparent 40%), var(--bg);
-      color: var(--text);
-      font-family: Arial, Helvetica, sans-serif;
-      min-height: 100vh;
-      -webkit-tap-highlight-color: transparent;
+
+    body {
+      background-color: var(--apple-bg);
+      color: var(--apple-text);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "PingFang TC", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      letter-spacing: -0.015em;
     }
-    .glass{
-      background: var(--card);
-      backdrop-filter: blur(26px);
-      border: 1px solid var(--line);
-      box-shadow: var(--shadow);
+
+    /* Apple 質感：極細邊框與層次 */
+    .apple-glass {
+      background: var(--glass);
+      backdrop-filter: blur(30px) saturate(180%);
+      -webkit-backdrop-filter: blur(30px) saturate(180%);
+      border: 0.5px solid rgba(0, 0, 0, 0.1);
     }
-    .glass-strong{
-      background: var(--card2);
-      backdrop-filter: blur(28px);
-      border: 1px solid rgba(255,255,255,.95);
-      box-shadow: var(--shadow-strong);
-    }
-    .soft-scroll::-webkit-scrollbar{ height: 8px; width: 8px; }
-    .soft-scroll::-webkit-scrollbar-thumb{ background: rgba(0,0,0,.12); border-radius: 999px; }
-    .soft-scroll{ scrollbar-width: thin; }
-    .day-chip.active{
-      background: var(--accent);
+
+    .card-shadow { box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04); }
+
+    /* 平滑過渡 */
+    .tap-scale { transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+    .tap-scale:active { transform: scale(0.97); }
+
+    /* 隱藏滾動條 */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* 精緻天氣卡片動效 */
+    .weather-card {
+      background: linear-gradient(160deg, #51a1ee 0%, #89c0f5 100%);
       color: white;
-      border-color: transparent;
+      position: relative;
+      overflow: hidden;
     }
-    .item-card{
-      transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+    .weather-card::after {
+      content: "";
+      position: absolute;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%);
+      animation: drift 10s infinite linear;
     }
-    .item-card:hover{
-      transform: translateY(-1px);
-      box-shadow: 0 14px 26px rgba(0,0,0,.08);
-      border-color: rgba(154,146,131,.35);
+    @keyframes drift {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
     }
-    .btn{
-      transition: transform .15s ease, opacity .15s ease, background .15s ease;
+
+    input, textarea {
+      background: rgba(0, 0, 0, 0.03);
+      border: 0.5px solid transparent;
+      border-radius: 12px;
+      transition: all 0.2s ease;
     }
-    .btn:active{ transform: scale(.98); opacity: .92; }
-    .modal-hidden{ display: none; }
-    .helper-badge{
-      border: 1px solid rgba(154,146,131,.18);
-      background: rgba(255,255,255,.72);
-    }
-    .ring{
-      background: conic-gradient(var(--accent) 0deg, var(--accent2) 120deg, #d7d1c7 120deg 360deg);
-      border-radius: 999px;
-      padding: 10px;
-    }
-    .field-base{
-      width: 100%;
-      min-width: 0;
-      box-sizing: border-box;
-      border: 1px solid rgba(255,255,255,.92);
-      background: rgba(255,255,255,.78);
-      color: var(--text);
+    input:focus, textarea:focus {
+      background: white;
+      border-color: var(--apple-blue);
+      box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1);
       outline: none;
-      transition: box-shadow .16s ease, border-color .16s ease, background .16s ease, transform .16s ease;
-      -webkit-appearance: none;
-      appearance: none;
-    }
-    .field-base:focus{
-      border-color: rgba(154,146,131,.28);
-      box-shadow: 0 0 0 3px rgba(154,146,131,.14);
-      background: rgba(255,255,255,.92);
-    }
-    .field-input{
-      height: 48px;
-      padding: 0 1rem;
-      border-radius: 1rem;
-    }
-    .field-color{
-      height: 48px;
-      padding: .375rem;
-      border-radius: 1rem;
-    }
-    .field-textarea{
-      min-height: 92px;
-      padding: .9rem 1rem;
-      border-radius: 1rem;
-      resize: none;
-    }
-    .field-date{
-      font: inherit;
-      letter-spacing: .01em;
-      line-height: 1.2;
-      color-scheme: light;
-    }
-    .field-date::-webkit-calendar-picker-indicator{
-      opacity: .55;
-      cursor: pointer;
     }
   </style>
 </head>
-<body class="antialiased">
-  <div id="app"></div>
+<body>
 
-  <div id="trip-modal" class="fixed inset-0 z-50 modal-hidden flex items-center justify-center overflow-y-auto px-3 py-4 sm:px-4 sm:py-6" role="dialog" aria-modal="true" aria-labelledby="trip-modal-title">
-    <div class="absolute inset-0 bg-black/35"></div>
-    <div class="relative w-full max-w-2xl glass-strong rounded-3xl p-4 sm:p-5 md:p-6 max-h-[calc(100vh-2rem)] overflow-y-auto soft-scroll">
-      <div class="flex items-center justify-between gap-3 mb-4">
+  <!-- 主容器 -->
+  <div id="app" class="min-h-screen"></div>
+
+  <!-- 建立/編輯行程 Modal -->
+  <div id="trip-modal" class="fixed inset-0 z-[100] hidden">
+    <div class="absolute inset-0 bg-black/20 backdrop-blur-sm"></div>
+    <div class="relative mx-auto mt-20 w-[90vw] max-w-lg apple-glass rounded-[28px] p-8 card-shadow">
+      <h2 id="modal-title" class="text-2xl font-bold mb-6">開始新的冒險</h2>
+      <div class="space-y-4">
         <div>
-          <h2 id="trip-modal-title" class="text-xl md:text-2xl font-bold">建立新的旅行</h2>
+          <label class="text-xs font-bold text-[var(--apple-secondary)] ml-1">行程名稱</label>
+          <input id="in-title" type="text" class="w-full px-4 py-3 mt-1" placeholder="例如：首爾五日慢遊" />
         </div>
-        <button type="button" class="btn w-10 h-10 rounded-full bg-black/5 hover:bg-black/10 cursor-pointer" data-action="close-trip-modal" aria-label="關閉">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-        <label class="block min-w-0">
-          <span class="text-sm font-semibold">行程名稱</span>
-          <input id="new-trip-title" class="field-base field-input mt-2" placeholder="例如：首爾 5 日慢旅行" />
-        </label>
-
-        <label class="block min-w-0">
-          <span class="text-sm font-semibold">主題色</span>
-          <input id="new-trip-color" type="color" class="field-base field-color mt-2" value="#9A9283" />
-        </label>
-
-        <label class="block min-w-0">
-          <span class="text-sm font-semibold">起始日期</span>
-          <input id="new-trip-start" type="date" class="field-base field-input field-date mt-2" />
-        </label>
-
-        <label class="block min-w-0">
-          <span class="text-sm font-semibold">天數</span>
-          <input id="new-trip-days" type="number" min="1" max="90" value="7" class="field-base field-input mt-2" />
-        </label>
-
-        <label class="block md:col-span-2 min-w-0">
-          <span class="text-sm font-semibold">目的地城市</span>
-          <textarea id="new-trip-destinations" rows="2" class="field-base field-textarea mt-2" placeholder="例如：首爾, 釜山, 濟州島"></textarea>
-        </label>
-
-        <label class="block md:col-span-2 min-w-0">
-          <span class="text-sm font-semibold">備註</span>
-          <textarea id="new-trip-notes" rows="2" class="field-base field-textarea mt-2" placeholder="例如：親子行程、重視咖啡店、交通偏地鐵"></textarea>
-        </label>
-      </div>
-
-      <div class="mt-5 flex flex-wrap gap-3 justify-end">
-        <button type="button" class="btn rounded-2xl px-4 py-3 bg-black/5 hover:bg-black/10 cursor-pointer" data-action="close-trip-modal">取消</button>
-        <button type="button" class="btn rounded-2xl px-5 py-3 bg-[var(--accent)] text-white font-semibold cursor-pointer" data-action="create-trip">創立行程</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="import-modal" class="fixed inset-0 z-50 modal-hidden">
-    <div class="absolute inset-0 bg-black/35"></div>
-    <div class="relative mx-auto mt-8 w-[94vw] max-w-2xl glass-strong rounded-3xl p-5 md:p-6">
-      <div class="flex items-center justify-between gap-3 mb-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="text-xs font-bold text-[var(--apple-secondary)] ml-1">開始日期</label>
+            <input id="in-date" type="date" class="w-full px-4 py-3 mt-1" />
+          </div>
+          <div>
+            <label class="text-xs font-bold text-[var(--apple-secondary)] ml-1">天數</label>
+            <input id="in-days" type="number" min="1" max="60" class="w-full px-4 py-3 mt-1" value="5" />
+          </div>
+        </div>
         <div>
-          <h2 class="text-xl md:text-2xl font-bold">匯入備份</h2>
-          <p class="text-sm text-slate-500 mt-1">貼上 JSON 備份內容，或直接選擇檔案匯入。</p>
+          <label class="text-xs font-bold text-[var(--apple-secondary)] ml-1">目的地路線 (用逗號分隔)</label>
+          <textarea id="in-dests" rows="2" class="w-full px-4 py-3 mt-1" placeholder="首爾, 釜山, 濟州島"></textarea>
         </div>
-        <button class="btn w-10 h-10 rounded-full bg-black/5 hover:bg-black/10" data-action="close-import-modal" aria-label="關閉">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
       </div>
-
-      <input id="import-file" type="file" accept="application/json" class="block w-full rounded-2xl border border-white bg-white/80 px-4 py-3 outline-none" />
-      <textarea id="import-json" rows="10" class="mt-4 w-full rounded-2xl border border-white bg-white/80 px-4 py-3 font-mono text-xs outline-none focus:ring-2 focus:ring-slate-300" placeholder="貼上 JSON 內容"></textarea>
-
-      <div class="mt-6 flex flex-wrap gap-3 justify-end">
-        <button class="btn rounded-2xl px-4 py-3 bg-black/5 hover:bg-black/10" data-action="close-import-modal">取消</button>
-        <button class="btn rounded-2xl px-5 py-3 bg-[var(--accent)] text-white font-semibold" data-action="do-import">匯入</button>
+      <div class="flex gap-3 mt-8">
+        <button id="btn-cancel-modal" class="flex-1 py-4 rounded-2xl bg-black/5 font-medium tap-scale">取消</button>
+        <button id="btn-confirm-modal" class="flex-1 py-4 rounded-2xl bg-[var(--apple-text)] text-white font-medium tap-scale">建立行程</button>
       </div>
     </div>
   </div>
 
   <script>
-    const STORAGE_KEY = "travel_itinerary_editor_v2";
-    const app = {
+    // --- 狀態管理 ---
+    const STORAGE_KEY = "travel_log_v26_pro";
+    let state = {
       trips: [],
-      activeTripId: null,
-      activeDayId: null,
-      searchQuery: "",
-      view: "home",
-      ui: { tripModalMode: "create" }
+      activeId: null,
+      view: 'home' // 'home' | 'editor'
     };
 
-    const SUGGESTIONS = [
-      { name: "首爾景福宮", type: "景點", city: "首爾", note: "歷史文化地標，適合半日安排。", tags: ["古蹟", "王宮", "拍照"] },
-      { name: "弘大商圈", type: "購物", city: "首爾", note: "適合晚餐、咖啡店與逛街。", tags: ["逛街", "夜生活", "咖啡"] },
-      { name: "釜山海雲台", type: "海灘", city: "釜山", note: "適合看海、散步與慢行程。", tags: ["海景", "放鬆", "日落"] },
-      { name: "濟州島西歸浦", type: "自然", city: "濟州島", note: "可搭配瀑布、海岸線與郊外景點。", tags: ["自然", "自駕", "戶外"] },
-      { name: "吉隆坡雙子星塔", type: "地標", city: "吉隆坡", note: "城市地標，適合安排第一天或夜景。", tags: ["城市", "夜景", "購物"] },
-      { name: "仁川機場", type: "機場", city: "仁川", note: "轉機與抵達節點。", tags: ["交通", "入境"] },
-      { name: "機場快線", type: "交通", city: "首爾", note: "適合串聯機場與市區。", tags: ["鐵路", "交通", "省時"] },
-      { name: "韓式烤肉", type: "美食", city: "多地", note: "可作為晚餐主題。", tags: ["餐廳", "晚餐", "熱門"] },
-      { name: "咖啡店巡禮", type: "主題", city: "多地", note: "適合自訂插入多天行程。", tags: ["咖啡", "休閒", "拍照"] },
-      { name: "博物館半日", type: "主題", city: "多地", note: "適合雨天備案。", tags: ["雨天", "文化", "室內"] },
-      { name: "海邊散步", type: "主題", city: "多地", note: "適合放進傍晚時段。", tags: ["海景", "黃昏", "輕鬆"] },
-      { name: "市集晚餐", type: "美食", city: "多地", note: "適合接在逛街或景點後。", tags: ["夜市", "小吃", "在地"] }
-    ];
-
-    function uuid(){
-      return (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : "id_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8);
+    // --- 數據處理邏輯 ---
+    function load() {
+      const data = localStorage.getItem(STORAGE_KEY);
+      if (data) state = JSON.parse(data);
+      render();
     }
 
-    function formatDateISO(d){
-      const y = d.getFullYear();
-      const m = String(d.getMonth() + 1).padStart(2, "0");
-      const day = String(d.getDate()).padStart(2, "0");
-      return `${y}-${m}-${day}`;
+    function save() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
 
-    function formatDateLabel(iso){
-      const d = new Date(`${iso}T00:00:00`);
-      if (Number.isNaN(d.getTime())) return iso || "";
-      return new Intl.DateTimeFormat("zh-Hant", { month: "2-digit", day: "2-digit", weekday: "short" }).format(d);
-    }
-
-    function displayDate(iso){
-      const d = new Date(`${iso}T00:00:00`);
-      if (Number.isNaN(d.getTime())) return iso || "";
-      return new Intl.DateTimeFormat("zh-Hant", { year: "numeric", month: "2-digit", day: "2-digit", weekday: "short" }).format(d);
-    }
-
-    function addDays(iso, offset){
-      const d = new Date(`${iso}T00:00:00`);
-      if (Number.isNaN(d.getTime())) return iso;
-      d.setDate(d.getDate() + offset);
-      return formatDateISO(d);
-    }
-
-    function splitDestinations(value){
-      return String(value || "")
-        .split(/[\n,|、\\/]+/)
-        .map(s => s.trim())
-        .filter(Boolean);
-    }
-
-    function defaultDestinations(trip, daysCount){
-      const list = splitDestinations(trip.destinationsInput);
-      if (list.length === 0) {
-        const base = trip.title?.trim() || "未命名行程";
-        return Array.from({ length: daysCount }, (_, i) => `${base} · Day ${i + 1}`);
-      }
-      if (list.length >= daysCount) return list.slice(0, daysCount);
-      const out = [];
+    function createTrip(title, startDate, daysCount, destsInput) {
+      const dests = destsInput.split(/[,，|]+/).map(s => s.trim()).filter(Boolean);
+      const days = [];
       for (let i = 0; i < daysCount; i++) {
-        out.push(list[Math.min(i, list.length - 1)]);
+        const d = new Date(startDate);
+        d.setDate(d.getDate() + i);
+        days.push({
+          id: crypto.randomUUID(),
+          date: d.toISOString().split('T')[0],
+          destination: dests[i] || dests[dests.length - 1] || "未設定地點",
+          items: []
+        });
       }
-      return out;
-    }
-
-    function normalizeTrip(trip){
-      trip.daysCount = Math.max(1, Number(trip.daysCount || (trip.days ? trip.days.length : 1) || 1));
-      trip.startDate = trip.startDate || formatDateISO(new Date());
-      trip.destinationsInput = trip.destinationsInput ?? (trip.destinations || "");
-      trip.color = trip.color || "#9A9283";
-      trip.budget = Number.isFinite(Number(trip.budget)) ? Number(trip.budget) : 0;
-      trip.notes = trip.notes || "";
-      trip.days = Array.isArray(trip.days) ? trip.days : [];
-      if (!Array.isArray(trip.days) || trip.days.length === 0) {
-        rebuildTripDays(trip, { preserveExisting: false });
-      } else {
-        trip.days = trip.days.map((day, index) => ({
-          id: day.id || uuid(),
-          date: day.date || addDays(trip.startDate, index),
-          title: day.title || `Day ${index + 1}`,
-          destination: day.destination || defaultDestinations(trip, trip.daysCount)[index] || "",
-          summary: day.summary || "",
-          items: Array.isArray(day.items) ? day.items.map(normalizeItem) : []
-        }));
-        if (trip.days.length !== trip.daysCount) {
-          rebuildTripDays(trip, { preserveExisting: true });
-        }
-      }
-      trip.daysCount = trip.days.length;
-      return trip;
-    }
-
-    function normalizeItem(item){
-      return {
-        id: item.id || uuid(),
-        title: item.title || "新行程項目",
-        time: item.time || "",
-        place: item.place || "",
-        notes: item.notes || "",
-        category: item.category || "一般",
-        done: Boolean(item.done)
+      const newTrip = {
+        id: crypto.randomUUID(),
+        title,
+        startDate,
+        daysCount,
+        color: '#0071e3',
+        days
       };
-    }
-
-    function createStarterTrip(){
-      const start = formatDateISO(new Date());
-      return normalizeTrip({
-        id: uuid(),
-        title: "我的第一個旅行",
-        startDate: start,
-        daysCount: 5,
-        destinationsInput: "首爾, 釜山, 濟州島",
-        color: "#9A9283",
-        budget: 0,
-        notes: "你可以先從這裡開始修改。",
-        days: []
-      });
-    }
-
-    function rebuildTripDays(trip, options = { preserveExisting: true }){
-      const preserveExisting = options.preserveExisting !== false;
-      const prevDays = Array.isArray(trip.days) ? [...trip.days] : [];
-      const byDate = new Map(prevDays.map(d => [d.date, d]));
-      const byIndex = prevDays;
-      const dests = defaultDestinations(trip, trip.daysCount);
-
-      const nextDays = [];
-      for (let i = 0; i < trip.daysCount; i++) {
-        const date = addDays(trip.startDate, i);
-        const old = preserveExisting ? (byDate.get(date) || byIndex[i]) : null;
-        nextDays.push({
-          id: old?.id || uuid(),
-          date,
-          title: old?.title || `Day ${i + 1}`,
-          destination: old?.destination || dests[i] || "",
-          summary: old?.summary || "",
-          items: preserveExisting && Array.isArray(old?.items) ? old.items.map(normalizeItem) : []
-        });
-      }
-      trip.days = nextDays;
-      return trip;
-    }
-
-    function loadState(){
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) {
-        app.trips = [createStarterTrip()];
-        app.activeTripId = app.trips[0].id;
-        app.view = "editor";
-        saveState();
-        return;
-      }
-      try {
-        const parsed = JSON.parse(raw);
-        app.trips = (parsed.trips || [createStarterTrip()]).map(normalizeTrip);
-        app.activeTripId = parsed.activeTripId || app.trips[0]?.id || null;
-        if (!app.trips.some(t => t.id === app.activeTripId)) {
-          app.activeTripId = app.trips[0]?.id || null;
-        }
-        app.view = app.activeTripId ? "editor" : "home";
-      } catch (e) {
-        console.error("載入失敗", e);
-        app.trips = [createStarterTrip()];
-        app.activeTripId = app.trips[0].id;
-        app.view = "editor";
-      }
-    }
-
-    let saveTimer = null;
-    function saveState(immediate = false){
-      const payload = JSON.stringify({
-        trips: app.trips,
-        activeTripId: app.activeTripId
-      });
-      const commit = () => localStorage.setItem(STORAGE_KEY, payload);
-      if (immediate) return commit();
-      clearTimeout(saveTimer);
-      saveTimer = setTimeout(commit, 120);
-    }
-
-    function activeTrip(){
-      return app.trips.find(t => t.id === app.activeTripId) || null;
-    }
-
-    function setActiveTrip(id){
-      app.activeTripId = id;
-      app.view = id ? "editor" : "home";
-      app.activeDayId = null;
-      saveState();
+      state.trips.unshift(newTrip);
+      state.activeId = newTrip.id;
+      state.view = 'editor';
+      save();
       render();
     }
 
-    function openTripModal(mode = "create"){
-      app.ui.tripModalMode = mode;
-      const modal = document.getElementById("trip-modal");
-      modal.classList.remove("modal-hidden");
-      document.getElementById("trip-modal-title").textContent = mode === "edit" ? "編輯行程設定" : "建立新的旅行";
-      if (mode === "create") {
-        document.getElementById("new-trip-title").value = "";
-        document.getElementById("new-trip-color").value = "#9A9283";
-        document.getElementById("new-trip-start").value = formatDateISO(new Date());
-        document.getElementById("new-trip-days").value = 7;
-        document.getElementById("new-trip-destinations").value = "";
-        document.getElementById("new-trip-notes").value = "";
-      } else {
-        const t = activeTrip();
-        if (!t) return;
-        document.getElementById("new-trip-title").value = t.title;
-        document.getElementById("new-trip-color").value = t.color;
-        document.getElementById("new-trip-start").value = t.startDate;
-        document.getElementById("new-trip-days").value = t.daysCount;
-        document.getElementById("new-trip-destinations").value = t.destinationsInput || "";
-        document.getElementById("new-trip-notes").value = t.notes || "";
-      }
-    }
-
-    function closeTripModal(){
-      document.getElementById("trip-modal").classList.add("modal-hidden");
-    }
-
-    function openImportModal(){
-      document.getElementById("import-json").value = "";
-      document.getElementById("import-file").value = "";
-      document.getElementById("import-modal").classList.remove("modal-hidden");
-    }
-
-    function closeImportModal(){
-      document.getElementById("import-modal").classList.add("modal-hidden");
-    }
-
-    function createTripFromModal(){
-      try {
-        const title = document.getElementById("new-trip-title").value.trim() || "未命名行程";
-        const color = document.getElementById("new-trip-color").value || "#9A9283";
-        const startDate = document.getElementById("new-trip-start").value || formatDateISO(new Date());
-        const daysCount = Math.max(1, Number(document.getElementById("new-trip-days").value || 1));
-        const destinationsInput = document.getElementById("new-trip-destinations").value.trim();
-        const notes = document.getElementById("new-trip-notes").value.trim();
-
-        const trip = normalizeTrip({
-          id: uuid(),
-          title, color, startDate, daysCount, destinationsInput, notes,
-          budget: 0,
-          days: []
-        });
-        rebuildTripDays(trip, { preserveExisting: false });
-        app.trips.unshift(trip);
-        setActiveTrip(trip.id);
-        closeTripModal();
-        saveState(true);
-      } catch (err) {
-        console.error('建立行程失敗', err);
-        alert('建立行程時發生錯誤，請再試一次。');
-      }
-    }
-
-    function deleteTrip(id){
-      const trip = app.trips.find(t => t.id === id);
-      if (!trip) return;
-      if (!confirm(`確定刪除「${trip.title}」？此動作無法復原。`)) return;
-      app.trips = app.trips.filter(t => t.id !== id);
-      if (app.activeTripId === id) app.activeTripId = app.trips[0]?.id || null;
-      app.view = app.activeTripId ? "editor" : "home";
-      saveState(true);
-      render();
-    }
-
-    function duplicateTrip(id){
-      const trip = app.trips.find(t => t.id === id);
-      if (!trip) return;
-      const copy = JSON.parse(JSON.stringify(trip));
-      copy.id = uuid();
-      copy.title = `${copy.title}（複本）`;
-      copy.days = copy.days.map(d => ({ ...d, id: uuid(), items: d.items.map(i => ({ ...i, id: uuid() })) }));
-      app.trips.unshift(copy);
-      setActiveTrip(copy.id);
-      saveState(true);
-      render();
-    }
-
-    function updateActiveTripField(field, value){
-      const trip = activeTrip();
-      if (!trip) return;
-      trip[field] = value;
-      if (field === "daysCount" || field === "startDate" || field === "destinationsInput") {
-        const keep = true;
-        trip.daysCount = Math.max(1, Number(trip.daysCount || 1));
-        rebuildTripDays(trip, { preserveExisting: keep });
-      }
-      trip.updatedAt = new Date().toISOString();
-      saveState();
-      render();
-    }
-
-    function updateDayField(dayId, field, value){
-      const trip = activeTrip();
-      if (!trip) return;
-      const day = trip.days.find(d => d.id === dayId);
-      if (!day) return;
-      day[field] = value;
-      trip.updatedAt = new Date().toISOString();
-      saveState();
-      render(false);
-    }
-
-    function addItem(dayId){
-      const trip = activeTrip();
-      if (!trip) return;
-      const day = trip.days.find(d => d.id === dayId);
-      if (!day) return;
-      day.items.unshift(normalizeItem({ title: "新行程項目", category: "一般" }));
-      app.activeDayId = dayId;
-      saveState();
-      render();
-    }
-
-    function deleteItem(dayId, itemId){
-      const trip = activeTrip();
-      if (!trip) return;
-      const day = trip.days.find(d => d.id === dayId);
-      if (!day) return;
-      day.items = day.items.filter(i => i.id !== itemId);
-      saveState();
-      render(false);
-    }
-
-    function moveItem(dayId, itemId, dir){
-      const trip = activeTrip();
-      if (!trip) return;
-      const day = trip.days.find(d => d.id === dayId);
-      if (!day) return;
-      const idx = day.items.findIndex(i => i.id === itemId);
-      const next = idx + dir;
-      if (idx < 0 || next < 0 || next >= day.items.length) return;
-      [day.items[idx], day.items[next]] = [day.items[next], day.items[idx]];
-      saveState();
-      render(false);
-    }
-
-    function toggleItemDone(dayId, itemId){
-      const trip = activeTrip();
-      if (!trip) return;
-      const day = trip.days.find(d => d.id === dayId);
-      if (!day) return;
-      const item = day.items.find(i => i.id === itemId);
-      if (!item) return;
-      item.done = !item.done;
-      saveState();
-      render(false);
-    }
-
-    function updateItemField(dayId, itemId, field, value){
-      const trip = activeTrip();
-      if (!trip) return;
-      const day = trip.days.find(d => d.id === dayId);
-      if (!day) return;
-      const item = day.items.find(i => i.id === itemId);
-      if (!item) return;
-      item[field] = value;
-      saveState();
-    }
-
-    function setActiveDay(dayId){
-      app.activeDayId = dayId;
-      render(false);
-      const el = document.getElementById(`day-${dayId}`);
-      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-
-    function applySuggestionToActiveDay(suggestion){
-      const trip = activeTrip();
-      if (!trip) return;
-      const target = trip.days.find(d => d.id === (app.activeDayId || trip.days[0]?.id));
-      if (!target) return;
-      target.items.unshift(normalizeItem({
-        title: suggestion.name,
-        category: suggestion.type,
-        place: suggestion.city,
-        notes: suggestion.note
-      }));
-      saveState();
-      render();
-      setActiveDay(target.id);
-    }
-
-    function searchSuggestions(query){
-      const q = (query || "").trim().toLowerCase();
-      if (!q) return SUGGESTIONS;
-      return SUGGESTIONS.filter(s => {
-        const hay = [s.name, s.type, s.city, s.note, ...(s.tags || [])].join(" ").toLowerCase();
-        return hay.includes(q);
-      });
-    }
-
-    function exportState(){
-      const blob = new Blob([JSON.stringify({ trips: app.trips, activeTripId: app.activeTripId }, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `travel-itinerary-backup-${formatDateISO(new Date())}.json`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 500);
-    }
-
-    async function importFromText(text){
-      const parsed = JSON.parse(text);
-      const trips = (parsed.trips || parsed).map(normalizeTrip);
-      if (!Array.isArray(trips) || trips.length === 0) throw new Error("找不到可匯入的行程資料");
-      app.trips = trips;
-      app.activeTripId = parsed.activeTripId && trips.some(t => t.id === parsed.activeTripId) ? parsed.activeTripId : trips[0].id;
-      app.view = "editor";
-      saveState(true);
-      render();
-      closeImportModal();
-    }
-
-    function renderHome(){
-      const count = app.trips.length;
-      const totalDays = app.trips.reduce((sum, t) => sum + (t.days?.length || 0), 0);
-      const active = activeTrip();
-
-      return `
-        <div class="min-h-screen pb-28">
-          <header class="sticky top-0 z-30 backdrop-blur-xl bg-[rgba(245,243,236,.76)] border-b border-white/80">
-            <div class="mx-auto max-w-7xl px-4 md:px-6 py-4">
-              <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                <div>
-                  <p class="text-sm text-slate-500 font-medium">Travel Planner</p>
-                  <h1 class="text-2xl md:text-3xl font-bold tracking-tight">我的旅行繪本</h1>
-                </div>
-                <div class="flex flex-wrap gap-2">
-                  <button class="btn rounded-2xl px-4 py-3 bg-white/70 border border-white hover:bg-white" data-action="open-import-modal">
-                    <i class="fa-solid fa-file-import mr-2"></i>匯入
-                  </button>
-                  <button class="btn rounded-2xl px-4 py-3 bg-white/70 border border-white hover:bg-white" data-action="export-state">
-                    <i class="fa-solid fa-file-export mr-2"></i>匯出
-                  </button>
-                  <button class="btn rounded-2xl px-5 py-3 bg-[var(--accent)] text-white font-semibold" data-action="open-trip-modal">
-                    <i class="fa-solid fa-plus mr-2"></i>新增行程
-                  </button>
-                </div>
-              </div>
-            </div>
-          </header>
-
-          <main class="mx-auto max-w-7xl px-4 md:px-6 py-6 md:py-8">
-            <section class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-              <div class="glass rounded-3xl p-5">
-                <p class="text-sm text-slate-500">行程總數</p>
-                <p class="text-3xl font-bold mt-2">${count}</p>
-              </div>
-              <div class="glass rounded-3xl p-5">
-                <p class="text-sm text-slate-500">總天數</p>
-                <p class="text-3xl font-bold mt-2">${totalDays}</p>
-              </div>
-              <div class="glass rounded-3xl p-5 md:col-span-2">
-                <p class="text-sm text-slate-500">現在使用中的行程</p>
-                <p class="text-2xl font-bold mt-2">${active ? active.title : "尚未建立"}</p>
-                <p class="text-sm text-slate-500 mt-1">${active ? `${active.daysCount} 天 · 起始 ${displayDate(active.startDate)}` : "先建立一個旅行開始編輯"}</p>
-              </div>
-            </section>
-
-            <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              ${app.trips.length ? app.trips.map(tripCard).join("") : emptyState()}
-            </section>
-          </main>
-        </div>
-      `;
-    }
-
-    function emptyState(){
-      return `
-        <div class="lg:col-span-3 glass rounded-3xl p-8 text-center">
-          <div class="text-5xl mb-4">✈️</div>
-          <h2 class="text-2xl font-bold">先建立你的第一個旅行</h2>
-          <p class="text-slate-500 mt-2">行程、日期、目的地都可以後續調整，資料會存在瀏覽器裡。</p>
-          <button class="btn mt-6 rounded-2xl px-5 py-3 bg-[var(--accent)] text-white font-semibold" data-action="open-trip-modal">
-            開始建立
-          </button>
-        </div>
-      `;
-    }
-
-    function tripCard(trip){
-      const firstDay = trip.days[0];
-      const lastDay = trip.days[trip.days.length - 1];
-      const completion = trip.days.length
-        ? Math.round(trip.days.reduce((sum, day) => sum + day.items.filter(i => i.done).length, 0) / Math.max(1, trip.days.reduce((sum, day) => sum + day.items.length, 0)) * 100)
-        : 0;
-
-      return `
-        <article class="glass rounded-3xl p-5 flex flex-col gap-4 border border-white/80" style="border-left: 10px solid ${trip.color}">
-          <div class="flex items-start justify-between gap-3">
-            <div>
-              <h3 class="text-xl font-bold">${escapeHtml(trip.title)}</h3>
-              <p class="text-sm text-slate-500 mt-1">${trip.daysCount} 天 · ${displayDate(trip.startDate)} 起</p>
-            </div>
-            <span class="helper-badge rounded-full px-3 py-1 text-xs font-semibold">完成 ${completion}%</span>
-          </div>
-
-          <div class="flex flex-wrap gap-2">
-            ${(trip.destinationsInput ? splitDestinations(trip.destinationsInput) : []).slice(0, 4).map(d => `<span class="rounded-full bg-white/80 px-3 py-1 text-xs border border-white">${escapeHtml(d)}</span>`).join("") || `<span class="rounded-full bg-white/80 px-3 py-1 text-xs border border-white">未設定目的地</span>`}
-          </div>
-
-          <div class="text-sm text-slate-500">
-            <p>第一天：${firstDay ? `${formatDateLabel(firstDay.date)} · ${escapeHtml(firstDay.destination || "")}` : "尚未生成"}</p>
-            <p class="mt-1">最後一天：${lastDay ? `${formatDateLabel(lastDay.date)} · ${escapeHtml(lastDay.destination || "")}` : "尚未生成"}</p>
-          </div>
-
-          <div class="flex flex-wrap gap-2 pt-2">
-            <button class="btn rounded-2xl px-4 py-2 bg-[var(--accent)] text-white font-semibold" data-action="open-trip" data-id="${trip.id}">
-              開啟
-            </button>
-            <button class="btn rounded-2xl px-4 py-2 bg-white/70 border border-white" data-action="duplicate-trip" data-id="${trip.id}">
-              複製
-            </button>
-            <button class="btn rounded-2xl px-4 py-2 bg-white/70 border border-white" data-action="edit-trip" data-id="${trip.id}">
-              編輯
-            </button>
-            <button class="btn rounded-2xl px-4 py-2 bg-white/70 border border-white text-rose-600" data-action="delete-trip" data-id="${trip.id}">
-              刪除
-            </button>
-          </div>
-        </article>
-      `;
-    }
-
-    function editorHeader(trip){
-      return `
-        <header class="sticky top-0 z-30 backdrop-blur-xl bg-[rgba(245,243,236,.76)] border-b border-white/80">
-          <div class="mx-auto max-w-7xl px-4 md:px-6 py-4">
-            <div class="flex flex-col gap-3">
-              <div class="flex items-center justify-between gap-3">
-                <div class="flex items-center gap-3 min-w-0">
-                  <button class="btn w-11 h-11 rounded-2xl bg-white/70 border border-white" data-action="go-home">
-                    <i class="fa-solid fa-arrow-left"></i>
-                  </button>
-                  <div class="min-w-0">
-                    <p class="text-sm text-slate-500">行程編輯器</p>
-                    <h1 class="text-xl md:text-3xl font-bold truncate">${escapeHtml(trip.title)}</h1>
-                  </div>
-                </div>
-                <div class="flex flex-wrap gap-2 justify-end">
-                  <button class="btn rounded-2xl px-4 py-3 bg-white/70 border border-white" data-action="open-search">
-                    <i class="fa-solid fa-magnifying-glass mr-2"></i>輔助搜尋
-                  </button>
-                  <button class="btn rounded-2xl px-4 py-3 bg-white/70 border border-white" data-action="open-import-modal">
-                    匯入
-                  </button>
-                  <button class="btn rounded-2xl px-4 py-3 bg-white/70 border border-white" data-action="export-state">
-                    匯出
-                  </button>
-                </div>
-              </div>
-
-              <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-                <label class="block">
-                  <span class="text-xs font-semibold text-slate-500">行程名稱</span>
-                  <input data-bind="trip.title" value="${escapeAttr(trip.title)}" class="mt-2 w-full rounded-2xl border border-white bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300" />
-                </label>
-                <label class="block">
-                  <span class="text-xs font-semibold text-slate-500">起始日期</span>
-                  <input data-bind="trip.startDate" type="date" value="${trip.startDate}" class="mt-2 w-full rounded-2xl border border-white bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300" />
-                </label>
-                <label class="block">
-                  <span class="text-xs font-semibold text-slate-500">天數</span>
-                  <input data-bind="trip.daysCount" type="number" min="1" max="90" value="${trip.daysCount}" class="mt-2 w-full rounded-2xl border border-white bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300" />
-                </label>
-                <label class="block">
-                  <span class="text-xs font-semibold text-slate-500">主題色</span>
-                  <input data-bind="trip.color" type="color" value="${escapeAttr(trip.color)}" class="mt-2 h-[48px] w-full rounded-2xl border border-white bg-white/80 p-2" />
-                </label>
-                <label class="block md:col-span-2">
-                  <span class="text-xs font-semibold text-slate-500">目的地路線</span>
-                  <input data-bind="trip.destinationsInput" value="${escapeAttr(trip.destinationsInput || "")}" placeholder="例如：首爾, 釜山, 濟州島" class="mt-2 w-full rounded-2xl border border-white bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300" />
-                </label>
-                <label class="block md:col-span-2">
-                  <span class="text-xs font-semibold text-slate-500">預算 / 備註</span>
-                  <input data-bind="trip.budget" type="number" min="0" step="1" value="${Number(trip.budget || 0)}" placeholder="預算" class="mt-2 w-full rounded-2xl border border-white bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300" />
-                </label>
-                <label class="block md:col-span-4">
-                  <span class="text-xs font-semibold text-slate-500">行程備註</span>
-                  <textarea data-bind="trip.notes" rows="3" class="mt-2 w-full rounded-2xl border border-white bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300">${escapeHtml(trip.notes || "")}</textarea>
-                </label>
-                <div class="md:col-span-4 flex flex-wrap gap-2 justify-between items-center">
-                  <div class="flex flex-wrap gap-2">
-                    <button class="btn rounded-2xl px-4 py-3 bg-[var(--accent)] text-white font-semibold" data-action="rebuild-trip">
-                      重新生成日期骨架
-                    </button>
-                    <button class="btn rounded-2xl px-4 py-3 bg-white/70 border border-white" data-action="add-day">
-                      新增一天
-                    </button>
-                  </div>
-                  <div class="text-sm text-slate-500">
-                    目的地是主資料來源；輔助搜尋只負責插入建議，不覆蓋你的主行程。
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </header>
-      `;
-    }
-
-    function dayNav(trip){
-      return `
-        <div class="glass rounded-3xl p-4 mb-5">
-          <div class="flex items-center justify-between gap-3 mb-3">
-            <h2 class="font-bold text-lg">日期導覽</h2>
-            <span class="text-sm text-slate-500">${trip.days.length} 天</span>
-          </div>
-          <div class="soft-scroll flex gap-2 overflow-x-auto pb-2">
-            ${trip.days.map((day, idx) => `
-              <button class="day-chip btn shrink-0 rounded-2xl border border-white bg-white/70 px-4 py-3 text-left min-w-[140px] ${app.activeDayId === day.id || (!app.activeDayId && idx === 0) ? "active" : ""}" data-action="select-day" data-day-id="${day.id}">
-                <div class="text-xs opacity-80">${day.title}</div>
-                <div class="font-semibold">${formatDateLabel(day.date)}</div>
-                <div class="text-xs opacity-85 truncate">${escapeHtml(day.destination || "")}</div>
-              </button>
-            `).join("")}
-          </div>
-        </div>
-      `;
-    }
-
-    function dayCard(day, index){
-      const doneCount = day.items.filter(i => i.done).length;
-      return `
-        <section id="day-${day.id}" class="glass-strong rounded-3xl p-4 md:p-5 mb-5" style="border-left: 10px solid var(--accent)">
-          <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
-            <div>
-              <div class="text-sm text-slate-500">Day ${index + 1}</div>
-              <h3 class="text-2xl font-bold mt-1">${displayDate(day.date)}</h3>
-              <div class="text-sm text-slate-500 mt-1">${doneCount}/${day.items.length} 項完成</div>
-            </div>
-            <div class="flex flex-wrap gap-2">
-              <button class="btn rounded-2xl px-4 py-2 bg-white/70 border border-white" data-action="add-item" data-day-id="${day.id}">
-                <i class="fa-solid fa-plus mr-2"></i>新增項目
-              </button>
-              <button class="btn rounded-2xl px-4 py-2 bg-white/70 border border-white" data-action="insert-suggestion" data-day-id="${day.id}">
-                <i class="fa-solid fa-wand-magic-sparkles mr-2"></i>插入建議
-              </button>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-            <label class="block">
-              <span class="text-xs font-semibold text-slate-500">當天目的地</span>
-              <input data-bind="day.destination" data-day-id="${day.id}" value="${escapeAttr(day.destination || "")}" class="mt-2 w-full rounded-2xl border border-white bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300" />
-            </label>
-            <label class="block">
-              <span class="text-xs font-semibold text-slate-500">當天標題</span>
-              <input data-bind="day.title" data-day-id="${day.id}" value="${escapeAttr(day.title || "")}" class="mt-2 w-full rounded-2xl border border-white bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300" />
-            </label>
-            <label class="block md:col-span-2">
-              <span class="text-xs font-semibold text-slate-500">當天摘要</span>
-              <textarea data-bind="day.summary" data-day-id="${day.id}" rows="2" class="mt-2 w-full rounded-2xl border border-white bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300">${escapeHtml(day.summary || "")}</textarea>
-            </label>
-          </div>
-
-          <div class="space-y-3">
-            ${day.items.length ? day.items.map((item, itemIndex) => itemRow(day, item, itemIndex)).join("") : emptyDayRow(day)}
-          </div>
-        </section>
-      `;
-    }
-
-    function emptyDayRow(day){
-      return `
-        <div class="rounded-3xl border border-dashed border-slate-300 bg-white/60 p-5 text-center text-slate-500">
-          這一天還沒有任何項目。你可以新增一筆，或使用輔助搜尋插入建議。
-        </div>
-      `;
-    }
-
-    function itemRow(day, item, index){
-      return `
-        <article class="item-card rounded-3xl border border-white bg-white/75 p-4 md:p-5">
-          <div class="flex flex-col gap-4">
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-              <label class="flex items-center gap-3">
-                <input type="checkbox" ${item.done ? "checked" : ""} data-action="toggle-item-done" data-day-id="${day.id}" data-item-id="${item.id}" class="w-5 h-5 rounded border-slate-300" />
-                <span class="font-semibold">項目 ${index + 1}</span>
-              </label>
-
-              <div class="flex flex-wrap gap-2">
-                <button class="btn rounded-2xl px-3 py-2 bg-black/5 hover:bg-black/10" data-action="move-item" data-day-id="${day.id}" data-item-id="${item.id}" data-dir="-1">上移</button>
-                <button class="btn rounded-2xl px-3 py-2 bg-black/5 hover:bg-black/10" data-action="move-item" data-day-id="${day.id}" data-item-id="${item.id}" data-dir="1">下移</button>
-                <button class="btn rounded-2xl px-3 py-2 bg-black/5 hover:bg-black/10 text-rose-600" data-action="delete-item" data-day-id="${day.id}" data-item-id="${item.id}">刪除</button>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <label>
-                <span class="text-xs font-semibold text-slate-500">名稱</span>
-                <input data-bind="item.title" data-day-id="${day.id}" data-item-id="${item.id}" value="${escapeAttr(item.title)}" class="mt-2 w-full rounded-2xl border border-white bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300 ${item.done ? "line-through opacity-70" : ""}" />
-              </label>
-              <label>
-                <span class="text-xs font-semibold text-slate-500">時間 / 類型</span>
-                <div class="mt-2 grid grid-cols-2 gap-2">
-                  <input data-bind="item.time" data-day-id="${day.id}" data-item-id="${item.id}" value="${escapeAttr(item.time)}" placeholder="10:00" class="w-full rounded-2xl border border-white bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300" />
-                  <input data-bind="item.category" data-day-id="${day.id}" data-item-id="${item.id}" value="${escapeAttr(item.category)}" placeholder="一般" class="w-full rounded-2xl border border-white bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300" />
-                </div>
-              </label>
-              <label>
-                <span class="text-xs font-semibold text-slate-500">地點</span>
-                <input data-bind="item.place" data-day-id="${day.id}" data-item-id="${item.id}" value="${escapeAttr(item.place)}" class="mt-2 w-full rounded-2xl border border-white bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300" />
-              </label>
-              <label>
-                <span class="text-xs font-semibold text-slate-500">備註</span>
-                <input data-bind="item.notes" data-day-id="${day.id}" data-item-id="${item.id}" value="${escapeAttr(item.notes)}" class="mt-2 w-full rounded-2xl border border-white bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300" />
-              </label>
-            </div>
-          </div>
-        </article>
-      `;
-    }
-
-    function renderSearchPanel(){
-      const results = searchSuggestions(app.searchQuery);
-      return `
-        <div id="search-panel" class="fixed inset-0 z-40 modal-hidden">
-          <div class="absolute inset-0 bg-black/30"></div>
-          <div class="absolute right-0 top-0 h-full w-full max-w-xl glass-strong p-4 md:p-6 overflow-y-auto">
-            <div class="flex items-start justify-between gap-3 mb-4">
+    // --- UI 渲染組件 ---
+    function render() {
+      const app = document.getElementById('app');
+      if (state.view === 'home') {
+        app.innerHTML = `
+          <div class="max-w-5xl mx-auto px-6 py-16">
+            <header class="flex justify-between items-end mb-12">
               <div>
-                <h2 class="text-2xl font-bold">輔助搜尋</h2>
-                <p class="text-sm text-slate-500 mt-1">這裡只提供建議，點選後才會插入到你的行程中。</p>
+                <h1 class="text-4xl font-extrabold tracking-tight">旅行繪本</h1>
+                <p class="text-[var(--apple-secondary)] mt-2">記錄每一段安靜而美好的旅程</p>
               </div>
-              <button class="btn w-10 h-10 rounded-full bg-black/5 hover:bg-black/10" data-action="close-search"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-
-            <input id="search-input" value="${escapeAttr(app.searchQuery)}" placeholder="搜尋景點、交通、美食、主題..." class="w-full rounded-2xl border border-white bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300" />
-
-            <div class="mt-4 grid grid-cols-1 gap-3">
-              ${results.map(s => `
-                <button class="text-left rounded-3xl border border-white bg-white/80 p-4 hover:bg-white btn" data-action="use-suggestion" data-name="${escapeAttr(s.name)}">
-                  <div class="flex items-center justify-between gap-3">
-                    <div>
-                      <div class="text-xs text-slate-500">${escapeHtml(s.type)} · ${escapeHtml(s.city)}</div>
-                      <div class="text-lg font-bold mt-1">${escapeHtml(s.name)}</div>
-                    </div>
-                    <span class="helper-badge rounded-full px-3 py-1 text-xs font-semibold">${escapeHtml(s.type)}</span>
-                  </div>
-                  <div class="text-sm text-slate-500 mt-2">${escapeHtml(s.note)}</div>
-                  <div class="mt-3 flex flex-wrap gap-2">
-                    ${(s.tags || []).map(t => `<span class="rounded-full bg-black/5 px-3 py-1 text-xs">${escapeHtml(t)}</span>`).join("")}
-                  </div>
-                </button>
-              `).join("") || `<div class="rounded-3xl border border-dashed border-slate-300 bg-white/60 p-6 text-center text-slate-500">沒有匹配結果。</div>`}
+              <button id="btn-add-trip" class="px-6 py-3 bg-[var(--apple-text)] text-white font-medium rounded-full tap-scale">
+                <i class="fa-solid fa-plus mr-2"></i>新行程
+              </button>
+            </header>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              ${state.trips.length ? state.trips.map(renderTripCard).join('') : renderEmpty()}
             </div>
           </div>
+        `;
+      } else {
+        app.innerHTML = renderEditor();
+      }
+      bindEvents();
+    }
+
+    function renderEmpty() {
+      return `
+        <div class="col-span-full py-20 text-center apple-glass rounded-[32px]">
+          <div class="text-5xl mb-4">✈️</div>
+          <h3 class="text-xl font-bold">還沒有任何行程</h3>
+          <p class="text-[var(--apple-secondary)] mt-1">點擊右上方按鈕開始你的第一場旅行</p>
         </div>
       `;
     }
 
-    function renderEditor(){
-      const trip = activeTrip();
-      if (!trip) return renderHome();
+    function renderTripCard(trip) {
+      return `
+        <div data-id="${trip.id}" class="trip-card apple-glass rounded-[28px] p-6 cursor-pointer tap-scale hover:border-[var(--apple-blue)] transition-colors">
+          <div class="flex justify-between items-start mb-12">
+            <div class="w-10 h-10 rounded-full shadow-inner" style="background:${trip.color}"></div>
+            <span class="text-[10px] font-black uppercase tracking-widest text-[var(--apple-secondary)] bg-black/5 px-2 py-1 rounded-md">${trip.daysCount} DAYS</span>
+          </div>
+          <h3 class="text-xl font-bold truncate">${trip.title}</h3>
+          <p class="text-[var(--apple-secondary)] text-sm mt-1">${trip.startDate} 出發</p>
+        </div>
+      `;
+    }
+
+    function renderEditor() {
+      const trip = state.trips.find(t => t.id === state.activeId);
+      if (!trip) return "";
+
+      // 修正: 預先初始化 typeSums 避免 ReferenceError
+      let typeSums = {}; 
 
       return `
-        <div class="min-h-screen pb-24">
-          ${editorHeader(trip)}
-          <main class="mx-auto max-w-7xl px-4 md:px-6 py-6 md:py-8">
-            ${dayNav(trip)}
-            ${trip.days.map((day, idx) => dayCard(day, idx)).join("")}
+        <div class="pb-20">
+          <nav class="sticky top-0 z-50 apple-glass px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-4">
+              <button id="btn-back" class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-black/5 tap-scale">
+                <i class="fa-solid fa-chevron-left"></i>
+              </button>
+              <div>
+                <h2 class="text-sm font-bold leading-tight">${trip.title}</h2>
+                <p class="text-[10px] text-[var(--apple-secondary)] uppercase tracking-widest">${trip.startDate} 起 · ${trip.daysCount} 天</p>
+              </div>
+            </div>
+            <div class="flex gap-2">
+               <button id="btn-delete-trip" class="w-10 h-10 rounded-full flex items-center justify-center text-rose-500 hover:bg-rose-50 tap-scale"><i class="fa-solid fa-trash-can"></i></button>
+            </div>
+          </nav>
 
-            <section class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-              <div class="glass rounded-3xl p-5">
-                <p class="text-sm text-slate-500">總天數</p>
-                <p class="text-3xl font-bold mt-2">${trip.days.length}</p>
+          <main class="max-w-3xl mx-auto px-6 py-8">
+            <!-- 天氣卡片區 (Apple 風格) -->
+            <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+              <div class="weather-card rounded-[22px] p-4 card-shadow tap-scale">
+                <p class="text-[10px] font-bold opacity-80 uppercase">今日天氣</p>
+                <div class="flex justify-between items-end mt-2">
+                  <span class="text-3xl font-bold">24°</span>
+                  <i class="fa-solid fa-cloud-sun text-xl"></i>
+                </div>
               </div>
-              <div class="glass rounded-3xl p-5">
-                <p class="text-sm text-slate-500">目的地數量</p>
-                <p class="text-3xl font-bold mt-2">${splitDestinations(trip.destinationsInput).length || 1}</p>
-              </div>
-              <div class="glass rounded-3xl p-5">
-                <p class="text-sm text-slate-500">預算</p>
-                <p class="text-3xl font-bold mt-2">${Number(trip.budget || 0).toLocaleString()}</p>
+              <div class="apple-glass rounded-[22px] p-4 flex flex-col justify-center items-center opacity-40">
+                <i class="fa-solid fa-plus text-xs mb-1"></i>
+                <span class="text-[10px] font-bold">添加天氣卡片</span>
               </div>
             </section>
-          </main>
 
-          <button class="fixed bottom-6 right-6 z-30 btn w-14 h-14 rounded-full bg-[var(--accent)] text-white shadow-xl" data-action="open-trip-modal" title="新增行程">
-            <i class="fa-solid fa-plus text-xl"></i>
-          </button>
+            <!-- 行程清單 -->
+            <div class="space-y-6">
+              ${trip.days.map((day, idx) => `
+                <div class="apple-glass rounded-[32px] p-8 card-shadow relative">
+                  <div class="flex justify-between items-start mb-6">
+                    <div>
+                      <span class="text-[10px] font-black text-[var(--apple-blue)] uppercase tracking-tighter">DAY ${idx + 1}</span>
+                      <h3 class="text-2xl font-extrabold mt-1">${day.date}</h3>
+                    </div>
+                    <input 
+                      type="text" 
+                      placeholder="設定地點"
+                      class="text-right font-medium py-2 px-4 w-1/2" 
+                      value="${day.destination}" 
+                      oninput="updateDayPlace('${day.id}', this.value)"
+                    />
+                  </div>
+                  <div class="space-y-3">
+                    <div class="h-[1px] bg-black/5 w-full"></div>
+                    <p class="text-xs text-[var(--apple-secondary)] italic">目前還沒有詳細行程細項...</p>
+                    <button class="w-full py-4 mt-2 border-[0.5px] border-dashed border-black/10 rounded-2xl text-sm font-medium text-[var(--apple-secondary)] hover:border-[var(--apple-blue)] hover:text-[var(--apple-blue)] transition-all">
+                      + 添加行程項目
+                    </button>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </main>
         </div>
       `;
     }
 
-    function render(){
-      const root = document.getElementById("app");
-      root.innerHTML = app.view === "home" ? renderHome() : renderEditor();
-      const existingSearch = document.getElementById("search-panel");
-      if (existingSearch) existingSearch.remove();
-      root.insertAdjacentHTML("beforeend", renderSearchPanel());
-      bindSearchPanelVisibility();
-      bindLiveInputs();
-    }
+    // --- 事件綁定 (委託與直接綁定) ---
+    function bindEvents() {
+      // 首頁按鈕
+      const btnAdd = document.getElementById('btn-add-trip');
+      if (btnAdd) btnAdd.onclick = () => document.getElementById('trip-modal').classList.remove('hidden');
 
-    function bindSearchPanelVisibility(){
-      const panel = document.getElementById("search-panel");
-      if (app.searchPanelOpen) panel.classList.remove("modal-hidden");
-      else panel.classList.add("modal-hidden");
-      const modal = document.getElementById("trip-modal");
-      if (app.tripModalOpen) modal.classList.remove("modal-hidden");
-      else modal.classList.add("modal-hidden");
-      const importModal = document.getElementById("import-modal");
-      if (app.importModalOpen) importModal.classList.remove("modal-hidden");
-      else importModal.classList.add("modal-hidden");
-    }
+      // Modal 按鈕
+      document.getElementById('btn-cancel-modal').onclick = () => document.getElementById('trip-modal').classList.add('hidden');
+      document.getElementById('btn-confirm-modal').onclick = () => {
+        const title = document.getElementById('in-title').value;
+        const date = document.getElementById('in-date').value;
+        const days = document.getElementById('in-days').value;
+        const dests = document.getElementById('in-dests').value;
+        if (title && date) {
+          createTrip(title, date, parseInt(days), dests);
+          document.getElementById('trip-modal').classList.add('hidden');
+        } else {
+          alert('請填寫標題與日期');
+        }
+      };
 
-    function bindLiveInputs(){
-      const trip = activeTrip();
-      if (!trip) return;
+      // 編輯器按鈕
+      const btnBack = document.getElementById('btn-back');
+      if (btnBack) btnBack.onclick = () => { state.view = 'home'; render(); };
 
-      document.querySelectorAll("[data-bind]").forEach(el => {
-        if (el.dataset.bound === "1") return;
-        el.dataset.bound = "1";
-        el.addEventListener("input", () => {
-          const bind = el.dataset.bind;
-          const value = el.type === "number" ? Number(el.value || 0) : el.value;
-          const dayId = el.dataset.dayId;
-          const itemId = el.dataset.itemId;
-
-          if (bind.startsWith("trip.")) {
-            const field = bind.split(".")[1];
-            updateActiveTripField(field, value);
-          } else if (bind.startsWith("day.")) {
-            const field = bind.split(".")[1];
-            updateDayField(dayId, field, value);
-          } else if (bind.startsWith("item.")) {
-            const field = bind.split(".")[1];
-            updateItemField(dayId, itemId, field, value);
-          }
-        });
-      });
-
-      const searchInput = document.getElementById("search-input");
-      if (searchInput && !searchInput.dataset.bound) {
-        searchInput.dataset.bound = "1";
-        searchInput.addEventListener("input", () => {
-          app.searchQuery = searchInput.value;
+      const btnDelete = document.getElementById('btn-delete-trip');
+      if (btnDelete) btnDelete.onclick = () => {
+        if(confirm('確定要刪除這份行程嗎？')) {
+          state.trips = state.trips.filter(t => t.id !== state.activeId);
+          state.view = 'home';
+          save();
           render();
-          openSearch(true);
-        });
-      }
-    }
-
-    function openSearch(keepInput = false){
-      const panel = document.getElementById("search-panel");
-      panel.classList.remove("modal-hidden");
-      app.searchPanelOpen = true;
-      if (!keepInput) app.searchQuery = "";
-      render();
-      const input = document.getElementById("search-input");
-      if (input) input.focus();
-    }
-
-    function closeSearch(){
-      app.searchPanelOpen = false;
-      render();
-    }
-
-    function escapeHtml(str){
-      return String(str ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#39;");
-    }
-
-    function escapeAttr(str){ return escapeHtml(str); }
-
-    document.addEventListener("click", async (e) => {
-      const el = e.target.closest("[data-action]");
-      if (!el) return;
-      const action = el.dataset.action;
-
-      if (action === "open-trip-modal") {
-        app.tripModalOpen = true;
-        render();
-        openTripModal("create");
-      }
-      if (action === "edit-trip") {
-        const id = el.dataset.id;
-        app.activeTripId = id;
-        app.view = "editor";
-        app.tripModalOpen = true;
-        render();
-        openTripModal("edit");
-      }
-      if (action === "open-trip") {
-        setActiveTrip(el.dataset.id);
-      }
-      if (action === "go-home") {
-        app.view = "home";
-        app.activeTripId = app.activeTripId || app.trips[0]?.id || null;
-        saveState();
-        render();
-      }
-      if (action === "close-trip-modal") {
-        app.tripModalOpen = false;
-        closeTripModal();
-      }
-      if (action === "create-trip") createTripFromModal();
-      if (action === "rebuild-trip") {
-        const trip = activeTrip();
-        if (!trip) return;
-        if (!confirm("這會依照目前的起始日期、天數與目的地路線重新整理日期骨架。已存在的內容會盡量保留。")) return;
-        rebuildTripDays(trip, { preserveExisting: true });
-        saveState(true);
-        render();
-      }
-      if (action === "add-day") {
-        const trip = activeTrip();
-        if (!trip) return;
-        trip.daysCount += 1;
-        rebuildTripDays(trip, { preserveExisting: true });
-        saveState(true);
-        render();
-      }
-      if (action === "duplicate-trip") duplicateTrip(el.dataset.id);
-      if (action === "delete-trip") deleteTrip(el.dataset.id);
-      if (action === "select-day") setActiveDay(el.dataset.dayId);
-      if (action === "add-item") addItem(el.dataset.dayId);
-      if (action === "delete-item") deleteItem(el.dataset.dayId, el.dataset.itemId);
-      if (action === "move-item") moveItem(el.dataset.dayId, el.dataset.itemId, Number(el.dataset.dir));
-      if (action === "toggle-item-done") toggleItemDone(el.dataset.dayId, el.dataset.itemId);
-      if (action === "open-search") openSearch();
-      if (action === "close-search") closeSearch();
-      if (action === "use-suggestion") {
-        const suggestion = SUGGESTIONS.find(s => s.name === el.dataset.name);
-        if (suggestion) applySuggestionToActiveDay(suggestion);
-      }
-      if (action === "insert-suggestion") {
-        openSearch();
-      }
-      if (action === "export-state") exportState();
-      if (action === "open-import-modal") {
-        app.importModalOpen = true;
-        render();
-        document.getElementById("import-modal").classList.remove("modal-hidden");
-      }
-      if (action === "close-import-modal") {
-        app.importModalOpen = false;
-        closeImportModal();
-      }
-      if (action === "do-import") {
-        const text = document.getElementById("import-json").value.trim();
-        if (!text) return;
-        try {
-          await importFromText(text);
-        } catch (err) {
-          alert("匯入失敗：" + err.message);
         }
-      }
-    });
+      };
 
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
-        app.searchPanelOpen = false;
-        app.tripModalOpen = false;
-        app.importModalOpen = false;
-        closeSearch();
-        closeTripModal();
-        closeImportModal();
-      }
-    });
-
-    document.addEventListener("change", async (e) => {
-      if (e.target.id === "import-file") {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        const text = await file.text();
-        try {
-          await importFromText(text);
-        } catch (err) {
-          alert("檔案匯入失敗：" + err.message);
-        }
-      }
-    });
-
-    // 初始化
-    loadState();
-    app.searchPanelOpen = false;
-    app.tripModalOpen = false;
-    app.importModalOpen = false;
-
-    // 若沒有 active trip，至少提供 home
-    if (!app.activeTripId && app.trips[0]) {
-      app.activeTripId = app.trips[0].id;
+      // 行程卡片點擊
+      document.querySelectorAll('.trip-card').forEach(card => {
+        card.onclick = () => {
+          state.activeId = card.dataset.id;
+          state.view = 'editor';
+          render();
+        };
+      });
     }
 
-    render();
+    // --- 局部更新函數 (防止 Focus 丟失) ---
+    window.updateDayPlace = function(dayId, val) {
+      const trip = state.trips.find(t => t.id === state.activeId);
+      const day = trip.days.find(d => d.id === dayId);
+      if (day) {
+        day.destination = val;
+        save(); // 靜默保存，不刷新頁面
+      }
+    };
+
+    // 啟動
+    load();
   </script>
 </body>
 </html>
