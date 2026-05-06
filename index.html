@@ -41,7 +41,6 @@
         .nav-item.active { color: var(--kr-text); transform: translateY(-4px); }
         .nav-item.active::after { content:''; position:absolute; bottom:-6px; left:50%; transform:translateX(-50%); width:4px; height:4px; background:var(--kr-accent); border-radius:50%; }
 
-        /* 24.0 小時天氣無溢出重構：鎖定 65px 與 flex-shrink: 0 */
         .h-scroll-container { margin: -10px -5px; padding: 10px 5px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; scroll-behavior: smooth; }
         .h-scroll-container::-webkit-scrollbar { display: none; }
         .h-scroll { display: flex; gap: 8px; width: max-content; }
@@ -49,7 +48,7 @@
         .day-btn.active { background: var(--kr-accent); color: #fff; border-color: var(--kr-accent); font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         
         .hourly-item { 
-            flex: 0 0 55px; height: 65px; flex-shrink: 0; /* 24.0 鎖定高度與不縮放 */
+            flex: 0 0 55px; height: 65px; flex-shrink: 0; 
             text-align: center; font-size: 0.7rem; line-height: 1.1; 
             border-radius: 12px; background: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.3); 
             scroll-snap-align: center; transition: 0.2s; display: flex; flex-direction: column; 
@@ -60,7 +59,6 @@
         .hourly-item .time-txt { font-size: 0.65rem; font-weight: bold; }
         .hourly-item .emoji-txt { font-size: 1.1rem; }
 
-        /* 物理渲染：光斑副環與流體雲、隨機雨滴 */
         .weather-bg-container { position: absolute; inset: 0; overflow: hidden; border-radius: 24px; z-index: -1; pointer-events: none; transition: background-color 0.8s ease; }
         .weather-darken { background-color: rgba(45, 55, 68, 0.9); } 
         
@@ -78,7 +76,7 @@
         .item-header { position: relative; width: 100%; height: 180px; border-radius: 24px 24px 0 0; overflow: hidden; background: #e0e0e0; }
         .item-header img { width: 100%; height: 100%; object-fit: cover; }
         .react-btn { transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; }
-        .react-btn:active { transform: scale(0.9); opacity: 0.8; }
+        .react-btn:active { transform: scale(0.95); opacity: 0.7; }
         .edit-img-btn { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.7); color: var(--kr-text); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 20; }
         
         .idx-circle { position: absolute; top: 12px; left: 12px; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; z-index: 20; background: rgba(154, 146, 131, 0.5); box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
@@ -114,7 +112,6 @@
         .thumb-box { width: 60px; height: 60px; border-radius: 10px; object-fit: cover; cursor: pointer; border: 1px solid #eee; }
         .thumb-del-btn { position: absolute; top: -6px; right: -6px; background: #ef4444; color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 10px; display: flex; align-items: center; justify-content: center; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
-        /* 24.0 全屏預覽優化：X 按鈕使用 rgba(255,255,255,0.3) 與 blur(10px) */
         #fullscreen-preview { display: none; position: fixed; inset: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.95); z-index: 5000; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(15px); overflow: hidden; }
         #preview-wrapper { width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; }
         #preview-img { max-width: 100%; max-height: 100%; object-fit: contain; transform-origin: center; transition: transform 0.1s ease-out; cursor: grab; }
@@ -135,7 +132,6 @@
         .wheel-item { height: 40px; line-height: 40px; scroll-snap-align: center; font-size: 1.1rem; font-weight: bold; color: var(--kr-text); transition: 0.2s; }
         .picker-selection-bar { position: absolute; top: 55px; left: 0; right: 0; height: 40px; border-top: 1px solid rgba(0,0,0,0.1); border-bottom: 1px solid rgba(0,0,0,0.1); pointer-events: none; z-index: -1; background: rgba(0,0,0,0.03); }
 
-        /* 語意純淨化：僅保留圖示切換 */
         details > summary { list-style: none; }
         details > summary::-webkit-details-marker { display: none; }
         details > summary .toggle-icon { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -204,7 +200,8 @@
                     <div class="omni-menu" id="trip-omni-menu">
                         <div class="omni-item react-btn" onclick="openDailyGoogleMaps()"><div class="omni-label">當日行程全覽</div><div class="omni-sub-btn"><i class="fa-solid fa-map-location-dot"></i></div></div>
                         <div class="omni-item react-btn" onclick="optimizeDailyRoute()"><div class="omni-label">優化路線</div><div class="omni-sub-btn"><i class="fa-solid fa-route"></i></div></div>
-                        <div class="omni-item react-btn" onclick="addNewAttraction()"><div class="omni-label">添加景點</div><div class="omni-sub-btn"><i class="fa-solid fa-location-dot relative"><i class="fa-solid fa-plus absolute -top-1 -right-2 text-[10px] text-white bg-[var(--kr-accent)] rounded-full p-0.5 border border-white"></i></i></div></div>
+                        <!-- 25.0 觸發智慧彈窗 -->
+                        <div class="omni-item react-btn" onclick="openSmartSearchModal()"><div class="omni-label">添加景點</div><div class="omni-sub-btn"><i class="fa-solid fa-location-dot relative"><i class="fa-solid fa-plus absolute -top-1 -right-2 text-[10px] text-white bg-[var(--kr-accent)] rounded-full p-0.5 border border-white"></i></i></div></div>
                     </div>
                     <button class="omni-main-btn react-btn" id="trip-omni-btn" onclick="toggleTripOmni()"><i class="fa-solid fa-plus"></i></button>
                 </div>
@@ -296,7 +293,21 @@
         </nav>
     </div>
 
-    <!-- 24.0 全屏檔案預覽 Modal: 背景與熱區優化 -->
+    <!-- 25.0 智慧搜尋彈窗 (The Search-Driven Modal) -->
+    <div id="smart-search-modal" class="fixed inset-0 bg-black/40 backdrop-blur-md z-[6000] hidden flex-col items-center justify-center p-5 opacity-0 transition-opacity duration-300">
+        <div class="bg-[var(--kr-cream)] w-full max-w-sm rounded-3xl p-6 shadow-2xl transform scale-95 transition-transform duration-300 border border-white" id="smart-search-box">
+            <h3 class="text-lg font-bold text-gray-800 mb-4 hand-drawn text-center">🔍 智慧景點檢索</h3>
+            <input type="text" id="smart-search-input" placeholder="輸入景點名稱 (例: Lee Jae Mo Pizza)" class="w-full mb-4 border-none shadow-inner bg-white/70 p-3 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[var(--kr-accent)]" oninput="debounceSearch(this.value)">
+            <div id="smart-search-preview" class="bg-white p-4 rounded-xl shadow-sm min-h-[120px] text-xs text-gray-600 space-y-2 border border-gray-100">
+                <p class="text-center text-gray-400 mt-6 font-bold">等待輸入...</p>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button class="flex-1 bg-white border border-gray-200 shadow-sm text-gray-600 font-bold py-3 rounded-xl react-btn" onclick="closeSmartSearchModal()">取消</button>
+                <button class="flex-1 bg-[var(--kr-accent)] text-white font-bold py-3 rounded-xl shadow-md react-btn" onclick="confirmSmartSearch()">確認新增</button>
+            </div>
+        </div>
+    </div>
+
     <div id="fullscreen-preview" onclick="closePreview()">
         <div class="close-fullscreen react-btn" onclick="event.stopPropagation(); closePreview()"><i class="fa-solid fa-xmark"></i></div>
         <div id="preview-wrapper" onclick="event.stopPropagation()">
@@ -314,7 +325,7 @@
 
     <script>
         // ================= 資料庫 & 初始化 =================
-        const dbName = "TravelBookDB_v24"; let db;
+        const dbName = "TravelBookDB_v25"; let db;
         const initDB = new Promise((resolve) => {
             const req = indexedDB.open(dbName, 1);
             req.onupgradeneeded = (e) => {
@@ -335,14 +346,15 @@
         function toggleHomeOmni() { const btn = document.getElementById('home-omni-btn'); const menu = document.getElementById('home-omni-menu'); btn.classList.toggle('active'); menu.classList.toggle('active'); }
         function toggleTripOmni() { const btn = document.getElementById('trip-omni-btn'); const menu = document.getElementById('trip-omni-menu'); btn.classList.toggle('active'); menu.classList.toggle('active'); }
 
-        // ================= 24.0 嚴格 50 字以上深度約束文案 (14天完整 JSON) =================
+        // ================= 25.0 嚴格 50 字以上深度約束文案 (14天完整 JSON) =================
         function generate14DaysData() {
             const regions = ["吉隆坡","釜山","釜山","釜山","濟州島","濟州島","濟州島","濟州島","濟州島","濟州-首爾","首爾","首爾","首爾","首爾"];
             let daily = [];
             
-            const deepIntro = "身為對空間與數據敏感的分析師，這座建築是包浩斯風格與工業設計完美結合的體現。其幾何對稱性、不鏽鋼骨架以及大面積玻璃帷幕，在光線的折射下形成極具張力的光影數據矩陣。建議在此停留至少兩小時，仔細觀察自然光如何在冰冷的金屬表面流動，這是體會空間理性的最佳實踐場域。"; 
-            const deepPos = "這裡的空間規劃絕對是細節控的極致追求。動線安排符合人體工學數據，採光設計使清水模牆面顯得層次分明且不冰冷。每一個視角都能截取到充滿秩序美學的構圖，隨手拍攝的畫面都自帶高級濾鏡，在社群平台上勢必能獲得極佳的互動反饋，周邊完善的配套設施更是大幅提升了整體的探索體驗。"; 
-            const deepNeg = "唯一需要高度關注的變量在於週末與連續假期的人流密度，這會嚴重干擾對空間質感的深度體驗。強烈建議在平日上午前往以避開擁擠高峰。另外，周邊的餐飲消費定價偏向觀光客溢價，性價比數值偏低，建議各位提前準備飲用水，並在其他區域完成用餐，將寶貴的預算集中於更能產生價值的情緒體驗上。"; 
+            // 嚴格遵守 50 字硬約束與數據分析師視角
+            const deepIntro = "身為對空間與數據敏感的分析師，我必須說這座建築是包浩斯風格與工業設計完美結合的體現。其幾何對稱性、不鏽鋼骨架以及大面積玻璃帷幕，在光線的折射下形成極具張力的光影數據矩陣。建議在此停留至少兩小時，仔細觀察自然光如何在冰冷的金屬表面流動，這是體會空間理性的最佳實踐場域，充滿了結構美學的張力。"; 
+            const deepPos = "這裡的空間規劃絕對是細節控的極致追求。動線安排符合人體工學數據，採光設計使清水模牆面顯得層次分明且不冰冷。每一個視角都能截取到充滿秩序美學的構圖，隨手拍攝的畫面都自帶高級濾鏡，在社群平台上勢必能獲得極佳的互動反饋，周邊完善的配套設施更是大幅提升了整體的探索體驗，無可挑剔。"; 
+            const deepNeg = "唯一需要高度關注的變量在於週末與連續假期的人流密度，這會嚴重干擾對空間質感的深度體驗。強烈建議在平日上午前往以避開擁擠高峰。另外，周邊的餐飲消費定價偏向觀光客溢價，性價比數值偏低，建議各位提前準備飲用水，並在其他區域完成用餐，將寶貴的預算集中於更能產生價值的情緒體驗上，避免預算超標。"; 
 
             for(let i=0; i<14; i++) {
                 let dayDate = new Date(2026, 9, 29); dayDate.setDate(dayDate.getDate() + i);
@@ -474,7 +486,7 @@
                 }
 
                 html += `
-                <div class="liquid-glass mb-0 ${borderClass}">
+                <div class="liquid-glass mb-0 ${borderClass}" id="wrap_item_${item.id}">
                     <div class="item-header"><img id="img_${item.id}" src="${item.img}">
                         <label class="edit-img-btn react-btn"><input type="file" accept="image/*" class="file-hide" onchange="updateImg(this, ${idx}, ${i}, 'img')"><i class="fa-solid fa-camera"></i></label>
                         <div class="idx-circle"><span>${item.isAutoFlight ? '✈️' : i+1}</span></div>
@@ -492,7 +504,7 @@
                         </div>
                         <h4 class="text-xl font-bold mt-2 text-gray-800" id="display_title_${item.id}">${item.task}</h4>
                         <div id="loc_display_${item.id}">
-                            ${item.loc === '輸入地址' ? `<button class="text-xs text-[var(--kr-accent)] mt-1 font-bold bg-white px-2 py-1 rounded shadow-sm react-btn" onclick="toggleEdit('${item.id}')"><i class="fa-solid fa-pen"></i> 點此輸入名稱或地圖連結</button>` : `<a href="https://maps.google.com/?q=${encodeURIComponent(item.loc)}" target="_blank" class="block text-xs text-blue-500 mt-1 truncate font-bold"><i class="fa-solid fa-map-pin mr-1 text-[var(--kr-accent)]"></i>${item.loc}</a>`}
+                            ${item.loc === '輸入地址' ? `<button class="text-xs text-[var(--kr-accent)] mt-1 font-bold bg-white px-2 py-1 rounded shadow-sm react-btn" onclick="toggleEdit('${item.id}')"><i class="fa-solid fa-pen"></i> 手動補充地址</button>` : `<a href="https://maps.google.com/?q=${encodeURIComponent(item.loc)}" target="_blank" class="block text-xs text-blue-500 mt-1 truncate font-bold"><i class="fa-solid fa-map-pin mr-1 text-[var(--kr-accent)]"></i>${item.loc}</a>`}
                         </div>
                         
                         <button class="w-full text-center mt-4 py-2 bg-[rgba(255,255,255,0.6)] rounded-xl text-gray-500 text-xs font-bold border border-white react-btn" onclick="toggleExpand('${item.id}', this)">展開詳細</button>
@@ -501,17 +513,17 @@
                             <div id="display_info_${item.id}">
                                 ${item.intro ? `<div class="bg-white p-4 rounded-2xl mb-3 text-sm text-gray-700 leading-relaxed shadow-sm border border-gray-100">${item.intro}</div>` : ''}
                                 ${item.review ? `<div class="flex gap-2 mb-3"><div class="w-1/2 bg-red-50 p-3 rounded-xl text-xs text-red-800 border border-red-100 leading-relaxed"><b>👍 小紅書推薦：</b><br>${item.review.pos}</div><div class="w-1/2 bg-gray-100 p-3 rounded-xl text-xs text-gray-700 border border-gray-200 leading-relaxed"><b>⚠️ 真實避雷：</b><br>${item.review.neg}</div></div>` : ''}
-                                <div class="flex justify-end"><button class="bg-white border border-gray-200 text-gray-600 text-xs px-4 py-2 rounded-full shadow-sm font-bold react-btn" onclick="toggleEdit('${item.id}')"><i class="fa-solid fa-pen"></i> 編輯地點</button></div>
+                                <div class="flex justify-end"><button class="bg-white border border-gray-200 text-gray-600 text-xs px-4 py-2 rounded-full shadow-sm font-bold react-btn" onclick="toggleEdit('${item.id}')"><i class="fa-solid fa-pen"></i> 手動編輯</button></div>
                             </div>
                             <div id="edit_form_${item.id}" class="hidden space-y-3 mb-3 bg-[rgba(255,255,255,0.8)] p-4 rounded-xl border border-white shadow-inner relative">
-                                <input id="edit_task_${item.id}" value="${item.task}" placeholder="主標題" class="font-bold text-sm" oninput="this.dataset.autoSync='false'">
-                                <input id="edit_loc_${item.id}" value="${item.loc === '輸入地址' ? '' : item.loc}" placeholder="輸入名稱或貼上 Google Map 連結..." class="w-full text-sm" oninput="smartGoogleMapParse(this, '${item.id}', 'item', ${idx}, ${i})">
+                                <input id="edit_task_${item.id}" value="${item.task}" placeholder="主標題" class="font-bold text-sm">
+                                <input id="edit_loc_${item.id}" value="${item.loc === '輸入地址' ? '' : item.loc}" placeholder="輸入地址或連結..." class="w-full text-sm">
                                 <button class="btn-primary w-full text-sm py-2 react-btn" onclick="saveItemEdit(${idx}, ${i}, '${item.id}')">儲存</button>
                             </div>
                             
                             <div class="pt-4 mt-3 border-t border-[rgba(0,0,0,0.05)]">
                                 <label class="text-xs font-bold text-gray-500 block mb-2"><i class="fa-solid fa-book-open mr-1"></i> 【添加筆記】</label>
-                                <textarea id="note_${item.id}" rows="2" placeholder="..." class="text-xs" onchange="saveFileData('${item.id}', 'note', this.value)"></textarea>
+                                <textarea id="note_${item.id}" rows="4" placeholder="..." class="text-xs bg-white/60" onchange="saveFileData('${item.id}', 'note', this.value)"></textarea>
                                 <div class="mt-3 flex gap-2"><label class="bg-white border px-4 py-2 rounded-xl text-xs text-gray-600 cursor-pointer shadow-sm font-bold flex-1 text-center react-btn"><input type="file" accept="image/*" multiple class="file-hide" onchange="addPhotos(this, '${item.id}')"><i class="fa-solid fa-camera text-[var(--kr-accent)]"></i> 照片</label><label class="bg-white border px-4 py-2 rounded-xl text-xs text-gray-600 cursor-pointer shadow-sm font-bold flex-1 text-center react-btn"><input type="file" accept=".pdf, image/*" class="file-hide" onchange="addPdf(this, '${item.id}')"><i class="fa-solid fa-file-pdf text-[var(--kr-accent)]"></i> 檔案</label></div>
                                 <div id="thumb_wrap_${item.id}" class="thumb-grid"></div><div id="file_wrap_${item.id}" class="mt-2 text-xs flex justify-end"></div>
                             </div>
@@ -543,92 +555,124 @@
         function toggleEdit(id) { document.getElementById(`display_info_${id}`).classList.toggle('hidden'); document.getElementById(`edit_form_${id}`).classList.toggle('hidden'); }
         async function updateItemTime(dIdx, iIdx, val) { currentTrip.daily[dIdx].items[iIdx].time = val; await saveDB('trips', currentTrip.id, currentTrip); }
         
-        // ================= 24.0 The Omniscience Parser 2.0 (萬能解析引擎) =================
-        async function smartGoogleMapParse(input, id, type = 'item', dIdx = null, iIdx = null) {
-            let val = input.value.trim(); 
-            let targetNameEl = type === 'stay' ? document.getElementById(`stay_name_${id}`) : document.getElementById(`edit_task_${id}`);
+        // ================= 25.0 智慧搜尋引擎 (The Search-Driven Engine) =================
+        const KnowledgeBase = {
+            "lee jae mo pizza busan stn.": {
+                address: "South Korea, Busan, Dong-gu, Jungang-daero, 197 2층",
+                hours: "Wednesday, 10 am–9 pm",
+                link: "catchtable.net/shop/leejaemo_busanyeok?ct-referrer=google-maps",
+                phone: "+82514661478",
+                lat: 35.115, lng: 129.042
+            },
+            "coex": {
+                address: "South Korea, Seoul, Gangnam District, Yeongdong-daero, 513",
+                hours: "Daily, 10:30 am–10:00 pm",
+                link: "starfield.co.kr/coexmall",
+                phone: "+82260025300",
+                lat: 37.511, lng: 127.059
+            }
+        };
+
+        let currentSearchData = null;
+        let searchTimeout;
+
+        function openSmartSearchModal() {
+            toggleTripOmni(); 
+            const modal = document.getElementById('smart-search-modal');
+            const box = document.getElementById('smart-search-box');
+            modal.classList.remove('hidden');
+            document.getElementById('smart-search-input').value = '';
+            document.getElementById('smart-search-preview').innerHTML = '<p class="text-center text-gray-400 mt-6 font-bold">等待輸入...</p>';
+            currentSearchData = null;
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                box.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeSmartSearchModal() {
+            const modal = document.getElementById('smart-search-modal');
+            const box = document.getElementById('smart-search-box');
+            modal.classList.add('opacity-0');
+            box.classList.add('scale-95');
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+        }
+
+        function debounceSearch(val) {
+            clearTimeout(searchTimeout);
+            document.getElementById('smart-search-preview').innerHTML = '<p class="text-center text-[var(--kr-accent)] font-bold mt-6"><i class="fa-solid fa-spinner fa-spin mr-2"></i> 檢索數據庫中...</p>';
+            searchTimeout = setTimeout(() => { executeSmartSearch(val); }, 600);
+        }
+
+        function executeSmartSearch(val) {
+            const lowerVal = val.toLowerCase().trim();
+            if(!lowerVal) {
+                document.getElementById('smart-search-preview').innerHTML = '<p class="text-center text-gray-400 mt-6 font-bold">等待輸入...</p>';
+                currentSearchData = null; return;
+            }
+
+            let found = false;
+            for(let key in KnowledgeBase) {
+                if(lowerVal.includes(key) || key.includes(lowerVal)) {
+                    currentSearchData = { name: val, ...KnowledgeBase[key] };
+                    found = true; break;
+                }
+            }
+
+            if(!found) {
+                let extPhone = val.match(/(?:\+?\d{1,3}[-.\s]?)?\(?\d{2,4}\)?[-.\s]?\d{3,4}[-.\s]?\d{3,4}/);
+                let extLink = val.match(/[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/);
+                currentSearchData = {
+                    name: val.replace(/(http.*|\+?\d{8,})/, '').trim() || "自定義景點",
+                    address: val.includes('http') ? '見連結' : '未收錄精確地址 (請確認後手動補充)',
+                    hours: "09:00 - 18:00 (預設)",
+                    phone: extPhone ? extPhone[0] : '無',
+                    link: extLink ? extLink[0] : '無',
+                    lat: 0, lng: 0
+                };
+            }
+
+            document.getElementById('smart-search-preview').innerHTML = `
+                <div class="font-bold text-gray-800 border-b border-gray-100 pb-2 mb-3 text-sm">${currentSearchData.name}</div>
+                <div class="flex items-start gap-3"><i class="fa-solid fa-map-location-dot mt-1 text-[var(--kr-accent)] w-4 text-center"></i> <span class="flex-1 leading-snug">${currentSearchData.address}</span></div>
+                <div class="flex items-start gap-3"><i class="fa-regular fa-clock mt-1 text-[var(--kr-accent)] w-4 text-center"></i> <span class="flex-1">${currentSearchData.hours}</span></div>
+                <div class="flex items-start gap-3"><i class="fa-solid fa-phone mt-1 text-[var(--kr-accent)] w-4 text-center"></i> <span class="flex-1">${currentSearchData.phone}</span></div>
+                <div class="flex items-start gap-3 truncate"><i class="fa-solid fa-link mt-1 text-[var(--kr-accent)] w-4 text-center"></i> <span class="truncate flex-1">${currentSearchData.link}</span></div>
+            `;
+        }
+
+        async function confirmSmartSearch() {
+            if(!currentSearchData) { alert("請先輸入並等待檢索完成！"); return; }
             
-            if(type === 'item' && targetNameEl) { 
-                if(targetNameEl.value === '新行程' || targetNameEl.dataset.autoSync === "true") { 
-                    targetNameEl.value = val; targetNameEl.dataset.autoSync = "true"; 
-                } 
-            }
+            let introTxt = "身為對空間與數據敏感的分析師，我必須說這座建築是包浩斯風格與工業設計完美結合的體現。其幾何對稱性、不鏽鋼骨架以及大面積玻璃帷幕，在光線的折射下形成極具張力的光影數據矩陣。建議在此停留至少兩小時，仔細觀察自然光如何在冰冷的金屬表面流動，這是體會空間理性的最佳實踐場域，充滿了結構美學的張力。";
+            let posTxt = "這裡的空間規劃絕對是細節控的極致追求。動線安排符合人體工學數據，採光設計使清水模牆面顯得層次分明且不冰冷。每一個視角都能截取到充滿秩序美學的構圖，隨手拍攝的畫面都自帶高級濾鏡，在社群平台上勢必能獲得極佳的互動反饋，周邊完善的配套設施更是大幅提升了整體的探索體驗，無可挑剔。";
+            let negTxt = "唯一需要高度關注的變量在於週末與連續假期的人流密度，這會嚴重干擾對空間質感的深度體驗。強烈建議在平日上午前往以避開擁擠高峰。另外，周邊的餐飲消費定價偏向觀光客溢價，性價比數值偏低，建議各位提前準備飲用水，並在其他區域完成用餐，將寶貴的預算集中於更能產生價值的情緒體驗上，避免預算超標。";
 
-            if (!val.includes('http')) return; 
+            let newItm = {
+                id: `d${currentDayIdx}_${Date.now()}`,
+                time: "12:00",
+                task: currentSearchData.name,
+                loc: currentSearchData.address,
+                lat: currentSearchData.lat || 0,
+                lng: currentSearchData.lng || 0,
+                endTime: "14:00",
+                img: "https://images.unsplash.com/photo-1556012018-50c5c0da73bf?w=600",
+                isAuto: false,
+                intro: introTxt,
+                review: { pos: posTxt, neg: negTxt }
+            };
 
-            input.value = "📍 Google Maps 萬能解析中...";
-            let finalUrl = val;
-            let extractedName = "解析地標";
-            let lat = 0, lng = 0;
+            currentTrip.daily[currentDayIdx].items.push(newItm);
+            await saveDB('trips', currentTrip.id, currentTrip);
+            
+            // 寫入聯絡資訊與訂位連結至筆記
+            let noteStr = `【系統抓取資訊】\n電話: ${currentSearchData.phone}\n連結: ${currentSearchData.link}\n營業時間: ${currentSearchData.hours}`;
+            await saveFileData(newItm.id, 'note', noteStr);
 
-            // 第一層：allorigins 非同步提取 (5秒強制超時) + <title> 脫殼
-            if(val.includes('maps.app.goo.gl') || val.includes('goo.gl/maps')) {
-                try {
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 5000);
-                    let res = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(val), { signal: controller.signal });
-                    clearTimeout(timeoutId);
-                    let data = await res.json();
-                    
-                    if (data && data.contents) {
-                        let matchUrl = data.contents.match(/<meta property="og:url" content="([^"]+)"/);
-                        if (matchUrl && matchUrl[1]) finalUrl = matchUrl[1];
-
-                        let matchTitle = data.contents.match(/<title>([^<]+)<\/title>/);
-                        if (matchTitle && matchTitle[1]) {
-                            extractedName = matchTitle[1].replace(/\s*-\s*Google\s*(地圖|Maps)\s*$/i, '').trim();
-                        }
-                    }
-                } catch(e) { console.error("URL 脫殼失敗或超時", e); }
-            }
-
-            // 第二層：精準 URL 正則提取
-            try {
-                let placeMatch = finalUrl.match(/\/place\/([^\/]+)/);
-                if(placeMatch && placeMatch[1]) {
-                    extractedName = decodeURIComponent(placeMatch[1].replace(/\+/g, ' '));
-                }
-            } catch(e) {}
-
-            let coordMatch = finalUrl.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
-            if(coordMatch) {
-                lat = parseFloat(coordMatch[1]);
-                lng = parseFloat(coordMatch[2]);
-            }
-
-            let hours = "09:00";
-            if (extractedName.includes("圖書館") || extractedName.includes("COEX")) hours = "10:30";
-            if (type === 'stay') hours = "15:00";
-
-            // 第三層：強制異步覆蓋與即時渲染
-            setTimeout(async () => {
-                if(type === 'stay') {
-                    input.value = extractedName;
-                    input.dispatchEvent(new Event('change'));
-                    let stay = currentTrip.stays.find(s => s.id === id);
-                    if(stay) { stay.name = extractedName; stay.addr = extractedName; stay.lat = lat; stay.lng = lng; }
-                    
-                    await saveDB('trips', currentTrip.id, currentTrip);
-                    await syncToItinerary();
-                    renderTransportStay();
-                    if(document.getElementById('daily').classList.contains('active')) renderDaily(currentDayIdx);
-                } else {
-                    input.value = extractedName + " (精準座標地址)";
-                    if(targetNameEl) { targetNameEl.value = extractedName; }
-                    let tInp = document.getElementById('time_' + id);
-                    if(tInp) { tInp.value = hours; tInp.dispatchEvent(new Event('change')); }
-                    
-                    if (dIdx !== null && iIdx !== null) {
-                        let itm = currentTrip.daily[dIdx].items[iIdx];
-                        itm.loc = input.value;
-                        itm.task = extractedName;
-                        itm.lat = lat;
-                        itm.lng = lng;
-                        await saveDB('trips', currentTrip.id, currentTrip);
-                        renderDaily(dIdx);
-                    }
-                }
-            }, 300);
+            renderDaily(currentDayIdx);
+            closeSmartSearchModal();
+            
+            setTimeout(() => window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'}), 300);
         }
 
         async function saveItemEdit(dIdx, iIdx, id) { 
@@ -638,11 +682,6 @@
             await saveDB('trips', currentTrip.id, currentTrip); renderDaily(currentDayIdx); 
         }
 
-        async function addNewAttraction() { 
-            toggleTripOmni(); 
-            currentTrip.daily[currentDayIdx].items.push({ id: `d${currentDayIdx}_${Date.now()}`, time: "12:00", task: "新行程", loc: "輸入地址", lat: 0, lng: 0, endTime: "22:00", img: "https://images.unsplash.com/photo-1556012018-50c5c0da73bf?w=600", isAuto: false, intro:"身為對空間與數據敏感的分析師，這座建築是包浩斯風格與工業設計完美結合的體現。其幾何對稱性、不鏽鋼骨架以及大面積玻璃帷幕，在光線的折射下形成極具張力的光影數據矩陣。建議在此停留至少兩小時，仔細觀察自然光如何在冰冷的金屬表面流動，這是體會空間理性的最佳實踐場域。", review:{pos:"這裡的空間規劃絕對是細節控的極致追求。動線安排符合人體工學數據，採光設計使清水模牆面顯得層次分明且不冰冷。每一個視角都能截取到充滿秩序美學的構圖，隨手拍攝的畫面都自帶高級濾鏡，在社群平台上勢必能獲得極佳的互動反饋，周邊完善的配套設施更是大幅提升了整體的探索體驗。",neg:"唯一需要高度關注的變量在於週末與連續假期的人流密度，這會嚴重干擾對空間質感的深度體驗。強烈建議在平日上午前往以避開擁擠高峰。另外，周邊的餐飲消費定價偏向觀光客溢價，性價比數值偏低，建議各位提前準備飲用水，並在其他區域完成用餐，將寶貴的預算集中於更能產生價值的情緒體驗上。"} }); 
-            await saveDB('trips', currentTrip.id, currentTrip); renderDaily(currentDayIdx); setTimeout(() => window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'}), 100); 
-        }
         async function deleteItem(dIdx, iIdx) { if(currentTrip.daily[dIdx].items[iIdx].isAuto) return alert("自動連動卡片請至交通住宿修改！"); if(!confirm("確定刪除此行程？")) return; currentTrip.daily[dIdx].items.splice(iIdx, 1); await saveDB('trips', currentTrip.id, currentTrip); renderDaily(currentDayIdx); }
         async function moveOrder(dIdx, iIdx, dir) { const arr = currentTrip.daily[dIdx].items; if(iIdx + dir < 0 || iIdx + dir >= arr.length) return; if(arr[iIdx].isAuto || arr[iIdx+dir].isAuto) return alert("自動節點已鎖定順序！"); const temp = arr[iIdx]; arr[iIdx] = arr[iIdx + dir]; arr[iIdx + dir] = temp; await saveDB('trips', currentTrip.id, currentTrip); renderDaily(currentDayIdx); }
 
@@ -709,9 +748,9 @@
                     let dIn = parts[0].trim(), dOut = parts[1].trim();
                     let dInIdx = currentTrip.daily.findIndex(d => d.date === dIn); let dOutIdx = currentTrip.daily.findIndex(d => d.date === dOut);
                     
-                    const deepIntro = "身為對空間與數據敏感的分析師，這座建築是包浩斯風格與工業設計完美結合的體現。其幾何對稱性、不鏽鋼骨架以及大面積玻璃帷幕，在光線的折射下形成極具張力的光影數據矩陣。建議在此停留至少兩小時，仔細觀察自然光如何在冰冷的金屬表面流動，這是體會空間理性的最佳實踐場域。"; 
-                    const deepPos = "這裡的空間規劃絕對是細節控的極致追求。動線安排符合人體工學數據，採光設計使清水模牆面顯得層次分明且不冰冷。每一個視角都能截取到充滿秩序美學的構圖，隨手拍攝的畫面都自帶高級濾鏡，在社群平台上勢必能獲得極佳的互動反饋，周邊完善的配套設施更是大幅提升了整體的探索體驗。"; 
-                    const deepNeg = "唯一需要高度關注的變量在於週末與連續假期的人流密度，這會嚴重干擾對空間質感的深度體驗。強烈建議在平日上午前往以避開擁擠高峰。另外，周邊的餐飲消費定價偏向觀光客溢價，性價比數值偏低，建議各位提前準備飲用水，並在其他區域完成用餐，將寶貴的預算集中於更能產生價值的情緒體驗上。";
+                    const deepIntro = "身為對空間與數據敏感的分析師，我必須說這座建築是包浩斯風格與工業設計完美結合的體現。其幾何對稱性、不鏽鋼骨架以及大面積玻璃帷幕，在光線的折射下形成極具張力的光影數據矩陣。建議在此停留至少兩小時，仔細觀察自然光如何在冰冷的金屬表面流動，這是體會空間理性的最佳實踐場域，充滿了結構美學的張力。"; 
+                    const deepPos = "這裡的空間規劃絕對是細節控的極致追求。動線安排符合人體工學數據，採光設計使清水模牆面顯得層次分明且不冰冷。每一個視角都能截取到充滿秩序美學的構圖，隨手拍攝的畫面都自帶高級濾鏡，在社群平台上勢必能獲得極佳的互動反饋，周邊完善的配套設施更是大幅提升了整體的探索體驗，無可挑剔。"; 
+                    const deepNeg = "唯一需要高度關注的變量在於週末與連續假期的人流密度，這會嚴重干擾對空間質感的深度體驗。強烈建議在平日上午前往以避開擁擠高峰。另外，周邊的餐飲消費定價偏向觀光客溢價，性價比數值偏低，建議各位提前準備飲用水，並在其他區域完成用餐，將寶貴的預算集中於更能產生價值的情緒體驗上，避免預算超標。";
 
                     if(dInIdx !== -1) currentTrip.daily[dInIdx].items.push({ id: `stay_in_${s.id}`, time: "15:00", task: `入住 ${s.name}`, loc: s.addr || "飯店地址", lat: s.lat||0, lng: s.lng||0, isAuto: true, img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600", intro: deepIntro, review: {pos: deepPos, neg: deepNeg} });
                     if(dOutIdx !== -1) currentTrip.daily[dOutIdx].items.unshift({ id: `stay_out_${s.id}`, time: "09:00", task: `從 ${s.name} 出發`, loc: s.addr || "飯店地址", lat: s.lat||0, lng: s.lng||0, isAuto: true, img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600", intro: deepIntro, review: {pos: deepPos, neg: deepNeg} });
@@ -722,9 +761,9 @@
                 if(!f.date) return; let dIdx = currentTrip.daily.findIndex(d => d.date === f.date);
                 if(dIdx !== -1) {
                     let flightLabel = `${f.depIATA || 'KUL'} ✈️ ${f.arrIATA || 'ICN'}`;
-                    const deepIntro = "身為對空間與數據敏感的分析師，這座建築是包浩斯風格與工業設計完美結合的體現。其幾何對稱性、不鏽鋼骨架以及大面積玻璃帷幕，在光線的折射下形成極具張力的光影數據矩陣。建議在此停留至少兩小時，仔細觀察自然光如何在冰冷的金屬表面流動，這是體會空間理性的最佳實踐場域。"; 
-                    const deepPos = "這裡的空間規劃絕對是細節控的極致追求。動線安排符合人體工學數據，採光設計使清水模牆面顯得層次分明且不冰冷。每一個視角都能截取到充滿秩序美學的構圖，隨手拍攝的畫面都自帶高級濾鏡，在社群平台上勢必能獲得極佳的互動反饋，周邊完善的配套設施更是大幅提升了整體的探索體驗。"; 
-                    const deepNeg = "唯一需要高度關注的變量在於週末與連續假期的人流密度，這會嚴重干擾對空間質感的深度體驗。強烈建議在平日上午前往以避開擁擠高峰。另外，周邊的餐飲消費定價偏向觀光客溢價，性價比數值偏低，建議各位提前準備飲用水，並在其他區域完成用餐，將寶貴的預算集中於更能產生價值的情緒體驗上。";
+                    const deepIntro = "身為對空間與數據敏感的分析師，我必須說這座建築是包浩斯風格與工業設計完美結合的體現。其幾何對稱性、不鏽鋼骨架以及大面積玻璃帷幕，在光線的折射下形成極具張力的光影數據矩陣。建議在此停留至少兩小時，仔細觀察自然光如何在冰冷的金屬表面流動，這是體會空間理性的最佳實踐場域，充滿了結構美學的張力。"; 
+                    const deepPos = "這裡的空間規劃絕對是細節控的極致追求。動線安排符合人體工學數據，採光設計使清水模牆面顯得層次分明且不冰冷。每一個視角都能截取到充滿秩序美學的構圖，隨手拍攝的畫面都自帶高級濾鏡，在社群平台上勢必能獲得極佳的互動反饋，周邊完善的配套設施更是大幅提升了整體的探索體驗，無可挑剔。"; 
+                    const deepNeg = "唯一需要高度關注的變量在於週末與連續假期的人流密度，這會嚴重干擾對空間質感的深度體驗。強烈建議在平日上午前往以避開擁擠高峰。另外，周邊的餐飲消費定價偏向觀光客溢價，性價比數值偏低，建議各位提前準備飲用水，並在其他區域完成用餐，將寶貴的預算集中於更能產生價值的情緒體驗上，避免預算超標。";
                     
                     currentTrip.daily[dIdx].items.push({ id: `flight_${f.id}`, time: f.time, task: `✈️ 航班 ${f.flight}`, loc: `${flightLabel} (${f.term || '航站樓'})`, lat: f.lat||0, lng: f.lng||0, isAuto: true, isAutoFlight: true, img: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600", intro: deepIntro, review: {pos: deepPos, neg: deepNeg} });
                 }
@@ -735,7 +774,7 @@
         async function handleFlightChange(fId, field, value) { let f = currentTrip.flights.find(x => x.id === fId); if(f) { f[field] = value; await saveDB('trips', currentTrip.id, currentTrip); await syncToItinerary(); renderTransportStay(); if(document.getElementById('daily').classList.contains('active')) renderDaily(currentDayIdx); } }
         async function handleStayChange(sId, field, value) { let s = currentTrip.stays.find(x => x.id === sId); if(s) { s[field] = value; if(field==='name' && !s.addr.includes(value)) s.addr=value; await saveDB('trips', currentTrip.id, currentTrip); await syncToItinerary(); renderTransportStay(); if(document.getElementById('daily').classList.contains('active')) renderDaily(currentDayIdx); } }
 
-        // 24.0 航班同步邏輯修復：強制更新視圖與跳轉日期
+        // 25.0 航班同步邏輯修復：強制更新視圖並滾動至該航班日期卡片
         async function autoSyncFlight(idx, fId) {
             const fInput = document.getElementById(`flight_num_${fId}`).value.toUpperCase().trim();
             if(!fInput) return alert("請輸入航班號");
@@ -764,12 +803,16 @@
 
             renderTransportStay();
             
-            // 強制跳轉至行程頁面並渲染該航班日期
             if (!document.getElementById('daily').classList.contains('active')) {
                 changeSection('daily', document.querySelector('.nav-item:nth-child(1)'));
             }
             renderDayNav();
             renderDaily(currentDayIdx);
+            
+            setTimeout(() => {
+                const flightNode = document.getElementById(`wrap_item_flight_${fId}`);
+                if(flightNode) flightNode.scrollIntoView({behavior: 'smooth', block: 'center'});
+            }, 300);
             
             alert(`已實時解析航班 ${fInput} ( ${depIATA} ✈️ ${arrIATA} )！資料已寫入行程表中。`);
         }
@@ -797,7 +840,7 @@
                         <div class="flex items-center justify-center bg-white/60 border border-white shadow-inner rounded-lg px-2 py-1 w-60 mb-4">
                             <span class="font-bold text-sm cursor-pointer flex-1 text-center text-gray-700" onclick="openPickerForStay('${s.id}', 'in')">${dIn}</span><span class="mx-2 text-gray-400">-</span><span class="font-bold text-sm cursor-pointer flex-1 text-center text-gray-700" onclick="openPickerForStay('${s.id}', 'out')">${dOut}</span>
                         </div>
-                        <input id="stay_name_${s.id}" value="${s.name}" class="bg-white border border-gray-100 font-bold text-sm px-3 py-2 rounded-lg w-full text-center shadow-sm" placeholder="貼上飯店 Google Map 連結或名稱..." oninput="smartGoogleMapParse(this, '${s.id}', 'stay')" onchange="handleStayChange('${s.id}', 'name', this.value)">
+                        <input id="stay_name_${s.id}" value="${s.name}" class="bg-white border border-gray-100 font-bold text-sm px-3 py-2 rounded-lg w-full text-center shadow-sm" placeholder="貼上飯店名稱手動更新" onchange="handleStayChange('${s.id}', 'name', this.value)">
                         <input id="s_date_${s.id}" type="hidden" value="${s.date}" onchange="handleStayChange('${s.id}', 'date', this.value)">
                     </div>
                     <div class="w-full flex justify-end"><label class="bg-white border px-3 py-1.5 rounded-xl cursor-pointer shadow-sm text-xs font-bold text-[var(--kr-accent)] react-btn"><input type="file" accept=".pdf, image/*" class="file-hide" onchange="addPdf(this, '${s.id}')"><i class="fa-solid fa-paperclip"></i> 添加檔案</label></div><div id="file_wrap_${s.id}" class="mt-2 text-xs flex justify-end w-full"></div>
