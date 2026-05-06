@@ -6,69 +6,196 @@
   <title>我的旅行繪本｜行程編輯器</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js" defer></script>
+  
   <style>
     :root{
-      --bg:#f5f3ec;
-      --card:rgba(255,255,255,.68);
-      --card2:rgba(255,255,255,.82);
-      --text:#3f3a33;
-      --muted:#7a7165;
-      --accent:#9A9283;
-      --accent2:#6d8ea0;
-      --line:rgba(255,255,255,.85);
-      --shadow:0 12px 35px rgba(0,0,0,.08);
-      --shadow-strong:0 18px 50px rgba(0,0,0,.14);
+      --bg:#f4f7fb;
+      --card:rgba(255,255,255,.72);
+      --card2:rgba(255,255,255,.88);
+      --text:#111827;
+      --muted:#64748b;
+      --accent:#3b82f6;
+      --accent2:#8b5cf6;
+      --line:rgba(255,255,255,.88);
+      --shadow:0 10px 30px rgba(15,23,42,.06);
+      --shadow-strong:0 20px 60px rgba(15,23,42,.10);
     }
+    *{ box-sizing:border-box; }
+    html{ scroll-behavior:smooth; }
     body{
-      background: radial-gradient(circle at top, rgba(255,255,255,.92), transparent 40%), var(--bg);
+      background:
+        radial-gradient(circle at top, rgba(255,255,255,.95), transparent 40%),
+        linear-gradient(180deg, #f7f9fc 0%, #edf2f7 100%);
       color: var(--text);
-      font-family: Arial, Helvetica, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", sans-serif;
       min-height: 100vh;
       -webkit-tap-highlight-color: transparent;
+      text-rendering: optimizeLegibility;
     }
     .glass{
       background: var(--card);
-      backdrop-filter: blur(26px);
-      border: 1px solid var(--line);
+      backdrop-filter: blur(26px) saturate(1.1);
+      border: 1px solid rgba(255,255,255,.78);
       box-shadow: var(--shadow);
     }
     .glass-strong{
       background: var(--card2);
-      backdrop-filter: blur(28px);
-      border: 1px solid rgba(255,255,255,.95);
+      backdrop-filter: blur(28px) saturate(1.15);
+      border: 1px solid rgba(255,255,255,.9);
       box-shadow: var(--shadow-strong);
     }
     .soft-scroll::-webkit-scrollbar{ height: 8px; width: 8px; }
-    .soft-scroll::-webkit-scrollbar-thumb{ background: rgba(0,0,0,.12); border-radius: 999px; }
+    .soft-scroll::-webkit-scrollbar-thumb{ background: rgba(15,23,42,.12); border-radius: 999px; }
     .soft-scroll{ scrollbar-width: thin; }
     .day-chip.active{
-      background: var(--accent);
+      background: linear-gradient(135deg, var(--accent), #6ea8fe);
       color: white;
       border-color: transparent;
+      box-shadow: 0 12px 24px rgba(59,130,246,.22);
     }
     .item-card{
-      transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+      box-shadow: var(--shadow);
     }
     .item-card:hover{
       transform: translateY(-1px);
-      box-shadow: 0 14px 26px rgba(0,0,0,.08);
-      border-color: rgba(154,146,131,.35);
+      box-shadow: 0 18px 30px rgba(15,23,42,.08);
+      border-color: rgba(59,130,246,.20);
     }
     .btn{
-      transition: transform .15s ease, opacity .15s ease, background .15s ease;
+      transition: transform .16s ease, opacity .16s ease, background .16s ease, box-shadow .16s ease;
+    }
+    .btn:hover{
+      box-shadow: 0 10px 20px rgba(15,23,42,.06);
     }
     .btn:active{ transform: scale(.98); opacity: .92; }
     .modal-hidden{ display: none; }
     .helper-badge{
-      border: 1px solid rgba(154,146,131,.18);
-      background: rgba(255,255,255,.72);
+      border: 1px solid rgba(148,163,184,.20);
+      background: rgba(255,255,255,.82);
     }
+    .field, input, textarea, select{ color: var(--text); }
+    .field::placeholder, input::placeholder, textarea::placeholder{ color: rgba(100,116,139,.72); }
     .ring{
-      background: conic-gradient(var(--accent) 0deg, var(--accent2) 120deg, #d7d1c7 120deg 360deg);
+      background: conic-gradient(var(--accent) 0deg, var(--accent2) 120deg, #d7ddea 120deg 360deg);
       border-radius: 999px;
       padding: 10px;
     }
+    .weather-hero{
+      position: relative;
+      overflow: hidden;
+      border-radius: 30px;
+      background:
+        radial-gradient(circle at 18% 20%, rgba(255,255,255,.92), transparent 18%),
+        radial-gradient(circle at 84% 26%, rgba(191,219,254,.58), transparent 20%),
+        linear-gradient(135deg, rgba(96,165,250,.18), rgba(255,255,255,.84));
+      border: 1px solid rgba(255,255,255,.85);
+      box-shadow: 0 20px 45px rgba(59,130,246,.08);
+    }
+    .weather-hero::before{
+      content:"";
+      position:absolute;
+      inset:-35%;
+      background:
+        radial-gradient(circle at 22% 26%, rgba(255,255,255,.92), transparent 20%),
+        radial-gradient(circle at 74% 36%, rgba(226,232,240,.72), transparent 22%),
+        radial-gradient(circle at 70% 80%, rgba(147,197,253,.42), transparent 20%);
+      filter: blur(6px);
+      animation: drift 16s ease-in-out infinite;
+    }
+    .weather-hero__orb{
+      position:absolute;
+      right:-20px;
+      top:-20px;
+      width:170px;
+      height:170px;
+      border-radius:999px;
+      background: radial-gradient(circle, rgba(255,255,255,.95), rgba(255,255,255,.16) 55%, transparent 72%);
+      filter: blur(1px);
+      animation: floatSlow 7s ease-in-out infinite;
+    }
+    .weather-visual{
+      position: relative;
+      overflow: hidden;
+      border-radius: 28px;
+      border: 1px solid rgba(255,255,255,.72);
+      background: linear-gradient(180deg, rgba(255,255,255,.58), rgba(255,255,255,.20));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.6);
+    }
+    .weather-visual.lg{ width: 132px; height: 132px; }
+    .weather-visual.sm{ width: 92px; height: 92px; border-radius: 24px; }
+    .weather-glow{
+      position:absolute;
+      inset:-20%;
+      border-radius: 999px;
+      opacity: .88;
+      animation: pulseSoft 5.5s ease-in-out infinite;
+    }
+    .weather-icon{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 2.2rem;
+      z-index: 2;
+      text-shadow: 0 8px 20px rgba(15,23,42,.12);
+      animation: floatSlow 4.5s ease-in-out infinite;
+    }
+    .weather-visual.sm .weather-icon{ font-size: 1.55rem; }
+    .weather-visual.sunny .weather-glow{ background: radial-gradient(circle, rgba(253,224,71,.92) 0%, rgba(250,204,21,.40) 28%, rgba(255,255,255,0) 64%); }
+    .weather-visual.sunny .weather-icon{ color: #eab308; }
+    .weather-visual.cloudy .weather-glow{ background: radial-gradient(circle, rgba(226,232,240,.92) 0%, rgba(148,163,184,.32) 30%, rgba(255,255,255,0) 66%); }
+    .weather-visual.cloudy .weather-icon{ color: #64748b; }
+    .weather-visual.rainy .weather-glow{ background: radial-gradient(circle, rgba(186,230,253,.96) 0%, rgba(96,165,250,.35) 28%, rgba(255,255,255,0) 66%); }
+    .weather-visual.rainy .weather-icon{ color: #2563eb; }
+    .weather-visual.breezy .weather-glow{ background: radial-gradient(circle, rgba(191,219,254,.94) 0%, rgba(96,165,250,.28) 28%, rgba(255,255,255,0) 66%); }
+    .weather-visual.breezy .weather-icon{ color: #3b82f6; }
+    .weather-visual.night .weather-glow{ background: radial-gradient(circle, rgba(199,210,254,.96) 0%, rgba(99,102,241,.28) 30%, rgba(255,255,255,0) 66%); }
+    .weather-visual.night .weather-icon{ color: #6366f1; }
+    .rain-drop{
+      position:absolute;
+      width: 2px;
+      height: 14px;
+      border-radius: 999px;
+      background: rgba(37,99,235,.7);
+      bottom: 18px;
+      z-index: 1;
+      animation: rainFall 1.7s linear infinite;
+    }
+    .rain-drop.d1{ left: 42px; animation-delay: 0s; }
+    .rain-drop.d2{ left: 56px; animation-delay: .35s; }
+    .rain-drop.d3{ left: 70px; animation-delay: .7s; }
+    .star{
+      position:absolute;
+      width: 4px;
+      height: 4px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.95);
+      box-shadow: 0 0 10px rgba(255,255,255,.7);
+      animation: twinkle 2.8s ease-in-out infinite;
+    }
+    .star.s1{ top: 22px; left: 28px; }
+    .star.s2{ top: 34px; right: 26px; animation-delay: .9s; }
+    .star.s3{ bottom: 30px; left: 36px; animation-delay: 1.6s; }
+    .weather-mini{
+      display:flex;
+      align-items:center;
+      gap: 12px;
+      padding: 14px;
+      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,.7);
+      background: rgba(255,255,255,.62);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.72);
+    }
+    @keyframes floatSlow { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
+    @keyframes drift { 0%, 100% { transform: translate3d(-8px, 0, 0) scale(1); } 50% { transform: translate3d(8px, -4px, 0) scale(1.03); } }
+    @keyframes pulseSoft { 0%, 100% { transform: scale(.96); opacity: .72; } 50% { transform: scale(1.04); opacity: 1; } }
+    @keyframes rainFall { 0% { transform: translateY(-4px); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(24px); opacity: 0; } }
+    @keyframes twinkle { 0%, 100% { transform: scale(.9); opacity: .55; } 50% { transform: scale(1.3); opacity: 1; } }
+    @media (prefers-reduced-motion: reduce){ *, *::before, *::after{ animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
   </style>
+
 </head>
 <body class="antialiased">
   <div id="app"></div>
@@ -196,6 +323,44 @@
       const d = new Date(`${iso}T00:00:00`);
       if (Number.isNaN(d.getTime())) return iso || "";
       return new Intl.DateTimeFormat("zh-Hant", { year: "numeric", month: "2-digit", day: "2-digit", weekday: "short" }).format(d);
+    }
+
+    const WEATHER_MOODS = [
+      { key: "sunny", label: "晴朗", hint: "適合散步、拍照與戶外移動", icon: "fa-sun", tempBase: 31 },
+      { key: "cloudy", label: "多雲", hint: "節奏舒適，適合輕鬆逛街", icon: "fa-cloud", tempBase: 29 },
+      { key: "rainy", label: "陣雨", hint: "建議準備室內備案", icon: "fa-cloud-rain", tempBase: 27 },
+      { key: "breezy", label: "微風", hint: "串點與交通都會更順", icon: "fa-wind", tempBase: 30 },
+      { key: "night", label: "夜色", hint: "適合晚餐、夜景與收尾行程", icon: "fa-moon", tempBase: 26 }
+    ];
+
+    function weatherForDay(day, index, trip){
+      const seedSource = `${day?.date || ""}|${day?.destination || ""}|${trip?.title || ""}|${index}`;
+      let seed = 0;
+      for (let i = 0; i < seedSource.length; i++) seed = (seed + seedSource.charCodeAt(i) * (i + 3)) % 9973;
+      const mood = WEATHER_MOODS[seed % WEATHER_MOODS.length];
+      const temp = mood.tempBase + (seed % 4) - 1;
+      return {
+        ...mood,
+        temp,
+        feelsLike: temp + ((seed % 3) - 1),
+        range: `${temp - 2}–${temp + 2}°C`
+      };
+    }
+
+    function weatherVisualMarkup(weather, size = "lg"){
+      const sizeClass = size === "sm" ? "sm" : "lg";
+      const extra = weather.key === "rainy"
+        ? `<span class="rain-drop d1"></span><span class="rain-drop d2"></span><span class="rain-drop d3"></span>`
+        : weather.key === "night"
+          ? `<span class="star s1"></span><span class="star s2"></span><span class="star s3"></span>`
+          : "";
+      return `
+        <div class="weather-visual ${sizeClass} ${weather.key}">
+          <span class="weather-glow"></span>
+          ${extra}
+          <div class="weather-icon"><i class="fa-solid ${weather.icon}"></i></div>
+        </div>
+      `;
     }
 
     function addDays(iso, offset){
@@ -686,68 +851,145 @@
     }
 
     function editorHeader(trip){
+      const heroDay = trip.days.find(d => d.id === app.activeDayId) || trip.days[0] || { date: trip.startDate, destination: trip.destinationsInput || trip.title };
+      const heroIndex = Math.max(0, trip.days.findIndex(d => d.id === heroDay.id));
+      const heroWeather = weatherForDay(heroDay, heroIndex, trip);
+
       return `
-        <header class="sticky top-0 z-30 backdrop-blur-xl bg-[rgba(245,243,236,.76)] border-b border-white/80">
+        <header class="sticky top-0 z-30 backdrop-blur-xl bg-[rgba(244,247,251,.78)] border-b border-white/80">
           <div class="mx-auto max-w-7xl px-4 md:px-6 py-4">
-            <div class="flex flex-col gap-3">
+            <div class="flex flex-col gap-4">
               <div class="flex items-center justify-between gap-3">
                 <div class="flex items-center gap-3 min-w-0">
-                  <button class="btn w-11 h-11 rounded-2xl bg-white/70 border border-white" data-action="go-home">
+                  <button class="btn w-11 h-11 rounded-2xl bg-white/75 border border-white shadow-sm" data-action="go-home">
                     <i class="fa-solid fa-arrow-left"></i>
                   </button>
                   <div class="min-w-0">
                     <p class="text-sm text-slate-500">行程編輯器</p>
-                    <h1 class="text-xl md:text-3xl font-bold truncate">${escapeHtml(trip.title)}</h1>
+                    <h1 class="text-xl md:text-3xl font-semibold tracking-tight truncate">${escapeHtml(trip.title)}</h1>
                   </div>
                 </div>
                 <div class="flex flex-wrap gap-2 justify-end">
-                  <button class="btn rounded-2xl px-4 py-3 bg-white/70 border border-white" data-action="open-search">
+                  <button class="btn rounded-2xl px-4 py-3 bg-white/75 border border-white shadow-sm" data-action="open-search">
                     <i class="fa-solid fa-magnifying-glass mr-2"></i>輔助搜尋
                   </button>
-                  <button class="btn rounded-2xl px-4 py-3 bg-white/70 border border-white" data-action="open-import-modal">
+                  <button class="btn rounded-2xl px-4 py-3 bg-white/75 border border-white shadow-sm" data-action="open-import-modal">
                     匯入
                   </button>
-                  <button class="btn rounded-2xl px-4 py-3 bg-white/70 border border-white" data-action="export-state">
+                  <button class="btn rounded-2xl px-4 py-3 bg-white/75 border border-white shadow-sm" data-action="export-state">
                     匯出
                   </button>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 lg:grid-cols-[1.25fr_.95fr] gap-4">
+                <div class="weather-hero p-5 md:p-6">
+                  <div class="weather-hero__orb"></div>
+                  <div class="relative z-10 flex items-start justify-between gap-4">
+                    <div class="min-w-0">
+                      <p class="text-sm font-medium text-slate-500">今日旅程氣氛</p>
+                      <h2 class="mt-2 text-2xl md:text-3xl font-semibold tracking-tight">${escapeHtml(heroWeather.label)}</h2>
+                      <p class="mt-2 text-sm text-slate-600 max-w-xl">${escapeHtml(heroWeather.hint)}</p>
+                    </div>
+                    <div class="shrink-0">
+                      ${weatherVisualMarkup(heroWeather, "lg")}
+                    </div>
+                  </div>
+                  <div class="relative z-10 mt-5 flex flex-wrap gap-3">
+                    <div class="rounded-2xl bg-white/70 border border-white px-4 py-3">
+                      <div class="text-xs text-slate-500">起始日期</div>
+                      <div class="mt-1 font-semibold">${displayDate(trip.startDate)}</div>
+                    </div>
+                    <div class="rounded-2xl bg-white/70 border border-white px-4 py-3">
+                      <div class="text-xs text-slate-500">旅程天數</div>
+                      <div class="mt-1 font-semibold">${trip.days.length} 天</div>
+                    </div>
+                    <div class="rounded-2xl bg-white/70 border border-white px-4 py-3">
+                      <div class="text-xs text-slate-500">預估氣溫</div>
+                      <div class="mt-1 font-semibold">${heroWeather.temp}°C</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="glass rounded-[30px] p-5 md:p-6">
+                  <div class="flex items-center justify-between gap-3">
+                    <div>
+                      <p class="text-sm text-slate-500">行程概覽</p>
+                      <h3 class="text-2xl font-semibold tracking-tight mt-1">${escapeHtml(trip.title)}</h3>
+                    </div>
+                    <div class="text-right">
+                      <div class="text-sm text-slate-500">主題色</div>
+                      <div class="mt-2 inline-flex items-center gap-2 rounded-full bg-white/80 border border-white px-3 py-2">
+                        <span class="inline-block w-3 h-3 rounded-full" style="background:${escapeAttr(trip.color)}"></span>
+                        <span class="text-sm font-medium">${escapeHtml(trip.color)}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="mt-5 grid grid-cols-3 gap-3">
+                    <div class="rounded-3xl bg-white/70 border border-white p-4">
+                      <div class="text-xs text-slate-500">天數</div>
+                      <div class="mt-1 text-2xl font-semibold">${trip.days.length}</div>
+                    </div>
+                    <div class="rounded-3xl bg-white/70 border border-white p-4">
+                      <div class="text-xs text-slate-500">目的地</div>
+                      <div class="mt-1 text-2xl font-semibold">${splitDestinations(trip.destinationsInput).length || 1}</div>
+                    </div>
+                    <div class="rounded-3xl bg-white/70 border border-white p-4">
+                      <div class="text-xs text-slate-500">預算</div>
+                      <div class="mt-1 text-2xl font-semibold">${Number(trip.budget || 0).toLocaleString()}</div>
+                    </div>
+                  </div>
+
+                  <div class="mt-5 rounded-3xl bg-white/65 border border-white p-4">
+                    <div class="text-xs text-slate-500">目的地路線</div>
+                    <div class="mt-2 flex flex-wrap gap-2">
+                      ${(splitDestinations(trip.destinationsInput).slice(0, 8).map(d => `<span class="rounded-full bg-white px-3 py-1 text-xs border border-slate-100">${escapeHtml(d)}</span>`).join("")) || `<span class="rounded-full bg-white px-3 py-1 text-xs border border-slate-100">未設定</span>`}
+                    </div>
+                  </div>
+
+                  <div class="mt-5 rounded-3xl bg-white/65 border border-white p-4">
+                    <div class="text-xs text-slate-500">備註</div>
+                    <p class="mt-2 text-sm text-slate-600 leading-6">${escapeHtml(trip.notes || "暫無備註。")}</p>
+                  </div>
                 </div>
               </div>
 
               <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
                 <label class="block">
                   <span class="text-xs font-semibold text-slate-500">行程名稱</span>
-                  <input data-bind="trip.title" value="${escapeAttr(trip.title)}" class="mt-2 w-full rounded-2xl border border-white bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300" />
+                  <input data-bind="trip.title" value="${escapeAttr(trip.title)}" class="mt-2 w-full rounded-2xl border border-white bg-white/84 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300 shadow-sm" />
                 </label>
                 <label class="block">
                   <span class="text-xs font-semibold text-slate-500">起始日期</span>
-                  <input data-bind="trip.startDate" type="date" value="${trip.startDate}" class="mt-2 w-full rounded-2xl border border-white bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300" />
+                  <input data-bind="trip.startDate" type="date" value="${trip.startDate}" class="mt-2 w-full rounded-2xl border border-white bg-white/84 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300 shadow-sm" />
                 </label>
                 <label class="block">
                   <span class="text-xs font-semibold text-slate-500">天數</span>
-                  <input data-bind="trip.daysCount" type="number" min="1" max="90" value="${trip.daysCount}" class="mt-2 w-full rounded-2xl border border-white bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300" />
+                  <input data-bind="trip.daysCount" type="number" min="1" max="90" value="${trip.daysCount}" class="mt-2 w-full rounded-2xl border border-white bg-white/84 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300 shadow-sm" />
                 </label>
                 <label class="block">
                   <span class="text-xs font-semibold text-slate-500">主題色</span>
-                  <input data-bind="trip.color" type="color" value="${escapeAttr(trip.color)}" class="mt-2 h-[48px] w-full rounded-2xl border border-white bg-white/80 p-2" />
+                  <input data-bind="trip.color" type="color" value="${escapeAttr(trip.color)}" class="mt-2 h-[48px] w-full rounded-2xl border border-white bg-white/84 p-2 shadow-sm" />
                 </label>
                 <label class="block md:col-span-2">
                   <span class="text-xs font-semibold text-slate-500">目的地路線</span>
-                  <input data-bind="trip.destinationsInput" value="${escapeAttr(trip.destinationsInput || "")}" placeholder="例如：首爾, 釜山, 濟州島" class="mt-2 w-full rounded-2xl border border-white bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300" />
+                  <input data-bind="trip.destinationsInput" value="${escapeAttr(trip.destinationsInput || "")}" placeholder="例如：首爾, 釜山, 濟州島" class="mt-2 w-full rounded-2xl border border-white bg-white/84 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300 shadow-sm" />
                 </label>
                 <label class="block md:col-span-2">
                   <span class="text-xs font-semibold text-slate-500">預算 / 備註</span>
-                  <input data-bind="trip.budget" type="number" min="0" step="1" value="${Number(trip.budget || 0)}" placeholder="預算" class="mt-2 w-full rounded-2xl border border-white bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300" />
+                  <input data-bind="trip.budget" type="number" min="0" step="1" value="${Number(trip.budget || 0)}" placeholder="預算" class="mt-2 w-full rounded-2xl border border-white bg-white/84 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300 shadow-sm" />
                 </label>
                 <label class="block md:col-span-4">
                   <span class="text-xs font-semibold text-slate-500">行程備註</span>
-                  <textarea data-bind="trip.notes" rows="3" class="mt-2 w-full rounded-2xl border border-white bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300">${escapeHtml(trip.notes || "")}</textarea>
+                  <textarea data-bind="trip.notes" rows="3" class="mt-2 w-full rounded-2xl border border-white bg-white/84 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300 shadow-sm">${escapeHtml(trip.notes || "")}</textarea>
                 </label>
                 <div class="md:col-span-4 flex flex-wrap gap-2 justify-between items-center">
                   <div class="flex flex-wrap gap-2">
-                    <button class="btn rounded-2xl px-4 py-3 bg-[var(--accent)] text-white font-semibold" data-action="rebuild-trip">
+                    <button class="btn rounded-2xl px-4 py-3 bg-[var(--accent)] text-white font-semibold shadow-sm" data-action="rebuild-trip">
                       重新生成日期骨架
                     </button>
-                    <button class="btn rounded-2xl px-4 py-3 bg-white/70 border border-white" data-action="add-day">
+                    <button class="btn rounded-2xl px-4 py-3 bg-white/75 border border-white shadow-sm" data-action="add-day">
                       新增一天
                     </button>
                   </div>
@@ -784,19 +1026,32 @@
 
     function dayCard(day, index){
       const doneCount = day.items.filter(i => i.done).length;
+      const trip = activeTrip();
+      const weather = weatherForDay(day, index, trip);
+
       return `
-        <section id="day-${day.id}" class="glass-strong rounded-3xl p-4 md:p-5 mb-5" style="border-left: 10px solid var(--accent)">
+        <section id="day-${day.id}" class="glass-strong rounded-[30px] p-4 md:p-5 mb-5" style="border-left: 10px solid var(--accent)">
           <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
             <div>
               <div class="text-sm text-slate-500">Day ${index + 1}</div>
-              <h3 class="text-2xl font-bold mt-1">${displayDate(day.date)}</h3>
+              <h3 class="text-2xl font-semibold tracking-tight mt-1">${displayDate(day.date)}</h3>
               <div class="text-sm text-slate-500 mt-1">${doneCount}/${day.items.length} 項完成</div>
             </div>
+
+            <div class="weather-mini">
+              ${weatherVisualMarkup(weather, "sm")}
+              <div class="min-w-0">
+                <div class="text-xs text-slate-500">今日天氣氛圍</div>
+                <div class="font-semibold">${escapeHtml(weather.label)}</div>
+                <div class="text-xs text-slate-500 mt-1">${weather.temp}°C · ${escapeHtml(weather.hint)}</div>
+              </div>
+            </div>
+
             <div class="flex flex-wrap gap-2">
-              <button class="btn rounded-2xl px-4 py-2 bg-white/70 border border-white" data-action="add-item" data-day-id="${day.id}">
+              <button class="btn rounded-2xl px-4 py-2 bg-white/75 border border-white shadow-sm" data-action="add-item" data-day-id="${day.id}">
                 <i class="fa-solid fa-plus mr-2"></i>新增項目
               </button>
-              <button class="btn rounded-2xl px-4 py-2 bg-white/70 border border-white" data-action="insert-suggestion" data-day-id="${day.id}">
+              <button class="btn rounded-2xl px-4 py-2 bg-white/75 border border-white shadow-sm" data-action="insert-suggestion" data-day-id="${day.id}">
                 <i class="fa-solid fa-wand-magic-sparkles mr-2"></i>插入建議
               </button>
             </div>
@@ -805,15 +1060,15 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
             <label class="block">
               <span class="text-xs font-semibold text-slate-500">當天目的地</span>
-              <input data-bind="day.destination" data-day-id="${day.id}" value="${escapeAttr(day.destination || "")}" class="mt-2 w-full rounded-2xl border border-white bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300" />
+              <input data-bind="day.destination" data-day-id="${day.id}" value="${escapeAttr(day.destination || "")}" class="mt-2 w-full rounded-2xl border border-white bg-white/84 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300 shadow-sm" />
             </label>
             <label class="block">
               <span class="text-xs font-semibold text-slate-500">當天標題</span>
-              <input data-bind="day.title" data-day-id="${day.id}" value="${escapeAttr(day.title || "")}" class="mt-2 w-full rounded-2xl border border-white bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300" />
+              <input data-bind="day.title" data-day-id="${day.id}" value="${escapeAttr(day.title || "")}" class="mt-2 w-full rounded-2xl border border-white bg-white/84 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300 shadow-sm" />
             </label>
             <label class="block md:col-span-2">
               <span class="text-xs font-semibold text-slate-500">當天摘要</span>
-              <textarea data-bind="day.summary" data-day-id="${day.id}" rows="2" class="mt-2 w-full rounded-2xl border border-white bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300">${escapeHtml(day.summary || "")}</textarea>
+              <textarea data-bind="day.summary" data-day-id="${day.id}" rows="2" class="mt-2 w-full rounded-2xl border border-white bg-white/84 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300 shadow-sm">${escapeHtml(day.summary || "")}</textarea>
             </label>
           </div>
 
