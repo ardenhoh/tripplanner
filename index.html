@@ -3,50 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>我的旅行繪本 27.0 旗艦版</title>
+    <title>我的旅行繪本 27.0</title>
     <link rel="icon" href="https://www.shutterstock.com/image-vector/airplane-vector-isolated-emoticon-emoji-600nw-2627946825.jpg">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
-    
     <style>
-        /* ================= 核心美學與變數 ================= */
         :root { --kr-cream: #F5F3EC; --kr-text: #4A4641; --kr-accent: #9A9283; --kr-glass: rgba(255,255,255,0.4); --kr-shadow: 0 10px 40px -10px rgba(0,0,0,0.1); }
         body.theme-cream { --kr-cream: #F5F3EC; --kr-text: #4A4641; --kr-accent: #9A9283; }
-        
-        /* 嚴格保留：全域 Arial 字體 */
         body, input, textarea, select, button, .hand-drawn { font-family: Arial, sans-serif !important; }
         body { background: var(--kr-cream); color: var(--kr-text); transition: 0.3s; margin: 0; min-height: 100vh; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
-
         .liquid-glass { background: var(--kr-glass); backdrop-filter: saturate(150%) blur(40px); -webkit-backdrop-filter: saturate(150%) blur(40px); border: 1px solid rgba(255,255,255,0.6); box-shadow: var(--kr-shadow); border-radius: 24px; position: relative; }
-        .view-screen, .tab-section { display: none; }
-        .view-screen.active, .tab-section.active { display: block; animation: fadeIn 0.4s ease; }
+        .view-screen, .tab-section { display: none; } .view-screen.active, .tab-section.active { display: block; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* 底部導航 */
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: rgba(245,243,236,0.9); backdrop-filter: blur(20px); display: flex; justify-content: space-around; padding: 12px 0 25px 0; border-top: 1px solid rgba(255,255,255,0.5); z-index: 1000; }
-        .nav-item { color: #C2BCB3; transition: 0.3s; display: flex; flex-direction: column; align-items: center; }
-        .nav-item.active { color: var(--kr-text); transform: translateY(-4px); }
-
-        /* 天氣區塊 12AM-11PM */
+        .nav-item { color: #C2BCB3; transition: 0.3s; display: flex; flex-direction: column; align-items: center; } .nav-item.active { color: var(--kr-text); transform: translateY(-4px); }
+        
+        /* 12AM-11PM 天氣與進度條 */
         .hourly-item { flex: 0 0 52px; height: 65px; border-radius: 12px; background: rgba(255,255,255,0.4); display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 0.7rem; margin-right: 8px; border: 1px solid rgba(255,255,255,0.3); }
         .hourly-item.active-hour { background: var(--kr-accent); color: white; transform: scale(1.05); border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-
-        /* 城市進度條 (合併邏輯) */
         #city-progress-wrapper { height: 32px; background: rgba(255,255,255,0.3); border: 1px solid rgba(255,255,255,0.6); border-radius: 8px; margin: 10px 0; overflow: hidden; display: flex; }
         .city-seg { display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: var(--kr-text); border-right: 2px solid white; position: relative; }
-        .city-seg:last-child { border-right: none; }
-        .city-seg::after { content:''; position:absolute; inset:0; background:var(--kr-accent); opacity:0.1; pointer-events: none; }
+        .city-seg:last-child { border-right: none; } .city-seg::after { content:''; position:absolute; inset:0; background:var(--kr-accent); opacity:0.1; pointer-events: none; }
 
-        /* ================= 27.0 物理居中與 Apple 質感重構 ================= */
-        
         /* OmniFab 蘋果級交互 */
         .omni-fab-container { position: fixed; bottom: 85px; right: 20px; z-index: 1050; display: flex; flex-direction: column; align-items: flex-end; gap: 15px; pointer-events: none; }
         .omni-main-btn { width: 56px; height: 56px; border-radius: 50%; background: var(--kr-text); color: white; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 25px rgba(0,0,0,0.3); transition: 0.3s; pointer-events: auto; }
         .omni-main-btn.active { transform: rotate(45deg); background: var(--kr-accent); }
-        .omni-menu { display: flex; flex-direction: column-reverse; gap: 12px; align-items: flex-end; opacity: 0; pointer-events: none; transition: 0.3s; }
-        .omni-menu.active { opacity: 1; pointer-events: auto; transform: translateY(0); }
-        /* 標籤：極細邊框、高斯模糊、Arial */
+        .omni-menu { display: flex; flex-direction: column-reverse; gap: 12px; align-items: flex-end; opacity: 0; pointer-events: none; transition: 0.3s; } .omni-menu.active { opacity: 1; pointer-events: auto; transform: translateY(0); }
         .omni-label { background: rgba(255,255,255,0.5); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 0.5px solid rgba(255,255,255,0.6); color: var(--kr-text); padding: 6px 14px; border-radius: 12px; font-size: 13px; font-weight: bold; transition: opacity 0.8s ease; opacity: 1; }
         .omni-label.faded { opacity: 0; pointer-events: none; }
         .omni-icon-circle { width: 48px; height: 48px; border-radius: 50%; background: white; color: var(--kr-accent); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; pointer-events: auto; }
@@ -60,23 +44,23 @@
         .bauhaus-circle:active { transform: scale(0.9); }
         .bauhaus-label { font-size: 14px; font-weight: bold; color: var(--kr-text); letter-spacing: 1px; }
 
-        /* 表單容器 */
         .form-box { background: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.8); border-radius: 28px; padding: 30px; width: 90%; max-width: 350px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); cursor: default; max-height: 90vh; overflow-y: auto; }
         input, select, textarea { width: 100%; padding: 12px; border-radius: 14px; border: none; background: rgba(255,255,255,0.8); font-size: 15px; color: var(--kr-text); margin-bottom: 12px; outline: none; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); font-weight: bold; }
-        .btn-primary { background: var(--kr-accent); color: white; padding: 14px; border-radius: 16px; font-weight: bold; width: 100%; border: none; box-shadow: 0 5px 15px rgba(0,0,0,0.1); transition: 0.2s; }
-        .btn-primary:active { transform: scale(0.95); }
-        
+        .btn-primary { background: var(--kr-accent); color: white; padding: 14px; border-radius: 16px; font-weight: bold; width: 100%; border: none; box-shadow: 0 5px 15px rgba(0,0,0,0.1); transition: 0.2s; } .btn-primary:active { transform: scale(0.95); }
         .smart-suggestion { position: absolute; top: 100%; left: 0; right: 0; background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); z-index: 7000; overflow: hidden; margin-top: -10px; border: 1px solid #eee; }
         .suggestion-item { padding: 12px 15px; border-bottom: 1px solid #f5f5f5; font-size: 14px; font-weight: bold; cursor: pointer; }
 
-        /* 雙指縮放與預覽 */
+        /* 雙指縮放與 iOS Picker */
         #fullscreen-preview { display: none; position: fixed; inset: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.95); z-index: 8000; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(15px); }
         #preview-img { max-width: 100%; max-height: 100%; object-fit: contain; }
         .close-fullscreen { position: fixed; top: 25px; right: 25px; background: rgba(255,255,255,0.3); color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; z-index: 8100; cursor: pointer; }
+        #ios-picker-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 8000; align-items: flex-end; }
+        .picker-container { width: 100%; background: var(--kr-cream); border-radius: 24px 24px 0 0; padding: 20px 20px 40px 20px; box-shadow: 0 -10px 40px rgba(0,0,0,0.1); }
+        .picker-wheels { display: flex; justify-content: space-between; height: 150px; position: relative; mask-image: linear-gradient(to bottom, transparent, black 30%, black 70%, transparent); -webkit-mask-image: linear-gradient(to bottom, transparent, black 30%, black 70%, transparent); }
+        .wheel-col { flex: 1; height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; text-align: center; padding: 55px 0; } .wheel-item { height: 40px; line-height: 40px; scroll-snap-align: center; font-size: 1.1rem; font-weight: bold; }
     </style>
 </head>
 <body class="theme-cream">
-
     <!-- 視圖 1: 首頁 -->
     <div id="home-view" class="view-screen active px-5 pt-10">
         <h1 class="text-3xl font-bold mb-6 tracking-tight">My Travel Books ✈️</h1>
@@ -97,51 +81,34 @@
         </header>
 
         <main class="max-w-md mx-auto px-4">
-            
-            <!-- Tab 1: 每日行程 -->
             <div id="daily" class="tab-section active">
                 <div class="overflow-x-auto scrollbar-hide mb-2"><div class="flex gap-2" id="day-selector"></div></div>
-                <!-- 城市進度條 -->
                 <div id="city-progress-wrapper"><div id="city-progress-bar" class="w-full h-full flex"></div></div>
-                <!-- 實時天氣排版 -->
-                <div id="weather-banner" class="liquid-glass p-5 mb-4 overflow-hidden"></div>
+                <div id="weather-banner" class="liquid-glass p-5 mb-4 overflow-hidden min-h-[120px]"></div>
                 <div id="daily-content" class="space-y-4 pb-10"></div>
             </div>
 
-            <!-- Tab 2: 交通與住宿 -->
             <div id="trans-stay" class="tab-section">
                 <h2 class="text-xl font-bold mb-6 text-center">交通與住宿 🏨✈️</h2>
                 <div id="stay-content" class="space-y-4 mb-8"></div>
                 <div id="flight-content" class="space-y-4 pb-10"></div>
             </div>
 
-            <!-- Tab 3: 花費 -->
             <div id="expenses" class="tab-section">
                 <h2 class="text-xl font-bold mb-6 text-center">花費記帳 💰</h2>
                 <div class="liquid-glass p-5 mb-4"><div class="text-xs text-gray-400 mb-2">總預算設定</div><input type="number" id="tripBudget" class="text-center font-bold text-2xl bg-transparent" onchange="updateBudget(this.value)"></div>
                 <div id="expense-summary" class="mb-4"></div>
-                <div class="liquid-glass p-5 mb-6">
-                    <h3 class="text-sm font-bold mb-3">實時匯率計算</h3>
-                    <div class="flex gap-2 mb-2"><select id="curFrom"></select><input type="number" id="curAmount" value="100" class="w-2/3" oninput="convertCur()"></div>
-                    <div class="flex gap-2"><select id="curTo"></select><input type="text" id="curResult" class="w-2/3 bg-white" readonly></div>
-                </div>
-                <div class="liquid-glass p-5 mb-6">
-                    <h3 class="text-sm font-bold mb-3">新增花費</h3>
-                    <input type="text" id="expName" placeholder="花費項目名稱">
-                    <div class="flex gap-2"><select id="expType" class="w-1/3"><option>🍽️ 餐飲</option><option>🚕 交通</option><option>🎫 門票</option><option>🏨 住宿</option><option>🛍️ 購物</option></select><select id="expCur" class="w-1/3"></select><input type="number" id="expAmt" placeholder="金額" class="w-1/3 text-right"></div>
-                    <button class="btn-primary mt-2" onclick="addExpense()">新增紀錄</button>
-                </div>
+                <div class="liquid-glass p-5 mb-6"><h3 class="text-sm font-bold mb-3">實時匯率計算</h3><div class="flex gap-2 mb-2"><select id="curFrom"></select><input type="number" id="curAmount" value="100" class="w-2/3" oninput="convertCur()"></div><div class="flex gap-2"><select id="curTo"></select><input type="text" id="curResult" class="w-2/3 bg-white" readonly></div></div>
+                <div class="liquid-glass p-5 mb-6"><h3 class="text-sm font-bold mb-3">新增花費</h3><input type="text" id="expName" placeholder="花費項目名稱"><div class="flex gap-2"><select id="expType" class="w-1/3"><option>🍽️ 餐飲</option><option>🚕 交通</option><option>🎫 門票</option><option>🏨 住宿</option><option>🛍️ 購物</option></select><select id="expCur" class="w-1/3"></select><input type="number" id="expAmt" placeholder="金額" class="w-1/3 text-right"></div><button class="btn-primary mt-2" onclick="addExpense()">新增紀錄</button></div>
                 <div id="expense-list" class="space-y-3 pb-10"></div>
             </div>
 
-            <!-- Tab 4: 行李 -->
             <div id="packing" class="tab-section">
                 <h2 class="text-xl font-bold mb-6 text-center">行李清單 🎒</h2>
                 <div class="liquid-glass p-5 mb-6"><div class="flex gap-2"><select id="packCat" class="w-1/3"><option>📄 證件</option><option>👕 衣物</option><option>🔌 電子</option><option>🧴 保養</option></select><input type="text" id="packName" class="w-2/3" placeholder="物品名稱..."><button class="btn-primary w-auto px-4" onclick="addPack()"><i class="fa-solid fa-plus"></i></button></div></div>
                 <div id="pack-list" class="space-y-3 pb-10"></div>
             </div>
 
-            <!-- Tab 5: OCR 與翻譯 -->
             <div id="translate" class="tab-section">
                 <h2 class="text-xl font-bold mb-6 text-center">即時翻譯與 OCR 🗣️</h2>
                 <div class="liquid-glass p-5 space-y-4">
@@ -153,7 +120,6 @@
             </div>
         </main>
 
-        <!-- 底部導航 -->
         <nav class="bottom-nav">
             <button class="nav-item active" onclick="switchTab('daily', this)"><i class="fa-solid fa-map-location-dot text-xl"></i><span class="text-[10px] mt-1">行程</span></button>
             <button class="nav-item" onclick="switchTab('trans-stay', this)"><i class="fa-solid fa-plane text-xl"></i><span class="text-[10px] mt-1">住宿</span></button>
@@ -162,19 +128,13 @@
             <button class="nav-item" onclick="switchTab('translate', this)"><i class="fa-solid fa-language text-xl"></i><span class="text-[10px] mt-1">翻譯</span></button>
         </nav>
 
-        <!-- OmniFab (Apple 標籤) -->
         <div class="omni-fab-container">
-            <div class="omni-menu" id="omni-menu">
-                <div class="omni-item" onclick="openBauhausModal()">
-                    <span class="omni-label">添加項目</span>
-                    <div class="omni-icon-circle"><i class="fa-solid fa-plus"></i></div>
-                </div>
-            </div>
+            <div class="omni-menu" id="omni-menu"><div class="omni-item" onclick="openBauhausModal()"><span class="omni-label">添加項目</span><div class="omni-icon-circle"><i class="fa-solid fa-plus"></i></div></div></div>
             <button class="omni-main-btn" id="omni-btn" onclick="toggleOmni()"><i class="fa-solid fa-plus"></i></button>
         </div>
     </div>
 
-    <!-- Bauhaus 極簡選項 (點擊空白關閉) -->
+    <!-- Bauhaus 極簡選項 Modal (物理居中) -->
     <div id="bauhaus-modal" class="bauhaus-modal" onclick="closeModal('bauhaus-modal')">
         <div class="project-grid" onclick="event.stopPropagation()">
             <div class="circle-btn-group" onclick="openForm('city')"><div class="bauhaus-circle"><i class="fa-solid fa-city"></i></div><span class="bauhaus-label">城市</span></div>
@@ -184,175 +144,125 @@
         </div>
     </div>
 
-    <!-- 萬能輸入表單 -->
+    <!-- 萬能表單 Modal -->
     <div id="form-modal" class="bauhaus-modal" style="background: rgba(0,0,0,0.5);" onclick="closeModal('form-modal')">
         <div class="form-box relative" id="form-content" onclick="event.stopPropagation()"></div>
     </div>
 
-    <!-- 圖片預覽 -->
+    <!-- 預覽與 iOS Picker -->
     <div id="fullscreen-preview" onclick="closePreview()"><div class="close-fullscreen" onclick="event.stopPropagation(); closePreview()"><i class="fa-solid fa-xmark"></i></div><img id="preview-img" src=""></div>
+    <div id="ios-picker-modal"><div class="picker-container"><div class="flex justify-between items-center mb-4"><button onclick="closePicker()" class="text-gray-400 font-bold">取消</button><h3 class="font-bold">選擇日期</h3><button onclick="confirmPicker()" class="text-[var(--kr-accent)] font-bold">確認</button></div><div class="picker-wheels"><div class="wheel-col" id="wheel-year"></div><div class="wheel-col" id="wheel-month"></div><div class="wheel-col" id="wheel-day"></div></div></div></div>
 
-    <!-- =======================================================
-         核心 JavaScript (IndexedDB, Weather, Haversine, 14 Days JSON) 
-    ======================================================== -->
     <script>
-        // --- 1. IndexedDB 核心儲存引擎 ---
-        const dbName = "TravelBookDB_v27"; let db;
-        const initDB = new Promise((resolve) => {
-            const req = indexedDB.open(dbName, 1);
-            req.onupgradeneeded = (e) => { db = e.target.result; if (!db.objectStoreNames.contains('trips')) db.createObjectStore('trips', { keyPath: 'id' }); if (!db.objectStoreNames.contains('files')) db.createObjectStore('files', { keyPath: 'id' }); };
-            req.onsuccess = (e) => { db = e.target.result; resolve(); };
-        });
-        async function saveDB(store, id, data) { await initDB; return new Promise(r => { const tx = db.transaction(store, 'readwrite'); tx.objectStore(store).put({ id, data }); tx.oncomplete = r; }); }
-        async function getDB(store, id) { await initDB; return new Promise(r => { const tx = db.transaction(store, 'readonly'); const req = tx.objectStore(store).get(id); req.onsuccess = () => r(req.result ? req.result.data : null); }); }
-        async function getAllDB(store) { await initDB; return new Promise(r => { const tx = db.transaction(store, 'readonly'); const req = tx.objectStore(store).getAll(); req.onsuccess = () => r(req.result.map(x=>x.data)); }); }
+        const el = id => document.getElementById(id);
+        const dbName = "TravelBookDB_v27"; let db, allTrips=[], currentTrip=null, currentDayIdx=0, exchangeRates={};
+        const initDB = new Promise(r => { const req = indexedDB.open(dbName, 1); req.onupgradeneeded = e => { db = e.target.result; if(!db.objectStoreNames.contains('trips')) db.createObjectStore('trips', {keyPath: 'id'}); if(!db.objectStoreNames.contains('files')) db.createObjectStore('files', {keyPath: 'id'}); }; req.onsuccess = e => { db = e.target.result; r(); }; });
+        async function saveDB(s, id, d) { await initDB; return new Promise(r => { const tx = db.transaction(s, 'readwrite'); tx.objectStore(s).put({id, data:d}); tx.oncomplete = r; }); }
+        async function getDB(s, id) { await initDB; return new Promise(r => { const tx = db.transaction(s, 'readonly'); const req = tx.objectStore(s).get(id); req.onsuccess = () => r(req.result ? req.result.data : null); }); }
+        async function getAllDB(s) { await initDB; return new Promise(r => { const tx = db.transaction(s, 'readonly'); const req = tx.objectStore(s).getAll(); req.onsuccess = () => r(req.result.map(x=>x.data)); }); }
 
-        let allTrips = []; let currentTrip = null; let currentDayIdx = 0; let exchangeRates = {};
-
-        // --- 2. 數據分析師 14 天深度 JSON (嚴格 > 50字) ---
-        const DEEP_ANALYSIS = {
-            intro: "身為數據分析師，我觀察到這處空間的幾何結構與包浩斯『形式追隨功能』的教條高度契合。不鏽鋼骨架與大面積玻璃帷幕的折射率經過精確計算，在不同時段呈現出的光影矩陣具有極高的數據美學價值，停留兩小時是獲取感官邊際效益最大化的最優解。",
-            pos: "空間動線規劃完美符合流體力學數據，採光層次分明且不冰冷，展現了極致的結構美學。每一個轉角皆是黃金比例的構圖，對於追求秩序感的靈魂而言，這裡提供了無與倫比的情緒溢價與感官數據反饋。",
-            neg: "週末人流量會產生顯著的噪聲數據噪音，嚴重干擾對幾何空間的沉浸式解構。周邊餐飲定價存在明顯的觀光客溢價，其性價比曲線極度陡峭，建議將預算集中於更能產生價值的情緒體驗，避開非理性的溢價消費。"
+        // 14 天深度 JSON (約束 > 50字)
+        const DA = {
+            i: "身為數據分析師，我觀察到這處空間的幾何結構與包浩斯『形式追隨功能』的教條高度契合。不鏽鋼骨架與大面積玻璃帷幕的折射率經過精確計算，在不同時段呈現出的光影矩陣具有極高的數據美學價值，停留兩小時是獲取感官邊際效益最大化的最優解。",
+            p: "空間動線規劃完美符合流體力學數據，採光層次分明且不冰冷，展現了極致的結構美學。每一個轉角皆是黃金比例的構圖，對於追求秩序感的靈魂而言，這裡提供了無與倫比的情緒溢價與感官數據反饋。",
+            n: "週末人流量會產生顯著的噪聲數據噪音，嚴重干擾對幾何空間的沉浸式解構。周邊餐飲定價存在明顯的觀光客溢價，其性價比曲線極度陡峭，建議將預算集中於更能產生價值的情緒體驗，避開非理性的溢價消費。"
         };
-        function generate14DaysJSON() {
-            const r = ["吉隆坡","吉隆坡","吉隆坡","釜山","釜山","釜山","釜山","釜山","首爾","首爾","首爾","首爾","首爾","首爾"];
-            return Array.from({length: 14}, (_, i) => {
-                let d = new Date(2026, 9, 29); d.setDate(d.getDate() + i); let dStr = `${d.getFullYear()}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getDate().toString().padStart(2,'0')}`;
-                return { date: dStr, region: r[i], items: [{ id: Date.now()+i, time: "10:00", task: `${r[i]} 幾何街區探索`, loc: `${r[i]} 藝術中心`, intro: DEEP_ANALYSIS.intro, review: {pos: DEEP_ANALYSIS.pos, neg: DEEP_ANALYSIS.neg}, img: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=600", isAuto: false, lat: 35.1, lng: 129.0 }] };
-            });
-        }
+        function gen14() { const r=["吉隆坡","吉隆坡","吉隆坡","釜山","釜山","釜山","釜山","釜山","首爾","首爾","首爾","首爾","首爾","首爾"]; return Array.from({length:14}, (_,i)=>{ let d=new Date(2026,9,29); d.setDate(d.getDate()+i); return {date:`${d.getFullYear()}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getDate().toString().padStart(2,'0')}`, region:r[i], items:[{id:Date.now()+i,time:"10:00",task:`${r[i]} 幾何街區探索`,loc:`${r[i]}藝術中心`,intro:DA.i,review:{pos:DA.p,neg:DA.n},img:"https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=600",isAuto:false,lat:35.1,lng:129.0}]}; }); }
 
-        // --- 3. 初始化與首頁 ---
-        window.onload = async () => {
-            await initDB; allTrips = await getAllDB('trips');
-            if(allTrips.length === 0) { let t = { id: Date.now().toString(), title: "2026 苦盡柑來 🍊", budget: 50000, daily: generate14DaysJSON(), stays: [], flights: [], expenses: [], packs: [{c:"📄 證件", n:"護照正本"}] }; await saveDB('trips', t.id, t); allTrips = [t]; }
-            fetchRates(); initLangs(); renderHome();
-        };
+        window.onload = async () => { await initDB; allTrips = await getAllDB('trips'); if(!allTrips.length){ let t={id:Date.now().toString(),title:"2026 苦盡柑來 🍊",budget:50000,daily:gen14(),stays:[],flights:[],expenses:[],packs:[{c:"📄 證件",n:"護照正本"}]}; await saveDB('trips',t.id,t); allTrips=[t]; } fetchRates(); initLangs(); initPickers(); renderHome(); };
+        
+        function renderHome() { el('home-view').classList.add('active'); el('trip-view').classList.remove('active'); el('trip-list').innerHTML = allTrips.map(t=>`<div class="liquid-glass p-5 border-l-8 border-[var(--kr-accent)] cursor-pointer" onclick="openTrip('${t.id}')"><div class="flex justify-between"><h2 class="text-2xl font-bold">${t.title}</h2><button class="text-gray-400" onclick="event.stopPropagation();delTrip('${t.id}')"><i class="fa-solid fa-trash"></i></button></div><p class="text-xs text-gray-500 mt-2">${t.daily.length} 天行程 | ${t.daily[0].date}</p></div>`).join(''); }
+        async function initNewTrip() { let t=el('new-trip-title').value||'未命名'; let n={id:Date.now().toString(),title:t,budget:50000,daily:gen14(),stays:[],flights:[],expenses:[],packs:[]}; await saveDB('trips',n.id,n); allTrips.push(n); renderHome(); }
+        async function delTrip(id) { if(confirm("刪除？")){ allTrips=allTrips.filter(t=>t.id!==id); await saveDB('trips',id,null); renderHome(); } }
+        function goHome() { el('trip-view').classList.remove('active'); el('home-view').classList.add('active'); }
+        async function openTrip(id) { currentTrip=allTrips.find(t=>t.id===id); el('home-view').classList.remove('active'); el('trip-view').classList.add('active'); el('trip-title-input').value=currentTrip.title; currentDayIdx=0; await smartSync(); renderAll(); }
+        async function updateTripTitle() { currentTrip.title=el('trip-title-input').value; await saveDB('trips',currentTrip.id,currentTrip); }
+        function renderAll() { renderDayNav(); renderCityProg(); renderDaily(); renderTransStay(); renderExp(); renderPack(); }
 
-        function renderHome() {
-            document.getElementById('home-view').classList.add('active'); document.getElementById('trip-view').classList.remove('active');
-            document.getElementById('trip-list').innerHTML = allTrips.map(t => `<div class="book-card cursor-pointer" onclick="openTrip('${t.id}')"><div class="flex justify-between items-start"><h2 class="text-2xl font-bold">${t.title}</h2><button class="text-gray-300" onclick="event.stopPropagation(); deleteTrip('${t.id}')"><i class="fa-solid fa-trash"></i></button></div><p class="text-xs text-gray-400 mt-2">${t.daily.length} 天行程 | 出發: ${t.daily[0].date}</p></div>`).join('');
-        }
-        async function initNewTrip() { const t = document.getElementById('new-trip-title').value || '未命名'; let n = { id: Date.now().toString(), title: t, budget: 50000, daily: generate14DaysJSON(), stays: [], flights: [], expenses: [], packs: [] }; await saveDB('trips', n.id, n); allTrips.push(n); renderHome(); }
-        async function deleteTrip(id) { if(confirm("刪除？")) { allTrips = allTrips.filter(t=>t.id!==id); await saveDB('trips', id, null); renderHome(); } }
-        function goHome() { document.getElementById('trip-view').classList.remove('active'); document.getElementById('home-view').classList.add('active'); }
-        async function openTrip(id) { currentTrip = allTrips.find(t => t.id === id); document.getElementById('home-view').classList.remove('active'); document.getElementById('trip-view').classList.add('active'); document.getElementById('trip-title-input').value = currentTrip.title; currentDayIdx = 0; await smartSync(); renderAll(); }
-        async function updateTripTitle() { currentTrip.title = document.getElementById('trip-title-input').value; await saveDB('trips', currentTrip.id, currentTrip); }
-        function renderAll() { renderDayNav(); renderCityProgress(); renderDaily(); renderTransStay(); renderExp(); renderPack(); }
+        function toggleOmni() { let m=el('omni-menu'), b=el('omni-btn'), l=m.querySelector('.omni-label'); m.classList.toggle('active'); b.classList.toggle('active'); if(m.classList.contains('active')){ l.classList.remove('faded'); setTimeout(()=>l.classList.add('faded'),3000); } }
+        function openBauhausModal() { toggleOmni(); el('bauhaus-modal').classList.add('active'); }
+        function closeModal(id) { el(id).classList.remove('active'); }
 
-        // --- 4. OmniFab & Bauhaus UI ---
-        function toggleOmni() { const m = document.getElementById('omni-menu'); const b = document.getElementById('omni-btn'); const l = m.querySelector('.omni-label'); m.classList.toggle('active'); b.classList.toggle('active'); if(m.classList.contains('active')) { l.classList.remove('faded'); setTimeout(() => l.classList.add('faded'), 3000); } }
-        function openBauhausModal() { toggleOmni(); document.getElementById('bauhaus-modal').classList.add('active'); }
-        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-
-        const CITY_DB = ["吉隆坡", "吉林", "釜山", "首爾", "台北", "東京", "北京"];
+        const C_DB = ["吉隆坡", "吉林", "釜山", "首爾", "台北", "東京", "北京"];
         function openForm(t) {
-            closeModal('bauhaus-modal'); const c = document.getElementById('form-content'); document.getElementById('form-modal').classList.add('active'); let td = currentTrip.daily[currentDayIdx].date;
-            if(t === 'city') c.innerHTML = `<h3 class="font-bold text-center mb-6">📍 設置城市</h3><div class="relative"><input id="f-city" placeholder="輸入城市 (如: 吉)" oninput="recCity(this.value)"><div id="city-sug" class="smart-suggestion hidden"></div></div><div class="flex gap-2"><input id="f-c-in" placeholder="前往 YYYY/MM/DD" value="${td}"><input id="f-c-out" placeholder="離開 YYYY/MM/DD" value="${td}"></div><button class="btn-primary mt-4" onclick="saveCity()">確認新增</button>`;
-            else if(t === 'stay') c.innerHTML = `<h3 class="font-bold text-center mb-6">🏨 住宿項目</h3><input id="f-s-name" placeholder="飯店名稱"><div class="flex gap-2"><input id="f-s-in" placeholder="入住 YYYY/MM/DD" value="${td}"><input id="f-s-out" placeholder="退房 YYYY/MM/DD" value="${td}"></div><button class="btn-primary mt-4" onclick="saveStay()">自動同步動線</button>`;
-            else if(t === 'trans') c.innerHTML = `<h3 class="font-bold text-center mb-6">🚀 交通項目</h3><select id="f-t-type"><option>✈️ 飞机</option><option>🚆 火车</option><option>🚇 地铁</option><option>🚌 巴士</option><option>🚗 自驾</option></select><input id="f-t-num" placeholder="班次編號"><div class="flex gap-2"><input id="f-t-dep" placeholder="出發地"><input id="f-t-arr" placeholder="目的地"></div><div class="flex gap-2"><input id="f-t-date" placeholder="日期 YYYY/MM/DD" value="${td}"><input id="f-t-time" type="time" value="10:00"></div><button class="btn-primary mt-4" onclick="saveTrans()">確認同步</button>`;
-            else if(t === 'play') c.innerHTML = `<h3 class="font-bold text-center mb-6">🔍 搜尋遊玩</h3><input id="f-p-name" placeholder="景點名稱 (例: Lee Jae Mo)"><button class="btn-primary mt-4" onclick="savePlay()">添加卡片</button>`;
+            closeModal('bauhaus-modal'); el('form-modal').classList.add('active'); let c=el('form-content'), td=currentTrip.daily[currentDayIdx].date;
+            if(t==='city') c.innerHTML=`<h3 class="font-bold text-center mb-6">📍 設置城市</h3><div class="relative"><input id="f-city" placeholder="輸入城市 (如:吉)" oninput="recC(this.value)"><div id="city-sug" class="smart-suggestion hidden"></div></div><div class="flex gap-2"><input id="f-c-in" placeholder="前往 YYYY/MM/DD" value="${td}" onclick="openPicker('f-c-in')"><input id="f-c-out" placeholder="離開 YYYY/MM/DD" value="${td}" onclick="openPicker('f-c-out')"></div><button class="btn-primary mt-4" onclick="saveCity()">確認新增</button>`;
+            else if(t==='stay') c.innerHTML=`<h3 class="font-bold text-center mb-6">🏨 住宿項目</h3><input id="f-s-name" placeholder="飯店名稱"><div class="flex gap-2"><input id="f-s-in" placeholder="入住 YYYY/MM/DD" value="${td}" onclick="openPicker('f-s-in')"><input id="f-s-out" placeholder="退房 YYYY/MM/DD" value="${td}" onclick="openPicker('f-s-out')"></div><button class="btn-primary mt-4" onclick="saveStay()">自動同步動線</button>`;
+            else if(t==='trans') c.innerHTML=`<h3 class="font-bold text-center mb-6">🚀 交通項目</h3><select id="f-t-type"><option>✈️ 飞机</option><option>🚆 火车</option><option>🚇 地铁</option><option>🚌 巴士</option><option>🚗 自驾</option></select><input id="f-t-num" placeholder="班次編號"><div class="flex gap-2"><input id="f-t-dep" placeholder="出發地"><input id="f-t-arr" placeholder="目的地"></div><div class="flex gap-2"><input id="f-t-date" placeholder="日期 YYYY/MM/DD" value="${td}" onclick="openPicker('f-t-date')"><input id="f-t-time" type="time" value="10:00"></div><button class="btn-primary mt-4" onclick="saveTrans()">確認同步</button>`;
+            else if(t==='play') c.innerHTML=`<h3 class="font-bold text-center mb-6">🔍 搜尋遊玩</h3><input id="f-p-name" placeholder="景點名稱"><button class="btn-primary mt-4" onclick="savePlay()">添加卡片</button>`;
         }
-        function recCity(v) { const b = document.getElementById('city-sug'); if(!v) return b.classList.add('hidden'); const m = CITY_DB.filter(x => x.includes(v)); if(m.length) { b.innerHTML = m.map(x => `<div class="suggestion-item" onclick="selCity('${x}')">${x}</div>`).join(''); b.classList.remove('hidden'); } else b.classList.add('hidden'); }
-        function selCity(x) { document.getElementById('f-city').value = x; document.getElementById('city-sug').classList.add('hidden'); }
+        function recC(v) { let b=el('city-sug'); if(!v) return b.classList.add('hidden'); let m=C_DB.filter(x=>x.includes(v)); if(m.length){ b.innerHTML=m.map(x=>`<div class="suggestion-item" onclick="selC('${x}')">${x}</div>`).join(''); b.classList.remove('hidden'); } else b.classList.add('hidden'); }
+        function selC(x) { el('f-city').value=x; el('city-sug').classList.add('hidden'); }
 
-        // --- 5. 跨分頁智慧同步與連動 (Data Sync) ---
-        function getDates(s, e) { let a=[]; let c=new Date(s); let l=new Date(e); while(c<=l){ a.push(`${c.getFullYear()}/${(c.getMonth()+1).toString().padStart(2,'0')}/${c.getDate().toString().padStart(2,'0')}`); c.setDate(c.getDate()+1); } return a; }
-
+        function getDates(s, e) { let a=[], c=new Date(s), l=new Date(e); while(c<=l){ a.push(`${c.getFullYear()}/${(c.getMonth()+1).toString().padStart(2,'0')}/${c.getDate().toString().padStart(2,'0')}`); c.setDate(c.getDate()+1); } return a; }
+        
         async function smartSync() {
-            currentTrip.daily.forEach(d => d.items = d.items.filter(i => !i.isAuto)); // 清理舊 Auto
-            currentTrip.stays.forEach(s => {
-                getDates(s.in, s.out).forEach((dStr, idx) => {
-                    let d = currentTrip.daily.find(x => x.date === dStr);
-                    if(d) {
-                        if(idx === 0) d.items.push({ id:`s_${s.id}`, time:"15:00", task:`入住 ${s.name}`, loc:s.name, isAuto:true, intro:DEEP_ANALYSIS.intro, review:{pos:DEEP_ANALYSIS.pos, neg:DEEP_ANALYSIS.neg}, img:"https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600" });
-                        else d.items.unshift({ id:`s_${s.id}_${idx}`, time:"09:00", task:`從 ${s.name} 出發`, loc:s.name, isAuto:true, intro:DEEP_ANALYSIS.intro, review:{pos:DEEP_ANALYSIS.pos, neg:DEEP_ANALYSIS.neg}, img:"https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600" }); // 插入首站
-                    }
-                });
-            });
-            currentTrip.flights.forEach(f => { let d = currentTrip.daily.find(x => x.date === f.date); if(d) d.items.push({ id:`f_${f.id}`, time:f.time, task:f.title, loc:f.route, isAuto:true, intro:DEEP_ANALYSIS.intro, review:{pos:DEEP_ANALYSIS.pos, neg:DEEP_ANALYSIS.neg}, img:"https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600" }); });
-            await saveDB('trips', currentTrip.id, currentTrip);
+            let t=currentTrip; t.daily.forEach(d=>d.items=d.items.filter(i=>!i.isAuto));
+            t.stays.forEach(s=>{ getDates(s.in,s.out).forEach((dStr,i)=>{ let d=t.daily.find(x=>x.date===dStr); if(d){ if(i===0) d.items.push({id:`s_${s.id}`,time:"15:00",task:`入住 ${s.name}`,loc:s.name,isAuto:true,intro:DA.i,review:{pos:DA.p,neg:DA.n},img:"https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600"}); else d.items.unshift({id:`s_${s.id}_${i}`,time:"09:00",task:`從 ${s.name} 出發`,loc:s.name,isAuto:true,intro:DA.i,review:{pos:DA.p,neg:DA.n},img:"https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600"}); } }); });
+            t.flights.forEach(f=>{ let d=t.daily.find(x=>x.date===f.date); if(d) d.items.push({id:`f_${f.id}`,time:f.time,task:f.title,loc:f.route,isAuto:true,intro:DA.i,review:{pos:DA.p,neg:DA.n},img:"https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600"}); });
+            await saveDB('trips',t.id,t);
         }
+        async function saveCity() { let c=el('f-city').value; getDates(el('f-c-in').value,el('f-c-out').value).forEach(dStr=>{ let d=currentTrip.daily.find(x=>x.date===dStr); if(d) d.region=c; }); await saveDB('trips',currentTrip.id,currentTrip); closeModal('form-modal'); renderAll(); }
+        async function saveStay() { currentTrip.stays.push({id:Date.now(),name:el('f-s-name').value,in:el('f-s-in').value,out:el('f-s-out').value}); await smartSync(); closeModal('form-modal'); renderTransStay(); renderDaily(); }
+        async function saveTrans() { let ty=el('f-t-type').value, no=el('f-t-num').value, d=el('f-t-date').value, tm=el('f-t-time').value, r=`${el('f-t-dep').value}➔${el('f-t-arr').value}`; if(!ty.includes('地铁')&&!ty.includes('巴士')) currentTrip.flights.push({id:Date.now(),title:`${ty} ${no}`,date:d,time:tm,route:r}); let day=currentTrip.daily.find(x=>x.date===d); if(day) day.items.push({id:Date.now(),time:tm,task:`${ty} ${no}`,loc:r,isAuto:false,intro:DA.i,review:{pos:DA.p,neg:DA.n},img:"https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600"}); await saveDB('trips',currentTrip.id,currentTrip); closeModal('form-modal'); renderTransStay(); renderDaily(); }
+        async function savePlay() { let n=el('f-p-name').value; currentTrip.daily[currentDayIdx].items.push({id:Date.now(),time:"12:00",task:n,loc:n,intro:DA.i,review:{pos:DA.p,neg:DA.n},img:"https://images.unsplash.com/photo-1556012018-50c5c0da73bf?w=600",isAuto:false,lat:0,lng:0}); await saveDB('trips',currentTrip.id,currentTrip); closeModal('form-modal'); renderDaily(); }
 
-        async function saveCity() { const c = document.getElementById('f-city').value; getDates(document.getElementById('f-c-in').value, document.getElementById('f-c-out').value).forEach(dStr => { let d = currentTrip.daily.find(x => x.date === dStr); if(d) d.region = c; }); await saveDB('trips', currentTrip.id, currentTrip); closeModal('form-modal'); renderAll(); }
-        async function saveStay() { currentTrip.stays.push({ id:Date.now(), name:document.getElementById('f-s-name').value, in:document.getElementById('f-s-in').value, out:document.getElementById('f-s-out').value }); await smartSync(); closeModal('form-modal'); renderTransStay(); renderDaily(); }
-        async function saveTrans() { const ty = document.getElementById('f-t-type').value; const no = document.getElementById('f-t-num').value; const d = document.getElementById('f-t-date').value; const tm = document.getElementById('f-t-time').value; const r = `${document.getElementById('f-t-dep').value} ➔ ${document.getElementById('f-t-arr').value}`; if(!ty.includes('地铁') && !ty.includes('巴士')) currentTrip.flights.push({ id:Date.now(), title:`${ty} ${no}`, date:d, time:tm, route:r }); let day = currentTrip.daily.find(x => x.date === d); if(day) day.items.push({ id:Date.now(), time:tm, task:`${ty} ${no}`, loc:r, isAuto:false, intro:DEEP_ANALYSIS.intro, review:{pos:DEEP_ANALYSIS.pos, neg:DEEP_ANALYSIS.neg}, img:"https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600" }); await saveDB('trips', currentTrip.id, currentTrip); closeModal('form-modal'); renderTransStay(); renderDaily(); }
-        async function savePlay() { const n = document.getElementById('f-p-name').value; currentTrip.daily[currentDayIdx].items.push({ id:Date.now(), time:"12:00", task:n, loc:n, intro:DEEP_ANALYSIS.intro, review:{pos:DEEP_ANALYSIS.pos, neg:DEEP_ANALYSIS.neg}, img:"https://images.unsplash.com/photo-1556012018-50c5c0da73bf?w=600", isAuto:false, lat:0, lng:0 }); await saveDB('trips', currentTrip.id, currentTrip); closeModal('form-modal'); renderDaily(); }
-
-        // --- 6. 核心渲染 (12AM-11PM 天氣與進度條合併) ---
-        function getWmo(code) { if([0].includes(code)) return '☀️'; if([1,2,3].includes(code)) return '☁️'; if([51,61,80].includes(code)) return '🌧️'; return '🌥️'; }
-        function getDistKm(lat1, lon1, lat2, lon2) { if(!lat1 || !lon1 || !lat2 || !lon2) return 0; const R = 6371; const dLat = (lat2-lat1)*Math.PI/180; const dLon = (lon2-lon1)*Math.PI/180; const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2); return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); }
-
-        function renderDayNav() { document.getElementById('day-selector').innerHTML = currentTrip.daily.map((d, i) => `<div class="flex-shrink-0 w-[70px] h-16 flex flex-col items-center justify-center rounded-xl border border-white/60 cursor-pointer transition-all ${i===currentDayIdx?'bg-[var(--kr-accent)] text-white font-bold shadow-md':'bg-white/50 text-gray-500'}" onclick="setDay(${i})"><span class="text-xs">Day ${i+1}</span><span class="text-[10px] mt-1">${d.date.substring(5)}</span></div>`).join(''); }
-        function setDay(i) { currentDayIdx = i; renderDayNav(); renderDaily(); }
-
-        function renderCityProgress() {
-            const bar = document.getElementById('city-progress-bar'); bar.innerHTML = ''; let grps = [];
-            currentTrip.daily.forEach(d => { if(grps.length === 0 || grps[grps.length-1].name !== d.region) grps.push({name: d.region, c: 1}); else grps[grps.length-1].c++; });
-            grps.forEach(g => { let seg = document.createElement('div'); seg.className = 'city-seg'; seg.style.flex = g.c; seg.innerText = g.name; bar.appendChild(seg); });
-        }
+        function getWmo(c) { return [0].includes(c)?'☀️':[1,2,3].includes(c)?'☁️':[51,61,80].includes(c)?'🌧️':'🌥️'; }
+        function renderDayNav() { el('day-selector').innerHTML=currentTrip.daily.map((d,i)=>`<div class="flex-shrink-0 w-[70px] h-16 flex flex-col items-center justify-center rounded-xl border border-white/60 cursor-pointer ${i===currentDayIdx?'bg-[var(--kr-accent)] text-white shadow-md':'bg-white/50 text-gray-500'}" onclick="setDay(${i})"><span class="text-xs font-bold">Day ${i+1}</span><span class="text-[10px] mt-1">${d.date.substring(5)}</span></div>`).join(''); }
+        function setDay(i) { currentDayIdx=i; renderDayNav(); renderDaily(); }
+        function renderCityProg() { let grps=[], b=el('city-progress-bar'); currentTrip.daily.forEach(d=>{ if(!grps.length||grps[grps.length-1].n!==d.region) grps.push({n:d.region,c:1}); else grps[grps.length-1].c++; }); b.innerHTML=grps.map(g=>`<div class="city-seg" style="flex:${g.c}">${g.n}</div>`).join(''); }
 
         async function renderDaily() {
-            const d = currentTrip.daily[currentDayIdx]; document.getElementById('weather-banner').innerHTML = `<div class="text-xs text-center text-gray-500">實時氣象擷取中...</div>`;
-            let lat = 35.1, lon = 129.0; if(d.items[0] && d.items[0].lat) { lat = d.items[0].lat; lon = d.items[0].lng; }
+            let d=currentTrip.daily[currentDayIdx], lat=d.items[0]?.lat||35.1, lon=d.items[0]?.lng||129.0;
             try {
-                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,weathercode`); const w = await res.json();
-                let hHtml = Array.from({length:24}, (_,i) => { let h = i%12||12; let a = i>=12?'PM':'AM'; let act = i===new Date().getHours()?'active-hour':''; return `<div class="hourly-item ${act}"><div class="mb-1">${h}${a}</div><div class="text-lg">${getWmo(w.hourly.weathercode[i])}</div><div class="font-bold">${Math.round(w.hourly.temperature_2m[i])}°</div></div>`; }).join('');
-                document.getElementById('weather-banner').innerHTML = `<div class="flex justify-between items-center mb-3"><div><div class="text-[10px] font-bold text-gray-500 mb-1"><i class="fa-solid fa-location-dot text-[var(--kr-accent)]"></i> ${d.region}</div><div class="text-2xl font-bold">${Math.round(w.current_weather.temperature)}°C ${getWmo(w.current_weather.weathercode)}</div></div></div><div class="flex overflow-x-auto pb-1 scrollbar-hide">${hHtml}</div>`;
-            } catch(e) { document.getElementById('weather-banner').innerHTML = `<div class="text-xs text-center text-red-400">天氣 API 無法連線</div>`; }
+                let res=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,weathercode`); let w=await res.json();
+                let hH=Array.from({length:24},(_,i)=>{ let h=i%12||12, a=i>=12?'PM':'AM', act=i===new Date().getHours()?'active-hour':''; return `<div class="hourly-item ${act}"><div class="mb-1">${h}${a}</div><div class="text-lg">${getWmo(w.hourly.weathercode[i])}</div><div class="font-bold">${Math.round(w.hourly.temperature_2m[i])}°</div></div>`; }).join('');
+                el('weather-banner').innerHTML=`<div class="flex justify-between items-center mb-3"><div><div class="text-[10px] font-bold text-gray-500 mb-1"><i class="fa-solid fa-location-dot"></i> ${d.region}</div><div class="text-2xl font-bold">${Math.round(w.current_weather.temperature)}°C ${getWmo(w.current_weather.weathercode)}</div></div></div><div class="flex overflow-x-auto pb-1 scrollbar-hide">${hH}</div>`;
+            } catch(e) { el('weather-banner').innerHTML=`<div class="text-xs text-center text-red-400">氣象 API 斷線</div>`; }
 
-            document.getElementById('daily-content').innerHTML = d.items.map((item, i) => {
-                let rTime = i < d.items.length - 1 ? Math.max(5, Math.round(getDistKm(item.lat, item.lng, d.items[i+1].lat, d.items[i+1].lng) * 3 + 10)) : 0;
-                let c = `<div class="liquid-glass mb-0">
-                    <div class="h-40 relative rounded-t-[24px] overflow-hidden"><img src="${item.img}" class="w-full h-full object-cover"><div class="absolute top-3 left-3 w-7 h-7 bg-black/50 text-white rounded-full flex items-center justify-center text-xs font-bold">${item.isAuto?'🔄':i+1}</div></div>
-                    <div class="p-5">
-                        <div class="flex justify-between items-center mb-2"><input type="time" value="${item.time}" class="w-24 bg-white/60 p-1 text-sm font-bold text-[var(--kr-accent)]" onchange="updTime(${i}, this.value)"><button class="text-red-300" onclick="delItem(${i})"><i class="fa-solid fa-trash"></i></button></div>
-                        <h4 class="text-xl font-bold mb-1 text-gray-800">${item.task}</h4>
-                        <!-- 智慧地址備援：直接將 loc 帶入 google maps query -->
-                        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.loc)}" target="_blank" class="block text-xs text-blue-500 font-bold mb-3"><i class="fa-solid fa-map-pin"></i> ${item.loc}</a>
-                        <div class="text-xs text-gray-600 leading-relaxed bg-white/60 p-3 rounded-xl border border-white shadow-sm">${item.intro}</div>
-                    </div></div>`;
-                if(i < d.items.length - 1) c += `<div class="flex flex-col items-center my-[-8px] relative z-10"><div class="w-0.5 h-6 bg-white"></div><div class="bg-white border border-gray-200 rounded-full px-3 py-1 shadow-sm text-[10px] text-gray-500 font-bold"><i class="fa-solid fa-car text-[var(--kr-accent)] mr-1"></i> ${rTime} 分鐘</div><div class="w-0.5 h-6 bg-white"></div></div>`;
-                return c;
-            }).join('');
+            el('daily-content').innerHTML = d.items.map((itm, i) => `
+                <div class="liquid-glass mb-0"><div class="h-40 relative rounded-t-[24px] overflow-hidden"><img src="${itm.img}" class="w-full h-full object-cover"><label class="absolute top-3 right-3 bg-white/70 w-8 h-8 rounded-full flex items-center justify-center cursor-pointer"><input type="file" accept="image/*" class="hidden" onchange="updImg(this,${i})"><i class="fa-solid fa-camera"></i></label><div class="absolute top-3 left-3 w-7 h-7 bg-black/50 text-white rounded-full flex items-center justify-center text-xs font-bold">${itm.isAuto?'🔄':i+1}</div></div>
+                <div class="p-5"><div class="flex justify-between items-center mb-2"><input type="time" value="${itm.time}" class="w-24 bg-white/60 p-1 text-sm font-bold text-[var(--kr-accent)]" onchange="updT(${i},this.value)"><button class="text-red-400" onclick="delItm(${i})"><i class="fa-solid fa-trash"></i></button></div>
+                <h4 class="text-xl font-bold mb-1">${itm.task}</h4><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(itm.loc)}" target="_blank" class="block text-xs text-blue-500 font-bold mb-3"><i class="fa-solid fa-map-pin"></i> ${itm.loc}</a><div class="text-xs text-gray-600 bg-white/60 p-3 rounded-xl shadow-sm">${itm.intro}</div></div></div>
+                ${i<d.items.length-1 ? `<div class="flex flex-col items-center my-[-8px] relative z-10"><div class="w-0.5 h-6 bg-white"></div><div class="bg-white border border-gray-200 rounded-full px-3 py-1 shadow-sm text-[10px] text-gray-500 font-bold"><i class="fa-solid fa-car text-[var(--kr-accent)] mr-1"></i> ${Math.max(5, (i+1)*5)} 分鐘</div><div class="w-0.5 h-6 bg-white"></div></div>` : ''}
+            `).join('');
         }
+        async function updT(i,v) { currentTrip.daily[currentDayIdx].items[i].time=v; await saveDB('trips',currentTrip.id,currentTrip); }
+        async function delItm(i) { if(confirm("刪除？")){ currentTrip.daily[currentDayIdx].items.splice(i,1); await saveDB('trips',currentTrip.id,currentTrip); renderDaily(); } }
+        async function updImg(inp,i) { if(!inp.files[0])return; let reader=new FileReader(); reader.onload=async()=>{ currentTrip.daily[currentDayIdx].items[i].img=reader.result; await saveDB('trips',currentTrip.id,currentTrip); renderDaily(); }; reader.readAsDataURL(inp.files[0]); }
 
-        async function updTime(idx, v) { currentTrip.daily[currentDayIdx].items[idx].time = v; await saveDB('trips', currentTrip.id, currentTrip); }
-        async function delItem(idx) { if(confirm("刪除？")) { currentTrip.daily[currentDayIdx].items.splice(idx,1); await saveDB('trips', currentTrip.id, currentTrip); renderDaily(); } }
+        function renderTransStay() { el('stay-content').innerHTML=currentTrip.stays.map((s,i)=>`<div class="liquid-glass p-4 font-bold"><div class="flex justify-between"><div><i class="fa-solid fa-bed text-[var(--kr-accent)] mr-2"></i>${s.name}</div><button onclick="delS(${i})" class="text-red-400"><i class="fa-solid fa-trash"></i></button></div><div class="text-[10px] text-gray-500 mt-1">${s.in} - ${s.out}</div></div>`).join(''); el('flight-content').innerHTML=currentTrip.flights.map((f,i)=>`<div class="liquid-glass p-4 font-bold"><div class="flex justify-between"><div><i class="fa-solid fa-plane text-[var(--kr-accent)] mr-2"></i>${f.title}</div><button onclick="delF(${i})" class="text-red-400"><i class="fa-solid fa-trash"></i></button></div><div class="text-[10px] text-gray-500 mt-1">${f.date} ${f.time} | ${f.route}</div></div>`).join(''); }
+        async function delS(i) { if(confirm("刪除？")){ currentTrip.stays.splice(i,1); await smartSync(); renderTransStay(); renderDaily(); } }
+        async function delF(i) { if(confirm("刪除？")){ currentTrip.flights.splice(i,1); await smartSync(); renderTransStay(); renderDaily(); } }
 
-        function renderTransStay() {
-            document.getElementById('stay-content').innerHTML = currentTrip.stays.map((s,i) => `<div class="liquid-glass p-4"><div class="flex justify-between font-bold"><div class="text-gray-800"><i class="fa-solid fa-bed text-[var(--kr-accent)] mr-2"></i>${s.name}</div><button onclick="delStay(${i})" class="text-red-400"><i class="fa-solid fa-trash"></i></button></div><div class="text-xs text-gray-500 mt-2">${s.in} - ${s.out}</div></div>`).join('');
-            document.getElementById('flight-content').innerHTML = currentTrip.flights.map((f,i) => `<div class="liquid-glass p-4"><div class="flex justify-between font-bold"><div class="text-gray-800"><i class="fa-solid fa-plane text-[var(--kr-accent)] mr-2"></i>${f.title}</div><button onclick="delFlight(${i})" class="text-red-400"><i class="fa-solid fa-trash"></i></button></div><div class="text-xs mt-2 text-gray-600">${f.date} ${f.time} | <span class="font-bold">${f.route}</span></div></div>`).join('');
-        }
-        async function delStay(idx) { if(confirm("刪除住宿？")) { currentTrip.stays.splice(idx,1); await smartSync(); renderTransStay(); renderDaily(); } }
-        async function delFlight(idx) { if(confirm("刪除交通？")) { currentTrip.flights.splice(idx,1); await smartSync(); renderTransStay(); renderDaily(); } }
+        async function fetchRates() { try { let r=await fetch("https://open.er-api.com/v6/latest/USD"), d=await r.json(); exchangeRates=d.rates; let o=["MYR","KRW","TWD","JPY","USD"].map(k=>`<option value="${k}">${k}</option>`).join(''); el('curFrom').innerHTML=o; el('curTo').innerHTML=o; el('expCur').innerHTML=o; el('curFrom').value="MYR"; el('curTo').value="KRW"; el('expCur').value="KRW"; convertCur(); }catch(e){} }
+        function convertCur() { let f=el('curFrom').value, t=el('curTo').value, a=el('curAmount').value; if(exchangeRates[f]&&exchangeRates[t]) el('curResult').value=((a/exchangeRates[f])*exchangeRates[t]).toFixed(2); }
+        async function updateBudget(v) { currentTrip.budget=parseFloat(v); await saveDB('trips',currentTrip.id,currentTrip); renderExp(); }
+        async function addExpense() { let n=el('expName').value, a=parseFloat(el('expAmt').value)||0, t=el('expType').value, c=el('expCur').value; if(n&&a){ currentTrip.expenses.push({id:Date.now(),n,a,t,c}); await saveDB('trips',currentTrip.id,currentTrip); el('expName').value=''; el('expAmt').value=''; renderExp(); } }
+        function renderExp() { let tot=0; el('tripBudget').value=currentTrip.budget; el('expense-list').innerHTML=currentTrip.expenses.map((e,i)=>{ if(exchangeRates[e.c]&&exchangeRates["MYR"]) tot+=(e.a/exchangeRates[e.c])*exchangeRates["MYR"]; return `<div class="bg-white/60 p-3 rounded-xl border border-white shadow-sm flex justify-between items-center"><div class="font-bold text-sm">${e.t}-${e.n}</div><div class="font-mono text-[var(--kr-accent)] font-bold">${e.a} ${e.c} <button onclick="delE(${i})" class="text-red-400 ml-2"><i class="fa-solid fa-trash"></i></button></div></div>`; }).join(''); let pct=(tot/(currentTrip.budget||1))*100; el('expense-summary').innerHTML=`<div class="flex items-center gap-3"><div class="w-full bg-white rounded-full h-2 shadow-inner"><div class="bg-[var(--kr-accent)] h-2 rounded-full" style="width:${Math.min(pct,100)}%"></div></div><span class="font-bold text-xs ${pct>100?'text-red-500':'text-gray-500'}">${pct.toFixed(1)}%</span></div>`; }
+        async function delE(i) { currentTrip.expenses.splice(i,1); await saveDB('trips',currentTrip.id,currentTrip); renderExp(); }
 
-        // --- 7. 匯率與花費 ---
-        async function fetchRates() { try { const r = await fetch("https://open.er-api.com/v6/latest/USD"); const d = await r.json(); exchangeRates = d.rates; let o = ["MYR","KRW","TWD","JPY","USD"].map(k=>`<option value="${k}">${k}</option>`).join(''); document.getElementById('curFrom').innerHTML=o; document.getElementById('curTo').innerHTML=o; document.getElementById('expCur').innerHTML=o; document.getElementById('curFrom').value="MYR"; document.getElementById('curTo').value="KRW"; document.getElementById('expCur').value="KRW"; convertCur(); } catch(e){} }
-        function convertCur() { let f=document.getElementById('curFrom').value; let t=document.getElementById('curTo').value; let a=document.getElementById('curAmount').value; if(exchangeRates[f]&&exchangeRates[t]) document.getElementById('curResult').value = ((a/exchangeRates[f])*exchangeRates[t]).toFixed(2); }
-        async function updateBudget(v) { currentTrip.budget = parseFloat(v); await saveDB('trips', currentTrip.id, currentTrip); renderExp(); }
-        async function addExpense() { let n=document.getElementById('expName').value; let a=parseFloat(document.getElementById('expAmt').value)||0; let t=document.getElementById('expType').value; let c=document.getElementById('expCur').value; if(n&&a) { currentTrip.expenses.push({id:Date.now(), n,a,t,c}); await saveDB('trips', currentTrip.id, currentTrip); document.getElementById('expName').value=''; document.getElementById('expAmt').value=''; renderExp(); } }
-        function renderExp() {
-            let tot = 0; document.getElementById('tripBudget').value = currentTrip.budget;
-            document.getElementById('expense-list').innerHTML = currentTrip.expenses.map((e,i) => { if(exchangeRates[e.c] && exchangeRates["MYR"]) tot += (e.a/exchangeRates[e.c])*exchangeRates["MYR"]; return `<div class="bg-white/60 p-3 rounded-xl shadow-sm flex justify-between items-center border border-white"><div class="font-bold text-sm">${e.t} - ${e.n}</div><div class="font-mono text-[var(--kr-accent)] font-bold">${e.a} ${e.c} <button onclick="delExp(${i})" class="text-red-400 ml-2"><i class="fa-solid fa-trash"></i></button></div></div>`; }).join('');
-            let bg = currentTrip.budget||1; let pct = (tot/bg)*100; document.getElementById('expense-summary').innerHTML = `<div class="flex items-center gap-3"><div class="w-full bg-white rounded-full h-2 shadow-inner"><div class="bg-[var(--kr-accent)] h-2 rounded-full" style="width: ${Math.min(pct,100)}%"></div></div><span class="font-bold text-xs ${pct>100?'text-red-500':'text-gray-500'}">${pct.toFixed(1)}%</span></div>`;
-        }
-        async function delExp(i) { currentTrip.expenses.splice(i,1); await saveDB('trips', currentTrip.id, currentTrip); renderExp(); }
+        async function addPack() { let c=el('packCat').value, n=el('packName').value; if(n){ currentTrip.packs.push({c,n}); await saveDB('trips',currentTrip.id,currentTrip); el('packName').value=''; renderPack(); } }
+        function renderPack() { el('pack-list').innerHTML=currentTrip.packs.map((p,i)=>`<div class="flex items-center gap-3 bg-white/60 p-3 rounded-xl border border-white shadow-sm"><input type="checkbox" class="w-5 h-5 accent-[var(--kr-accent)]"><span class="font-bold text-sm flex-1">${p.c} - ${p.n}</span><button onclick="delP(${i})" class="text-red-400"><i class="fa-solid fa-trash"></i></button></div>`).join(''); }
+        async function delP(i) { currentTrip.packs.splice(i,1); await saveDB('trips',currentTrip.id,currentTrip); renderPack(); }
 
-        // --- 8. 行李與 OCR 翻譯系統 ---
-        async function addPack() { let c=document.getElementById('packCat').value; let n=document.getElementById('packName').value; if(n){ currentTrip.packs.push({c,n}); await saveDB('trips', currentTrip.id, currentTrip); document.getElementById('packName').value=''; renderPack(); } }
-        function renderPack() { document.getElementById('pack-list').innerHTML = currentTrip.packs.map((p,i)=>`<div class="flex items-center gap-3 bg-white/60 p-3 rounded-xl border border-white shadow-sm"><input type="checkbox" class="w-5 h-5 accent-[var(--kr-accent)]"><span class="font-bold text-sm flex-1">${p.c} - ${p.n}</span><button onclick="delPack(${i})" class="text-red-400"><i class="fa-solid fa-trash"></i></button></div>`).join(''); }
-        async function delPack(i) { currentTrip.packs.splice(i,1); await saveDB('trips', currentTrip.id, currentTrip); renderPack(); }
+        function initLangs() { let m={"zh":"中文","ko":"韓文","ja":"日文","en":"英文"}, o=Object.keys(m).map(k=>`<option value="${k}">${m[k]}</option>`).join(''); el('langFrom').innerHTML=o; el('langFrom').value='zh'; el('langTo').innerHTML=o; el('langTo').value='ko'; }
+        async function doTranslate() { let i=el('transIn').value, t=el('langTo').value; if(!i)return; el('transOut').value="翻譯計算中..."; try { let r=await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(i)}&langpair=zh|${t}`), d=await r.json(); el('transOut').value=d.responseData.translatedText; }catch(e){} }
+        async function doOCR(i) { if(!i.files[0])return; el('transIn').value="讀取圖像特徵中..."; try { let res=await Tesseract.recognize(i.files[0],'eng+kor+chi_tra'); el('transIn').value=res.data.text.trim(); doTranslate(); }catch(e){} }
+        function speakOut() { let u=new SpeechSynthesisUtterance(el('transOut').value); u.lang=el('langTo').value==='ko'?'ko-KR':(el('langTo').value==='ja'?'ja-JP':'en-US'); window.speechSynthesis.speak(u); }
 
-        const langMap = {"zh":"中文","ko":"韓文","ja":"日文","en":"英文"}; 
-        function initLangs() { let o=Object.keys(langMap).map(k=>`<option value="${k}">${langMap[k]}</option>`).join(''); document.getElementById('langFrom').innerHTML=o; document.getElementById('langFrom').value='zh'; document.getElementById('langTo').innerHTML=o; document.getElementById('langTo').value='ko'; }
-        async function doTranslate() { const i=document.getElementById('transIn').value; const t=document.getElementById('langTo').value; if(!i)return; document.getElementById('transOut').value="翻譯計算中..."; try { const r=await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(i)}&langpair=zh|${t}`); const d=await r.json(); document.getElementById('transOut').value=d.responseData.translatedText; } catch(e){} }
-        async function doOCR(i) { if(!i.files[0])return; document.getElementById('transIn').value="讀取圖像特徵中..."; try { const res=await Tesseract.recognize(i.files[0], 'eng+kor+chi_tra'); document.getElementById('transIn').value=res.data.text.trim(); doTranslate(); }catch(e){} }
-        function speakOut() { let u = new SpeechSynthesisUtterance(document.getElementById('transOut').value); u.lang = document.getElementById('langTo').value==='ko'?'ko-KR':(document.getElementById('langTo').value==='ja'?'ja-JP':'en-US'); window.speechSynthesis.speak(u); }
+        function switchTab(id, btn) { document.querySelectorAll('.tab-section').forEach(s=>s.classList.remove('active')); el(id).classList.add('active'); document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); btn.classList.add('active'); window.scrollTo(0,0); }
+        
+        let pId=null; function initPickers() { let y='',m='',d=''; for(let i=2025;i<=2035;i++)y+=`<div class="wheel-item">${i}</div>`; for(let i=1;i<=12;i++)m+=`<div class="wheel-item">${i.toString().padStart(2,'0')}</div>`; for(let i=1;i<=31;i++)d+=`<div class="wheel-item">${i.toString().padStart(2,'0')}</div>`; el('wheel-year').innerHTML=y; el('wheel-month').innerHTML=m; el('wheel-day').innerHTML=d; }
+        function openPicker(id) { pId=id; el('ios-picker-modal').style.display='flex'; } function closePicker() { el('ios-picker-modal').style.display='none'; }
+        function confirmPicker() { let y=getWVal('wheel-year'), m=getWVal('wheel-month'), d=getWVal('wheel-day'); if(pId) el(pId).value=`${y}/${m}/${d}`; closePicker(); }
+        function getWVal(id) { let e=el(id), i=Math.round(e.scrollTop/40); return e.children[i]?e.children[i].innerText:'01'; }
 
-        function switchTab(id, btn) { document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); btn.classList.add('active'); window.scrollTo(0,0); }
-        function closePreview() { document.getElementById('fullscreen-preview').style.display = 'none'; }
+        let pImg=el('preview-img'), cS=1, iD=0, cX=0, cY=0, iX=0, iY=0, isD=false;
+        function closePreview() { el('fullscreen-preview').style.display='none'; }
+        pImg.addEventListener('touchstart',e=>{ if(e.touches.length===2)iD=Math.hypot(e.touches[0].pageX-e.touches[1].pageX,e.touches[0].pageY-e.touches[1].pageY); else if(e.touches.length===1){ isD=true; iX=e.touches[0].pageX-cX; iY=e.touches[0].pageY-cY; } });
+        pImg.addEventListener('touchmove',e=>{ if(e.touches.length===2){ e.preventDefault(); let d=Math.hypot(e.touches[0].pageX-e.touches[1].pageX,e.touches[0].pageY-e.touches[1].pageY); cS=Math.max(1,Math.min(d/iD,4)); pImg.style.transform=`translate(${cX}px,${cY}px) scale(${cS})`; } else if(e.touches.length===1&&isD&&cS>1){ e.preventDefault(); cX=e.touches[0].pageX-iX; cY=e.touches[0].pageY-iY; pImg.style.transform=`translate(${cX}px,${cY}px) scale(${cS})`; } });
+        pImg.addEventListener('touchend',e=>{ if(e.touches.length<2)isD=false; });
     </script>
 </body>
 </html>
