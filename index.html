@@ -2,29 +2,32 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>Travel Log | 行程助手</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js" defer></script>
   <style>
     :root {
+      --apple-bg: #f5f5f7;
       --apple-text: #1d1d1f;
       --apple-secondary: #86868b;
       --apple-blue: #0071e3;
+      --apple-blue-light: #5cb0ff;
     }
 
-    /* 動態流體背景 (Mesh Gradient) */
+    /* 1. 動態流體背景 (iOS 26 環境感知) */
     body {
-      background: radial-gradient(circle at 15% 50%, #eef2f9, transparent 40%),
+      background: radial-gradient(circle at 15% 50%, #e8f0fe, transparent 50%),
                   radial-gradient(circle at 85% 30%, #f6eef2, transparent 50%),
                   radial-gradient(circle at 50% 80%, #f0f0f5, transparent 50%),
-                  #f5f5f7;
+                  var(--apple-bg);
       background-size: 150% 150%;
-      animation: ambientShift 15s ease-in-out infinite alternate;
+      animation: ambientShift 20s ease-in-out infinite alternate;
       color: var(--apple-text);
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
       -webkit-font-smoothing: antialiased;
       letter-spacing: -0.015em;
+      overscroll-behavior-y: none; /* 防止原生下拉刷新干擾手勢 */
     }
 
     @keyframes ambientShift {
@@ -32,20 +35,51 @@
       100% { background-position: 100% 50%; }
     }
 
-    /* iOS 26 Liquid Glass 核心材質 */
+    /* 2. Liquid Glass 材質 */
     .liquid-glass {
-      background: rgba(255, 255, 255, 0.4);
-      backdrop-filter: blur(50px) saturate(200%);
-      -webkit-backdrop-filter: blur(50px) saturate(200%);
-      border: 0.5px solid rgba(255, 255, 255, 0.7);
+      background: rgba(255, 255, 255, 0.45);
+      backdrop-filter: blur(40px) saturate(180%);
+      -webkit-backdrop-filter: blur(40px) saturate(180%);
+      border: 0.5px solid rgba(255, 255, 255, 0.6);
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
     }
 
-    /* 統一輸入框標準: 高度 52px, 圓角 16px */
+    .liquid-glass-dark {
+      background: rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(30px) saturate(150%);
+      -webkit-backdrop-filter: blur(30px) saturate(150%);
+      border: 0.5px solid rgba(255, 255, 255, 0.2);
+    }
+
+    /* 3. Liquid Orb 核心元件 */
+    .liquid-orb {
+      background: radial-gradient(circle at 30% 30%, var(--apple-blue-light), var(--apple-blue));
+      box-shadow: 
+        inset 2px 2px 6px rgba(255, 255, 255, 0.4),
+        inset -2px -2px 6px rgba(0, 0, 0, 0.2),
+        0 4px 12px rgba(0, 113, 227, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+    .liquid-orb::after {
+      content: '';
+      position: absolute;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 60%);
+      animation: drift 8s infinite linear;
+      pointer-events: none;
+    }
+    @keyframes drift {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* 4. 標準化輸入框 */
     .input-std {
       height: 52px;
       border-radius: 16px;
-      background: rgba(255, 255, 255, 0.55);
+      background: rgba(255, 255, 255, 0.6);
       border: 0.5px solid rgba(255, 255, 255, 0.8);
       padding: 0 16px;
       font-size: 16px;
@@ -60,79 +94,93 @@
       outline: none;
     }
 
-    /* 原生感滾輪選擇器 */
-    .wheel-container {
-      height: 156px; /* 3 個 item，每個 52px */
-      overflow-y: scroll;
-      scroll-snap-type: y mandatory;
-    }
-    .wheel-item {
-      height: 52px;
-      scroll-snap-align: center;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    /* 隱藏滾動條 */
+    /* 5. 隱藏滾動條 */
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-    /* 交互手勢過渡 */
-    .tap-scale { transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
-    .tap-scale:active { transform: scale(0.94); }
+    /* 6. 動態天氣層 (CSS 粒子/霧氣) */
+    .weather-layer {
+      position: absolute; inset: 0;
+      pointer-events: none; z-index: 0;
+      background: linear-gradient(180deg, rgba(40,50,70,0.8) 0%, rgba(60,75,100,0.9) 100%);
+      overflow: hidden;
+    }
+    .weather-rain {
+      position: absolute;
+      width: 2px; height: 100px;
+      background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.4));
+      animation: rainDrop 1s linear infinite;
+    }
+    @keyframes rainDrop {
+      0% { transform: translateY(-100px); opacity: 0; }
+      50% { opacity: 1; }
+      100% { transform: translateY(800px); opacity: 0; }
+    }
+    .weather-content { position: relative; z-index: 10; color: white; }
+
+    /* 7. 手風琴與滑動動畫 */
+    .accordion-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
+      opacity: 0;
+    }
+    .accordion-content.expanded {
+      max-height: 500px; /* 足夠大的高度 */
+      opacity: 1;
+    }
+    .tap-scale { transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+    .tap-scale:active { transform: scale(0.95); }
+
+    /* 右滑刪除容器 */
+    .swipe-container { position: relative; overflow: hidden; border-radius: 28px; }
+    .swipe-actions {
+      position: absolute; top: 0; left: 0; bottom: 0; width: 100%;
+      background-color: #ff3b30; border-radius: 28px;
+      display: flex; align-items: center; padding-left: 24px;
+      color: white; font-size: 24px; z-index: 0;
+    }
+    .swipe-card {
+      position: relative; z-index: 1;
+      transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+      will-change: transform;
+    }
   </style>
 </head>
 <body class="selection:bg-blue-100">
 
   <div id="app" class="min-h-screen pb-32"></div>
 
-  <!-- 懸浮玻璃按鈕 (Floating Action Button) -->
-  <button id="btn-fab" class="fixed bottom-10 left-1/2 -translate-x-1/2 w-[64px] h-[64px] rounded-full liquid-glass flex items-center justify-center text-3xl tap-scale z-[90] text-[var(--apple-text)]">
+  <!-- 懸浮玻璃按鈕 FAB -->
+  <button id="btn-fab" class="fixed bottom-10 left-1/2 -translate-x-1/2 w-[64px] h-[64px] rounded-full liquid-orb flex items-center justify-center text-3xl tap-scale z-[90] text-white shadow-xl transition-transform hover:scale-105">
     <i class="fa-solid fa-plus font-light"></i>
   </button>
 
   <!-- 建立/編輯行程 Modal -->
   <div id="trip-modal" class="fixed inset-0 z-[100] hidden transition-opacity duration-300">
-    <div id="modal-bg" class="absolute inset-0 bg-black/10 backdrop-blur-[2px]"></div>
-    <!-- 增加上邊距，確保留白 -->
-    <div class="absolute bottom-0 left-0 w-full md:relative md:mx-auto md:mt-24 md:w-[90vw] md:max-w-md liquid-glass md:rounded-[32px] rounded-t-[32px] p-8 pb-12 shadow-2xl transition-transform duration-300 translate-y-full md:translate-y-0" id="modal-card">
-      
-      <h2 class="text-2xl font-bold mb-8 text-center">開始新的冒險</h2>
-      
+    <div id="modal-bg" class="absolute inset-0 bg-black/10 backdrop-blur-[4px]"></div>
+    <div class="absolute bottom-0 left-0 w-full md:relative md:mx-auto md:mt-24 md:w-[90vw] md:max-w-md liquid-glass md:rounded-[32px] rounded-t-[32px] p-8 pb-12 shadow-2xl transition-transform duration-400 translate-y-full md:translate-y-0" id="modal-card">
+      <h2 class="text-2xl font-bold mb-8 text-center tracking-tight">開始新的冒險</h2>
       <div class="space-y-6">
         <div>
-          <label class="block text-[11px] font-bold text-[var(--apple-secondary)] ml-1 mb-2">行程名稱</label>
-          <input id="in-title" type="text" class="w-full input-std" placeholder="例如：首爾五日慢遊" />
+          <label class="block text-[11px] font-bold text-[var(--apple-secondary)] ml-1 mb-2 uppercase tracking-wider">行程名稱</label>
+          <input id="in-title" type="text" class="w-full input-std" placeholder="例如：吉隆坡五日遊" />
         </div>
-        
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-[11px] font-bold text-[var(--apple-secondary)] ml-1 mb-2">起始日期</label>
-            <input id="in-date" type="date" class="w-full input-std text-center" />
+            <label class="block text-[11px] font-bold text-[var(--apple-secondary)] ml-1 mb-2 uppercase tracking-wider">起始日期</label>
+            <input id="in-start" type="date" class="w-full input-std text-center" />
           </div>
           <div>
-            <label class="block text-[11px] font-bold text-[var(--apple-secondary)] ml-1 mb-2">天數</label>
-            <!-- 模擬 iOS 滾輪選擇器 -->
-            <div class="relative w-full input-std !p-0 !h-[156px] overflow-hidden bg-white/40">
-              <div class="absolute top-1/2 left-0 w-full h-[52px] -translate-y-1/2 bg-black/5 pointer-events-none rounded-[12px]"></div>
-              <div id="days-wheel" class="wheel-container no-scrollbar relative z-10 py-[52px]">
-                <!-- JS 動態生成 -->
-              </div>
-            </div>
+            <label class="block text-[11px] font-bold text-[var(--apple-secondary)] ml-1 mb-2 uppercase tracking-wider">回程日期</label>
+            <input id="in-end" type="date" class="w-full input-std text-center" />
           </div>
         </div>
-
-        <div class="relative">
-          <label class="block text-[11px] font-bold text-[var(--apple-secondary)] ml-1 mb-2">目的地城市</label>
-          <input id="in-dests" type="text" class="w-full input-std" placeholder="例如：首爾, 釜山" autocomplete="off" />
-          <!-- 智慧推薦折射卡片 -->
-          <div id="dest-suggestions" class="absolute bottom-full left-0 w-full mb-2 liquid-glass rounded-[16px] hidden z-[110] max-h-[160px] overflow-y-auto no-scrollbar shadow-xl">
-             <!-- JS 動態填充 -->
-          </div>
+        <div>
+          <label class="block text-[11px] font-bold text-[var(--apple-secondary)] ml-1 mb-2 uppercase tracking-wider">目的地城市</label>
+          <input id="in-dests" type="text" class="w-full input-std" placeholder="例如：吉隆坡" />
         </div>
       </div>
-
       <div class="flex gap-3 mt-10">
         <button id="btn-cancel-modal" class="flex-1 h-[52px] rounded-[16px] bg-black/5 font-semibold text-[var(--apple-secondary)] tap-scale">取消</button>
         <button id="btn-confirm-modal" class="flex-1 h-[52px] rounded-[16px] bg-[var(--apple-text)] text-white font-semibold tap-scale shadow-md">建立</button>
@@ -141,44 +189,51 @@
   </div>
 
   <script>
-    // --- 狀態與核心邏輯 (不動) ---
-    const STORAGE_KEY = "travel_log_v26_pro";
-    let state = {
-      trips: [],
-      activeId: null,
-      view: 'home' 
-    };
+    // --- 狀態管理 ---
+    const STORAGE_KEY = "travel_log_v26_weather";
+    let state = { trips: [], activeId: null, view: 'home' };
 
     function load() {
       const data = localStorage.getItem(STORAGE_KEY);
       if (data) state = JSON.parse(data);
       render();
     }
+    function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 
-    function save() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    // 日期格式化：將 YYYY-MM-DD 轉為 "SAT 17"
+    function formatTimelineDate(dateStr) {
+      const d = new Date(dateStr);
+      const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+      const dayName = days[d.getDay()];
+      const dateNum = String(d.getDate()).padStart(2, '0');
+      return { dayName, dateNum };
     }
 
-    function createTrip(title, startDate, daysCount, destsInput) {
+    // 計算天數差
+    function createTrip(title, startDate, endDate, destsInput) {
+      const start = new Date(startDate);
+      let end = new Date(endDate);
+      if(end < start) end = new Date(start); // 邏輯保護：回程早於起始
+
+      const diffTime = Math.abs(end - start);
+      const daysCount = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+      
       const dests = destsInput.split(/[,，|]+/).map(s => s.trim()).filter(Boolean);
       const days = [];
+      
       for (let i = 0; i < daysCount; i++) {
-        const d = new Date(startDate);
+        const d = new Date(start);
         d.setDate(d.getDate() + i);
         days.push({
           id: crypto.randomUUID(),
           date: d.toISOString().split('T')[0],
-          destination: dests[i] || dests[dests.length - 1] || "未設定地點",
-          items: []
+          destination: dests[i] || dests[dests.length - 1] || "未設定城市",
+          items: [] // 留白：未來可添加景點
         });
       }
+
       const newTrip = {
-        id: crypto.randomUUID(),
-        title,
-        startDate,
-        daysCount,
-        color: '#0071e3', // 使用 Apple Blue 作為主色調
-        days
+        id: crypto.randomUUID(), title, startDate, endDate, daysCount, days
       };
       state.trips.unshift(newTrip);
       state.activeId = newTrip.id;
@@ -187,234 +242,287 @@
       render();
     }
 
-    // --- UI 渲染 (套用 Liquid Glass 美學) ---
+    // --- UI 渲染 ---
     function render() {
       const app = document.getElementById('app');
       if (state.view === 'home') {
-        document.getElementById('btn-fab').style.display = 'flex'; // 顯示 + 按鈕
+        document.getElementById('btn-fab').style.display = 'flex';
         app.innerHTML = `
-          <div class="max-w-5xl mx-auto px-8 py-20">
-            <header class="mb-16">
-              <h1 class="text-4xl font-extrabold tracking-tight">行程助手</h1>
+          <div class="max-w-5xl mx-auto px-6 py-20">
+            <header class="mb-12 px-2">
+              <h1 class="text-[34px] font-bold tracking-tight text-[var(--apple-text)]">行程助手</h1>
             </header>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="space-y-5" id="trip-list">
               ${state.trips.length ? state.trips.map(renderTripCard).join('') : renderEmpty()}
             </div>
           </div>
         `;
+        bindSwipeEvents();
       } else {
-        document.getElementById('btn-fab').style.display = 'none'; // 隱藏 + 按鈕
+        document.getElementById('btn-fab').style.display = 'none';
         app.innerHTML = renderEditor();
+        bindAccordionEvents();
       }
-      bindEditorEvents(); // 只綁定編輯器內按鈕，Fab 獨立綁定
+      bindGlobalEvents();
     }
 
     function renderEmpty() {
       return `
-        <div class="col-span-full py-24 text-center liquid-glass rounded-[32px]">
-          <div class="text-5xl mb-4 opacity-80">✈️</div>
-          <h3 class="text-xl font-bold">還沒有任何行程</h3>
+        <div class="py-24 text-center liquid-glass rounded-[32px] mx-2">
+          <div class="text-5xl mb-4 opacity-50">✈️</div>
+          <h3 class="text-lg font-semibold text-[var(--apple-secondary)]">準備出發？點擊下方按鈕建立</h3>
         </div>
       `;
     }
 
     function renderTripCard(trip) {
       return `
-        <div data-id="${trip.id}" class="trip-card liquid-glass rounded-[28px] p-6 cursor-pointer tap-scale transition-all hover:shadow-lg">
-          <div class="flex justify-between items-start mb-12">
-            <div class="w-10 h-10 rounded-full shadow-sm opacity-90" style="background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)"></div>
-            <span class="text-[10px] font-bold uppercase tracking-widest text-[var(--apple-secondary)] bg-white/50 px-3 py-1 rounded-full border border-white/40 shadow-sm">${trip.daysCount} DAYS</span>
+        <div class="swipe-container group" data-id="${trip.id}">
+          <div class="swipe-actions" onclick="deleteTrip('${trip.id}')">
+            <i class="fa-solid fa-trash-can"></i>
           </div>
-          <h3 class="text-2xl font-bold truncate tracking-tight">${trip.title}</h3>
-          <p class="text-[var(--apple-secondary)] text-sm mt-1">${trip.startDate} 出發</p>
+          <div class="swipe-card trip-card liquid-glass rounded-[28px] p-6 cursor-pointer" onclick="openTrip('${trip.id}')">
+            <div class="flex justify-between items-start mb-10">
+              <div class="w-10 h-10 rounded-full shadow-sm opacity-90 liquid-orb flex items-center justify-center text-white text-sm"><i class="fa-solid fa-plane-departure"></i></div>
+              <span class="text-[11px] font-bold uppercase tracking-widest text-[var(--apple-secondary)] bg-white/50 px-3 py-1.5 rounded-full border border-white/40 shadow-sm">${trip.startDate} 起</span>
+            </div>
+            <h3 class="text-2xl font-bold tracking-tight text-[var(--apple-text)]">${trip.title}</h3>
+            <p class="text-[var(--apple-secondary)] text-sm mt-1">${trip.daysCount} 天行程</p>
+          </div>
         </div>
       `;
     }
 
+    // 動態生成 24H 預報卡片
+    function renderWeather24H() {
+      let hoursHtml = '';
+      const times = ['Now', '9PM', '10PM', '11PM', '12AM', '1AM', '2AM', '3AM'];
+      const temps = [27, 27, 26, 26, 26, 26, 25, 25];
+      const icons = ['fa-cloud', 'fa-cloud', 'fa-cloud-rain', 'fa-cloud', 'fa-cloud', 'fa-cloud', 'fa-cloud', 'fa-cloud'];
+      
+      for(let i=0; i<8; i++) {
+        hoursHtml += `
+          <div class="flex flex-col items-center justify-between min-w-[60px] h-full py-1">
+            <span class="text-[13px] font-medium">${times[i]}</span>
+            <i class="fa-solid ${icons[i]} text-lg my-2 ${i===2 ? 'text-blue-300' : ''}"></i>
+            <span class="text-[15px] font-semibold">${temps[i]}°</span>
+          </div>
+        `;
+      }
+      return `
+        <div class="w-full mt-6 liquid-glass-dark rounded-[24px] p-4">
+          <p class="text-[13px] font-medium opacity-90 mb-3 leading-snug border-b border-white/10 pb-3">Rainy conditions expected around 10PM. Wind gusts are up to 6 km/h.</p>
+          <div class="flex overflow-x-auto no-scrollbar snap-x snap-mandatory h-[90px]">
+            ${hoursHtml}
+          </div>
+        </div>
+      `;
+    }
+
+    // 詳情頁：沉浸式天氣 Header + Timeline
     function renderEditor() {
       const trip = state.trips.find(t => t.id === state.activeId);
       if (!trip) return "";
-      let typeSums = {}; // 防止報錯
+      
+      // 生成雨滴效果
+      let rainDrops = '';
+      for(let i=0; i<20; i++) {
+        const left = Math.random() * 100;
+        const delay = Math.random() * 2;
+        rainDrops += `<div class="weather-rain" style="left: ${left}%; animation-delay: ${delay}s;"></div>`;
+      }
 
       return `
-        <div class="pb-20">
-          <nav class="sticky top-0 z-50 liquid-glass px-6 py-4 flex justify-between items-center border-b-0">
-            <div class="flex items-center gap-4">
-              <button id="btn-back" class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-black/5 tap-scale text-[var(--apple-text)]">
+        <div class="min-h-screen">
+          <!-- 35% 沉浸式氣象 Header -->
+          <header class="relative h-[45vh] min-h-[380px] flex flex-col justify-between pt-12 pb-6 px-6">
+            <div class="weather-layer">${rainDrops}</div>
+            
+            <nav class="weather-content flex justify-between items-center z-20">
+              <button class="w-10 h-10 rounded-full flex items-center justify-center liquid-glass-dark tap-scale" onclick="goHome()">
                 <i class="fa-solid fa-chevron-left"></i>
               </button>
-              <div>
-                <h2 class="text-sm font-bold leading-tight">${trip.title}</h2>
-                <p class="text-[10px] text-[var(--apple-secondary)] uppercase tracking-widest">${trip.startDate} 起</p>
-              </div>
-            </div>
-            <button id="btn-delete-trip" class="w-10 h-10 rounded-full flex items-center justify-center text-rose-500 hover:bg-rose-50 tap-scale"><i class="fa-solid fa-trash-can"></i></button>
-          </nav>
+              <div class="text-xs font-bold tracking-widest uppercase opacity-80">行程概覽</div>
+              <div class="w-10 h-10"></div> <!-- 佔位平衡 -->
+            </nav>
 
-          <main class="max-w-3xl mx-auto px-6 py-8">
-            <div class="space-y-6 mt-4">
-              ${trip.days.map((day, idx) => `
-                <div class="liquid-glass rounded-[32px] p-8 relative group">
-                  <div class="flex justify-between items-start mb-8">
-                    <div>
-                      <span class="text-[10px] font-black text-[var(--apple-blue)] uppercase tracking-widest mb-1 block opacity-80">DAY ${idx + 1}</span>
-                      <h3 class="text-3xl font-bold tracking-tight">${day.date.split('-').slice(1).join('/')}</h3>
-                    </div>
-                    <input 
-                      type="text" 
-                      placeholder="設定城市"
-                      class="text-right font-semibold py-2 px-4 w-1/2 bg-transparent border-none outline-none text-lg focus:bg-white/40 focus:rounded-[12px] transition-all" 
-                      value="${day.destination}" 
-                      oninput="updateDayPlace('${day.id}', this.value)"
-                    />
+            <div class="weather-content flex flex-col items-center text-center z-20 mt-2">
+              <span class="text-sm font-semibold tracking-widest uppercase opacity-90 mb-1">My Location</span>
+              <h1 class="text-4xl font-bold tracking-tight mb-0">${trip.title.split(' ')[0] || '吉隆坡'}</h1>
+              <div class="text-[80px] font-thin leading-none my-1">27°</div>
+              <span class="text-lg font-medium opacity-90">Mostly Cloudy</span>
+              <span class="text-sm font-medium opacity-90">H:32° L:25°</span>
+            </div>
+
+            <div class="weather-content z-20">
+              ${renderWeather24H()}
+            </div>
+          </header>
+
+          <!-- Timeline 行程列表 -->
+          <main class="relative z-30 -mt-4 bg-[var(--apple-bg)] rounded-t-[32px] px-6 py-8 min-h-[55vh]">
+            <div class="absolute top-3 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-black/10 rounded-full"></div>
+            
+            <div class="space-y-0 mt-4 relative">
+              <!-- 左側連接線 -->
+              <div class="absolute left-[23px] top-6 bottom-10 w-[2px] bg-black/5 z-0"></div>
+              
+              ${trip.days.map((day, idx) => {
+                const { dayName, dateNum } = formatTimelineDate(day.date);
+                return `
+                <div class="relative z-10 flex gap-4 pb-8 group">
+                  <!-- Liquid Orb 日期標記 -->
+                  <div class="flex-shrink-0 w-[48px] h-[48px] rounded-full liquid-orb flex flex-col items-center justify-center text-white shadow-md z-10 tap-scale">
+                    <span class="text-[9px] font-bold uppercase leading-none opacity-90">${dayName}</span>
+                    <span class="text-lg font-bold leading-none mt-0.5">${dateNum}</span>
                   </div>
-                  <div class="space-y-3">
-                    <button class="w-full h-[52px] rounded-[16px] bg-white/40 text-[var(--apple-text)] font-semibold text-sm hover:bg-white/60 transition-all tap-scale shadow-sm">
-                      <i class="fa-solid fa-plus mr-2 opacity-50"></i>添加項目
-                    </button>
+                  
+                  <!-- 手風琴內容區 -->
+                  <div class="flex-1 mt-1 accordion-trigger cursor-pointer tap-scale" data-day="${day.id}">
+                    <div class="flex justify-between items-center mb-1">
+                      <h3 class="text-xl font-bold tracking-tight text-[var(--apple-text)]">${trip.title.split(' ')[0]} > ${day.destination}</h3>
+                      <i class="fa-solid fa-chevron-down text-[var(--apple-secondary)] text-sm transition-transform duration-300"></i>
+                    </div>
+                    <p class="text-sm text-[var(--apple-secondary)] truncate">點擊展開詳細行程...</p>
+                    
+                    <div class="accordion-content mt-4 liquid-glass rounded-[20px] p-5">
+                      <input type="text" class="w-full bg-transparent border-none outline-none text-lg font-semibold mb-2 placeholder-black/30" value="${day.destination}" oninput="updateDest('${day.id}', this.value)" placeholder="設定目的地..." onclick="event.stopPropagation()"/>
+                      <div class="w-full h-[1px] bg-black/5 my-3"></div>
+                      <button class="flex items-center text-[var(--apple-blue)] text-sm font-semibold tap-scale" onclick="event.stopPropagation()">
+                        <i class="fa-solid fa-circle-plus mr-2"></i>添加地點或活動
+                      </button>
+                    </div>
                   </div>
                 </div>
-              `).join('')}
+              `}).join('')}
             </div>
           </main>
         </div>
       `;
     }
 
-    // --- 事件綁定 ---
-    function bindEditorEvents() {
-      const btnBack = document.getElementById('btn-back');
-      if (btnBack) btnBack.onclick = () => { state.view = 'home'; render(); };
-
-      const btnDelete = document.getElementById('btn-delete-trip');
-      if (btnDelete) btnDelete.onclick = () => {
-        if(confirm('確定要刪除這份行程嗎？')) {
-          state.trips = state.trips.filter(t => t.id !== state.activeId);
-          state.view = 'home';
-          save();
-          render();
-        }
+    // --- 互動邏輯與手勢引擎 ---
+    function bindGlobalEvents() {
+      // FAB Modal
+      const fab = document.getElementById('btn-fab');
+      const modal = document.getElementById('trip-modal');
+      const modalCard = document.getElementById('modal-card');
+      
+      if(fab) fab.onclick = () => {
+        modal.classList.remove('hidden');
+        setTimeout(() => modalCard.classList.remove('translate-y-full'), 10);
+        
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('in-start').value = today;
+        document.getElementById('in-end').value = today;
       };
 
-      document.querySelectorAll('.trip-card').forEach(card => {
-        card.onclick = () => {
-          state.activeId = card.dataset.id;
-          state.view = 'editor';
-          render();
+      const closeModal = () => {
+        modalCard.classList.add('translate-y-full');
+        setTimeout(() => modal.classList.add('hidden'), 300);
+      };
+
+      const btnCancel = document.getElementById('btn-cancel-modal');
+      const bgModal = document.getElementById('modal-bg');
+      if(btnCancel) btnCancel.onclick = closeModal;
+      if(bgModal) bgModal.onclick = closeModal;
+
+      const btnConfirm = document.getElementById('btn-confirm-modal');
+      if(btnConfirm) btnConfirm.onclick = () => {
+        const title = document.getElementById('in-title').value;
+        const start = document.getElementById('in-start').value;
+        const end = document.getElementById('in-end').value;
+        const dests = document.getElementById('in-dests').value;
+        if(title && start && end) {
+          createTrip(title, start, end, dests);
+          closeModal();
+        } else {
+          alert('請填寫完整資訊');
+        }
+      };
+    }
+
+    // 手風琴展開動畫
+    function bindAccordionEvents() {
+      document.querySelectorAll('.accordion-trigger').forEach(el => {
+        el.onclick = () => {
+          const content = el.querySelector('.accordion-content');
+          const icon = el.querySelector('.fa-chevron-down');
+          const p = el.querySelector('p');
+          
+          if(content.classList.contains('expanded')) {
+            content.classList.remove('expanded');
+            icon.style.transform = 'rotate(0deg)';
+            p.style.display = 'block';
+          } else {
+            // 關閉其他
+            document.querySelectorAll('.accordion-content.expanded').forEach(c => {
+               c.classList.remove('expanded');
+               c.parentElement.querySelector('.fa-chevron-down').style.transform = 'rotate(0deg)';
+               c.parentElement.querySelector('p').style.display = 'block';
+            });
+            content.classList.add('expanded');
+            icon.style.transform = 'rotate(180deg)';
+            p.style.display = 'none';
+          }
         };
       });
     }
 
-    window.updateDayPlace = function(dayId, val) {
+    // 右滑刪除手勢 (Elastic Bounce)
+    function bindSwipeEvents() {
+      const containers = document.querySelectorAll('.swipe-container');
+      containers.forEach(container => {
+        const card = container.querySelector('.swipe-card');
+        let startX = 0, currentX = 0, isDragging = false;
+
+        card.addEventListener('touchstart', (e) => {
+          startX = e.touches[0].clientX;
+          isDragging = true;
+          card.style.transition = 'none'; // 拖拽時移除動畫
+        }, {passive: true});
+
+        card.addEventListener('touchmove', (e) => {
+          if (!isDragging) return;
+          const diffX = e.touches[0].clientX - startX;
+          // 只允許右滑
+          if (diffX > 0) {
+            // 阻尼方程 (Elasticity): 隨距離增加，滑動變困難
+            currentX = Math.pow(diffX, 0.85); 
+            card.style.transform = `translateX(${currentX}px)`;
+          }
+        }, {passive: true});
+
+        card.addEventListener('touchend', () => {
+          isDragging = false;
+          card.style.transition = 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)';
+          
+          if (currentX > 90) { // 觸發刪除的閾值
+            card.style.transform = `translateX(100vw)`; // 滑出螢幕
+            setTimeout(() => deleteTrip(container.dataset.id), 300);
+          } else {
+            card.style.transform = `translateX(0px)`; // 回彈
+          }
+          currentX = 0;
+        });
+      });
+    }
+
+    // 路由與數據修改
+    window.openTrip = function(id) { state.activeId = id; state.view = 'editor'; render(); };
+    window.goHome = function() { state.view = 'home'; state.activeId = null; render(); };
+    window.deleteTrip = function(id) {
+      state.trips = state.trips.filter(t => t.id !== id);
+      save(); render();
+    };
+    window.updateDest = function(dayId, val) {
       const trip = state.trips.find(t => t.id === state.activeId);
       const day = trip.days.find(d => d.id === dayId);
       if (day) { day.destination = val; save(); }
     };
 
-    // --- iOS 風格滾輪選擇器邏輯 ---
-    let selectedDays = 5;
-    function initWheel() {
-      const wheel = document.getElementById('days-wheel');
-      let html = '';
-      for(let i=1; i<=60; i++) {
-        html += `<div class="wheel-item text-xl font-semibold select-none text-[var(--apple-text)]" data-val="${i}">${i}</div>`;
-      }
-      wheel.innerHTML = html;
-      
-      // 預設滾動至第 5 天 (index 4)
-      setTimeout(() => wheel.scrollTo({top: 4 * 52, behavior: 'auto'}), 0);
-
-      wheel.addEventListener('scroll', () => {
-        clearTimeout(wheel.timer);
-        wheel.timer = setTimeout(() => {
-          const index = Math.round(wheel.scrollTop / 52);
-          selectedDays = index + 1;
-        }, 100); // 防抖
-      });
-    }
-
-    // --- 智慧推薦邏輯 ---
-    const cityDB = ['北京', '台北', '首爾', '釜山', '東京', '大阪', '京都', '曼谷', '新加坡', '吉隆坡', '倫敦', '巴黎', '紐約'];
-    function initSmartSuggest() {
-      const inDests = document.getElementById('in-dests');
-      const suggs = document.getElementById('dest-suggestions');
-      
-      inDests.addEventListener('input', (e) => {
-        // 取最後一個輸入的詞
-        const parts = e.target.value.split(/[,，]+/);
-        const currentWord = parts.pop().trim();
-        
-        if (!currentWord) { suggs.classList.add('hidden'); return; }
-        
-        // 匹配資料庫 (包含字首或字中)
-        const matches = cityDB.filter(c => c.includes(currentWord) && c !== currentWord);
-        if (matches.length === 0) { suggs.classList.add('hidden'); return; }
-        
-        suggs.innerHTML = matches.map(m => `
-          <div class="px-6 py-4 border-b border-white/20 hover:bg-white/40 cursor-pointer font-semibold text-sm transition-colors" onclick="selectCity('${m}')">
-            ${m}
-          </div>
-        `).join('');
-        suggs.classList.remove('hidden');
-      });
-
-      window.selectCity = function(city) {
-        const parts = inDests.value.split(/[,，]+/);
-        parts.pop(); 
-        parts.push(city);
-        inDests.value = parts.join(', ') + (parts.length > 0 ? ', ' : '');
-        suggs.classList.add('hidden');
-        inDests.focus();
-      };
-
-      // 點擊外部隱藏推薦
-      document.addEventListener('click', (e) => {
-        if(!inDests.contains(e.target) && !suggs.contains(e.target)) {
-          suggs.classList.add('hidden');
-        }
-      });
-    }
-
-    // --- Modal 控制與啟動 ---
-    const modal = document.getElementById('trip-modal');
-    const modalCard = document.getElementById('modal-card');
-
-    function openModal() {
-      modal.classList.remove('hidden');
-      // 觸發滑出動畫
-      setTimeout(() => {
-        modalCard.classList.remove('translate-y-full');
-      }, 10);
-      document.getElementById('in-date').value = new Date().toISOString().split('T')[0];
-    }
-
-    function closeModal() {
-      modalCard.classList.add('translate-y-full');
-      setTimeout(() => { modal.classList.add('hidden'); }, 300);
-    }
-
-    document.getElementById('btn-fab').onclick = openModal;
-    document.getElementById('btn-cancel-modal').onclick = closeModal;
-    document.getElementById('modal-bg').onclick = closeModal;
-
-    document.getElementById('btn-confirm-modal').onclick = () => {
-      const title = document.getElementById('in-title').value;
-      const date = document.getElementById('in-date').value;
-      const dests = document.getElementById('in-dests').value;
-      if (title && date) {
-        createTrip(title, date, selectedDays, dests);
-        closeModal();
-        document.getElementById('in-title').value = '';
-        document.getElementById('in-dests').value = '';
-      } else {
-        alert('請填寫行程名稱與起始日期');
-      }
-    };
-
-    // 系統初始化
+    // 初始化
     load();
-    initWheel();
-    initSmartSuggest();
   </script>
 </body>
 </html>
