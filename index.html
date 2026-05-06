@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>我的旅行繪本</title>
+    <title>我的旅行繪本 27.0</title>
     <link rel="icon" href="https://www.shutterstock.com/image-vector/airplane-vector-isolated-emoticon-emoji-600nw-2627946825.jpg">
     <link rel="apple-touch-icon" href="https://www.shutterstock.com/image-vector/airplane-vector-isolated-emoticon-emoji-600nw-2627946825.jpg">
     
@@ -44,17 +44,21 @@
         .h-scroll-container { margin: -10px -5px; padding: 10px 5px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; scroll-behavior: smooth; }
         .h-scroll-container::-webkit-scrollbar { display: none; }
         .h-scroll { display: flex; gap: 8px; width: max-content; }
-        .day-btn { flex: 0 0 auto; height: 65px; padding: 0 16px; border-radius: 12px; background: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.8); color: #777; text-align: center; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .day-btn { flex: 0 0 85px; height: 65px; padding: 0 12px; border-radius: 12px; background: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.8); color: #777; text-align: center; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .day-btn.active { background: var(--kr-accent); color: #fff; border-color: var(--kr-accent); font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         
-        /* 27.0 自動化橫向城市進度條 */
-        #city-progress-container { margin: 10px 0 15px 0; height: 36px; background: rgba(255,255,255,0.4); border-radius: 12px; overflow: hidden; display: flex; border: 1px solid rgba(255,255,255,0.6); box-shadow: inset 0 2px 5px rgba(0,0,0,0.03); backdrop-filter: blur(10px); }
-        .city-segment { height: 100%; border-right: 1px solid rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: var(--kr-text); transition: 0.3s; position: relative; }
-        .city-segment::before { content: ''; position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: var(--kr-accent); opacity: 0.15; }
-        .city-segment:last-child { border-right: none; }
+        /* 27.0 城市進度條 */
+        #city-progress-container { margin: 5px -5px 15px -5px; padding: 0 5px; overflow-x: auto; scrollbar-width: none; scroll-behavior: auto; }
+        #city-progress-container::-webkit-scrollbar { display: none; }
+        #city-progress-bar { display: flex; gap: 8px; width: max-content; height: 28px; }
+        .city-segment { flex: 0 0 85px; height: 100%; border-radius: 8px; background: rgba(255,255,255,0.4); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: var(--kr-text); box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); transition: 0.3s; }
+        .city-segment.break { border-left: 3px solid white; background: rgba(154, 146, 131, 0.2); color: var(--kr-accent); }
 
+        /* 12AM-11PM 天氣 */
         .hourly-item { flex: 0 0 55px; height: 65px; flex-shrink: 0; text-align: center; font-size: 0.7rem; line-height: 1.1; border-radius: 12px; background: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.3); scroll-snap-align: center; transition: 0.2s; display: flex; flex-direction: column; justify-content: center; align-items: center; box-sizing: border-box; overflow: hidden; padding: 6px 4px; gap: 4px; }
         .hourly-item.active-hour { background: var(--kr-accent); color: white; font-weight: bold; transform: scale(1.1); border-color: transparent; box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 10; }
+        .hourly-item .time-txt { font-size: 0.65rem; font-weight: bold; }
+        .hourly-item .emoji-txt { font-size: 1.1rem; }
 
         .weather-bg-container { position: absolute; inset: 0; overflow: hidden; border-radius: 24px; z-index: -1; pointer-events: none; transition: background-color 0.8s ease; }
         .weather-darken { background-color: rgba(45, 55, 68, 0.9); } 
@@ -86,16 +90,18 @@
         .file-hide { display: none; }
         .btn-primary { background: var(--kr-accent); color: white; padding: 10px 18px; border-radius: 14px; font-size: 0.85rem; font-weight: bold; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
         
-        /* 27.0 OmniFab 導航進化：底部位移至 85px，由下往上彈出 */
+        /* 27.0 OmniFab 重構：移至底部，向上彈出，標籤霧化 */
         .omni-fab-container { position: fixed; bottom: 85px; right: 20px; z-index: 1050; display: flex; flex-direction: column; align-items: flex-end; pointer-events: none; justify-content: flex-end; gap: 15px; }
         .omni-main-btn { background: var(--kr-text); color: white; width: 56px; height: 56px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; box-shadow: 0 8px 25px rgba(0,0,0,0.3); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 2; border: 2px solid rgba(255,255,255,0.2); pointer-events: auto; }
         .omni-main-btn.active { transform: rotate(45deg); background: var(--kr-accent); }
+        
         .omni-menu { display: flex; flex-direction: column-reverse; gap: 12px; opacity: 0; pointer-events: none; align-items: flex-end; position: absolute; bottom: 70px; right: 0; }
-        .omni-menu.active { pointer-events: auto; animation: springUpMenu 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .omni-menu.active { pointer-events: auto; animation: springUpMenu 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         @keyframes springUpMenu { 0% { transform: translateY(20px) scale(0.9); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
         
         .omni-item { display: flex; align-items: center; gap: 12px; cursor: pointer; pointer-events: auto; }
-        .omni-label { background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(25px); color: var(--kr-text); border-radius: 10px; font-size: 13px; font-weight: bold; padding: 8px 16px; border: 1px solid rgba(255,255,255,0.8); box-shadow: 0 4px 15px rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: center; }
+        .omni-label { background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(25px); color: var(--kr-text); border-radius: 10px; font-size: 13px; font-weight: bold; padding: 8px 16px; border: 1px solid rgba(255,255,255,0.8); box-shadow: 0 4px 15px rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: center; transition: opacity 0.5s ease; opacity: 1; }
+        .omni-label.faded { opacity: 0; pointer-events: none; }
         .omni-sub-btn { background: white; color: var(--kr-accent); width: 44px; height: 44px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.1rem; box-shadow: 0 6px 15px rgba(0,0,0,0.15); }
 
         .book-card { background: var(--kr-card-bg); backdrop-filter: blur(20px); border-radius: 12px 24px 24px 12px; padding: 20px; box-shadow: 5px 5px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; border-left: 12px solid var(--kr-accent); position: relative; overflow: hidden; transition: 0.3s; margin-bottom: 15px; border-top: 1px solid rgba(255,255,255,0.5); }
@@ -114,16 +120,16 @@
         .budget-ring { position: relative; width: 110px; height: 110px; border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; transition: background 0.3s; }
         .donut-chart { width: 120px; height: 120px; border-radius: 50%; background: #ccc; position: relative; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px auto; box-shadow: var(--kr-shadow); }
 
-        #ios-picker-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 3000; align-items: flex-end; }
+        #ios-picker-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 8000; align-items: flex-end; }
         .picker-container { width: 100%; background: var(--kr-cream); border-radius: 24px 24px 0 0; padding: 20px; padding-bottom: 40px; box-shadow: 0 -10px 40px rgba(0,0,0,0.1); }
         .picker-wheels { display: flex; justify-content: space-between; height: 150px; position: relative; mask-image: linear-gradient(to bottom, transparent, black 30%, black 70%, transparent); -webkit-mask-image: linear-gradient(to bottom, transparent, black 30%, black 70%, transparent); }
         .wheel-col { flex: 1; height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; text-align: center; padding: 55px 0; }
         .wheel-item { height: 40px; line-height: 40px; scroll-snap-align: center; font-size: 1.1rem; font-weight: bold; color: var(--kr-text); transition: 0.2s; }
 
-        /* 27.0 Bauhaus 全螢幕霧面模態框共用 (完美居中與鍵盤適配) */
-        .bauhaus-modal { display: none; position: fixed; inset: 0; height: 100dvh; background: rgba(0,0,0,0.4); backdrop-filter: blur(15px); z-index: 6000; flex-direction: column; align-items: center; justify-content: center; padding: 20px; opacity: 0; transition: opacity 0.3s ease; }
+        /* 27.0 Bauhaus 全螢幕霧面模態框 (h-[100dvh] + justify-center 完美適配鍵盤) */
+        .bauhaus-modal { display: none; position: fixed; inset: 0; height: 100dvh; background: rgba(0,0,0,0.4); backdrop-filter: blur(20px); z-index: 6000; flex-direction: column; align-items: center; justify-content: center; padding: 20px; opacity: 0; transition: opacity 0.3s ease; }
         .bauhaus-modal.active { display: flex; opacity: 1; }
-        .bauhaus-modal-box { background: var(--kr-cream); width: 100%; max-w: 90%; max-height: 85vh; overflow-y: auto; margin: 0 auto; border-radius: 24px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.8); transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .bauhaus-modal-box { background: var(--kr-cream); width: 100%; max-w: 90%; max-height: 85vh; overflow-y: auto; margin: 0 auto; border-radius: 32px; padding: 32px 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.8); transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .bauhaus-modal.active .bauhaus-modal-box { transform: scale(1); }
         
         .smart-suggestion { position: absolute; top: calc(100% - 10px); left: 0; right: 0; background: white; border-radius: 0 0 12px 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); z-index: 7000; overflow: hidden; border: 1px solid #eee; border-top: none; }
@@ -182,10 +188,14 @@
         <main class="max-w-md mx-auto px-4 relative">
             
             <div id="daily" class="tab-section active">
-                <div class="h-scroll-container"><div class="h-scroll" id="day-selector"></div></div>
+                <div class="h-scroll-container" id="day-scroll-container">
+                    <div class="h-scroll" id="day-selector"></div>
+                </div>
                 
                 <!-- 27.0 城市進度條 -->
-                <div id="city-progress-container"></div>
+                <div id="city-progress-container">
+                    <div id="city-progress-bar"></div>
+                </div>
                 
                 <div id="weather-banner" class="liquid-glass p-5 mb-4 relative overflow-hidden"></div>
                 <div id="daily-content"></div>
@@ -220,9 +230,8 @@
                 </details>
             </div>
 
-            <!-- SECTION 3: 花費 (略，保持不變) -->
+            <!-- SECTION 3: 花費 -->
             <div id="expenses" class="tab-section">
-                <!-- 內容保持不變 -->
                 <h2 class="text-xl font-bold mb-6 text-center hand-drawn">花費記帳 💰</h2>
                 <div class="liquid-glass p-5 mb-4 text-center">
                     <div class="flex justify-between items-center mb-4"><h3 class="text-sm font-bold text-gray-500"><i class="fa-solid fa-chart-pie"></i> 消費分析</h3><div class="text-xs text-gray-400 flex items-center gap-1">預算 <input type="number" id="tripBudget" class="w-16 p-0 text-right bg-transparent border-none font-bold" value="0" onchange="updateBudget(this.value)"></div></div>
@@ -264,17 +273,29 @@
         </nav>
     </div>
 
-    <!-- 27.0 項目大選單彈窗 -->
-    <div id="add-item-modal" class="bauhaus-modal">
-        <div class="bauhaus-modal-box">
-            <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center hand-drawn">✨ 想要添加什麼？</h3>
-            <div class="grid grid-cols-2 gap-4">
-                <button class="py-6 bg-white border border-gray-100 rounded-2xl shadow-sm font-bold text-gray-700 flex flex-col items-center justify-center gap-2 react-btn" onclick="openCityModal()"><i class="fa-solid fa-city text-2xl text-[var(--kr-accent)]"></i> <span>城市</span></button>
-                <button class="py-6 bg-white border border-gray-100 rounded-2xl shadow-sm font-bold text-gray-700 flex flex-col items-center justify-center gap-2 react-btn" onclick="openTransportModal()"><i class="fa-solid fa-shuttle-van text-2xl text-[var(--kr-accent)]"></i> <span>交通</span></button>
-                <button class="py-6 bg-white border border-gray-100 rounded-2xl shadow-sm font-bold text-gray-700 flex flex-col items-center justify-center gap-2 react-btn" onclick="openStayModal()"><i class="fa-solid fa-bed text-2xl text-[var(--kr-accent)]"></i> <span>住宿</span></button>
-                <button class="py-6 bg-[var(--kr-accent)] border border-gray-100 rounded-2xl shadow-sm font-bold text-white flex flex-col items-center justify-center gap-2 react-btn" onclick="openSmartSearchModal()"><i class="fa-solid fa-map-location-dot text-2xl text-white"></i> <span>遊玩</span></button>
+    <!-- 27.0 項目大選單彈窗 (對標上傳圖，垂直排列綠色按鈕) -->
+    <div id="add-item-modal" class="bauhaus-modal" onclick="closeAddItemModal()">
+        <div class="bauhaus-modal-box flex flex-col items-center" onclick="event.stopPropagation()">
+            <h3 class="text-xl font-bold text-gray-800 mb-8 text-center hand-drawn">✨ 想要添加什麼？</h3>
+            <div class="flex flex-col gap-6 items-center w-full">
+                <button class="flex flex-col items-center gap-2 react-btn" onclick="openCityModal()">
+                    <div class="w-16 h-16 rounded-full bg-[#5AD387] flex items-center justify-center text-white shadow-lg"><i class="fa-solid fa-city text-2xl"></i></div>
+                    <span class="text-sm font-bold text-gray-700">城市</span>
+                </button>
+                <button class="flex flex-col items-center gap-2 react-btn" onclick="openTransportModal()">
+                    <div class="w-16 h-16 rounded-full bg-[#5AD387] flex items-center justify-center text-white shadow-lg"><i class="fa-solid fa-plane text-2xl"></i></div>
+                    <span class="text-sm font-bold text-gray-700">交通</span>
+                </button>
+                <button class="flex flex-col items-center gap-2 react-btn" onclick="openSmartSearchModal()">
+                    <div class="w-16 h-16 rounded-full bg-[#5AD387] flex items-center justify-center text-white shadow-lg"><i class="fa-solid fa-star text-2xl"></i></div>
+                    <span class="text-sm font-bold text-gray-700">遊玩</span>
+                </button>
+                <button class="flex flex-col items-center gap-2 react-btn" onclick="openStayModal()">
+                    <div class="w-16 h-16 rounded-full bg-[#5AD387] flex items-center justify-center text-white shadow-lg"><i class="fa-solid fa-bed text-2xl"></i></div>
+                    <span class="text-sm font-bold text-gray-700">住宿</span>
+                </button>
             </div>
-            <button class="w-full mt-6 py-3 bg-gray-100 text-gray-500 rounded-xl font-bold react-btn" onclick="closeAddItemModal()">取消</button>
+            <button class="w-full mt-10 py-3 bg-white border border-gray-200 text-gray-500 rounded-xl font-bold shadow-sm react-btn" onclick="closeAddItemModal()">取消</button>
         </div>
     </div>
 
@@ -523,27 +544,23 @@
 
         // --- 城市進度條渲染 ---
         function renderCityProgress() {
-            const wrap = document.getElementById('city-progress-container');
+            const wrap = document.getElementById('city-progress-bar');
             if(!currentTrip.daily) return;
             let html = '';
-            let segments = [];
             let lastCity = '';
-            
-            currentTrip.daily.forEach(d => {
+            currentTrip.daily.forEach((d, i) => {
                 let cName = d.region || "未定";
-                if(cName === lastCity && segments.length > 0) {
-                    segments[segments.length - 1].weight += 1;
-                } else {
-                    segments.push({ name: cName, weight: 1 });
-                    lastCity = cName;
-                }
-            });
-            
-            segments.forEach(seg => {
-                html += `<div class="city-segment" style="flex:${seg.weight}"><span class="relative z-10">${seg.name}</span></div>`;
+                let isBreak = (i > 0 && cName !== lastCity);
+                html += `<div class="city-segment ${isBreak ? 'break' : ''}">${cName}</div>`;
+                lastCity = cName;
             });
             wrap.innerHTML = html;
         }
+
+        // 綁定滾動同步 (進度條跟隨日期滾動)
+        document.getElementById('day-scroll-container').addEventListener('scroll', function() {
+            document.getElementById('city-progress-container').scrollLeft = this.scrollLeft;
+        });
 
         function getDateRange(s, e) {
             let dates = []; let curr = new Date(s); let last = new Date(e);
@@ -574,6 +591,7 @@
                             if(dStr === dIn) {
                                 currentTrip.daily[dIdx].items.push({ id: `stay_in_${s.id}`, time: "15:00", task: `入住 ${s.name}`, loc: s.addr || "飯店地址", lat: s.lat||0, lng: s.lng||0, isAuto: true, img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600", intro: deepIntro, review: {pos: deepPos, neg: deepNeg} });
                             } else if (dStr <= dOut) {
+                                // 將第二天的出發放置在首站 (unshift)
                                 currentTrip.daily[dIdx].items.unshift({ id: `stay_out_${s.id}_${dStr}`, time: "09:00", task: dStr === dOut ? `退房 ${s.name}` : `從 ${s.name} 出發`, loc: s.addr || "飯店地址", lat: s.lat||0, lng: s.lng||0, isAuto: true, img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600", intro: deepIntro, review: {pos: deepPos, neg: deepNeg} });
                             }
                         }
@@ -625,8 +643,30 @@
         }
 
         function setTheme(themeName) { document.body.className = `theme-${themeName}`; }
-        function toggleHomeOmni() { document.getElementById('home-omni-btn').classList.toggle('active'); document.getElementById('home-omni-menu').classList.toggle('active'); }
-        function toggleTripOmni() { document.getElementById('trip-omni-btn').classList.toggle('active'); document.getElementById('trip-omni-menu').classList.toggle('active'); }
+        
+        function toggleHomeOmni() { 
+            const menu = document.getElementById('home-omni-menu');
+            const btn = document.getElementById('home-omni-btn');
+            menu.classList.toggle('active');
+            btn.classList.toggle('active');
+        }
+        
+        function toggleTripOmni() { 
+            const menu = document.getElementById('trip-omni-menu');
+            const btn = document.getElementById('trip-omni-btn');
+            const labels = menu.querySelectorAll('.omni-label');
+            
+            menu.classList.toggle('active');
+            btn.classList.toggle('active');
+            
+            if(menu.classList.contains('active')) {
+                labels.forEach(l => l.classList.remove('faded'));
+                // 3 秒後標籤自動霧化消失的過渡腳本
+                setTimeout(() => {
+                    labels.forEach(l => l.classList.add('faded'));
+                }, 3000);
+            }
+        }
 
         function renderHome() { document.getElementById('trip-view').classList.remove('active'); document.getElementById('home-view').classList.add('active'); document.getElementById('trip-list').innerHTML = allTrips.map(t => `<div class="book-card" style="border-left-color: ${t.color}" onclick="openTrip('${t.id}')"><div class="flex justify-between items-start"><h2 class="text-2xl font-bold text-gray-800 hand-drawn">${t.title}</h2><button onclick="event.stopPropagation(); deleteTrip('${t.id}')" class="text-gray-300 react-btn"><i class="fa-solid fa-trash"></i></button></div><p class="text-xs text-gray-400 mt-2">${t.daily[0].date.split('/')[1]}/${t.daily[0].date.split('/')[2]} 出發 · ${t.daily.length} 天行程</p></div>`).join(''); }
         
