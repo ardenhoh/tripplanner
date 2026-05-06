@@ -200,7 +200,7 @@
                     <div class="omni-menu" id="trip-omni-menu">
                         <div class="omni-item react-btn" onclick="openDailyGoogleMaps()"><div class="omni-label">當日行程全覽</div><div class="omni-sub-btn"><i class="fa-solid fa-map-location-dot"></i></div></div>
                         <div class="omni-item react-btn" onclick="optimizeDailyRoute()"><div class="omni-label">優化路線</div><div class="omni-sub-btn"><i class="fa-solid fa-route"></i></div></div>
-                        <!-- 26.0 觸發智慧彈窗 -->
+                        <!-- 25.0 觸發智慧彈窗 -->
                         <div class="omni-item react-btn" onclick="openSmartSearchModal()"><div class="omni-label">添加景點</div><div class="omni-sub-btn"><i class="fa-solid fa-location-dot relative"><i class="fa-solid fa-plus absolute -top-1 -right-2 text-[10px] text-white bg-[var(--kr-accent)] rounded-full p-0.5 border border-white"></i></i></div></div>
                     </div>
                     <button class="omni-main-btn react-btn" id="trip-omni-btn" onclick="toggleTripOmni()"><i class="fa-solid fa-plus"></i></button>
@@ -293,10 +293,9 @@
         </nav>
     </div>
 
-    <!-- 26.0 完美對稱全螢幕智慧搜尋彈窗 (h-[100dvh] + flex-col items-center justify-center) -->
-    <div id="smart-search-modal" class="fixed inset-0 h-[100dvh] bg-black/40 backdrop-blur-md z-[6000] hidden flex-col items-center justify-center p-0 opacity-0 transition-opacity duration-300">
-        <!-- max-w-[90%] 配合 mx-auto 確保左右邊距永遠精確相等 -->
-        <div class="bg-[var(--kr-cream)] w-full max-w-[90%] mx-auto rounded-3xl p-6 shadow-2xl transform scale-95 transition-transform duration-300 border border-white" id="smart-search-box">
+    <!-- 25.0 智慧搜尋彈窗 (The Search-Driven Modal) -->
+    <div id="smart-search-modal" class="fixed inset-0 bg-black/40 backdrop-blur-md z-[6000] hidden flex-col items-center justify-center p-5 opacity-0 transition-opacity duration-300">
+        <div class="bg-[var(--kr-cream)] w-full max-w-sm rounded-3xl p-6 shadow-2xl transform scale-95 transition-transform duration-300 border border-white" id="smart-search-box">
             <h3 class="text-lg font-bold text-gray-800 mb-4 hand-drawn text-center">🔍 智慧景點檢索</h3>
             <input type="text" id="smart-search-input" placeholder="輸入景點名稱 (例: Lee Jae Mo Pizza)" class="w-full mb-4 border-none shadow-inner bg-white/70 p-3 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[var(--kr-accent)]" oninput="debounceSearch(this.value)">
             <div id="smart-search-preview" class="bg-white p-4 rounded-xl shadow-sm min-h-[120px] text-xs text-gray-600 space-y-2 border border-gray-100">
@@ -326,7 +325,7 @@
 
     <script>
         // ================= 資料庫 & 初始化 =================
-        const dbName = "TravelBookDB_v26"; let db;
+        const dbName = "TravelBookDB_v25"; let db;
         const initDB = new Promise((resolve) => {
             const req = indexedDB.open(dbName, 1);
             req.onupgradeneeded = (e) => {
@@ -347,7 +346,7 @@
         function toggleHomeOmni() { const btn = document.getElementById('home-omni-btn'); const menu = document.getElementById('home-omni-menu'); btn.classList.toggle('active'); menu.classList.toggle('active'); }
         function toggleTripOmni() { const btn = document.getElementById('trip-omni-btn'); const menu = document.getElementById('trip-omni-menu'); btn.classList.toggle('active'); menu.classList.toggle('active'); }
 
-        // ================= 26.0 嚴格 50 字以上深度約束文案 (14天完整 JSON) =================
+        // ================= 25.0 嚴格 50 字以上深度約束文案 (14天完整 JSON) =================
         function generate14DaysData() {
             const regions = ["吉隆坡","釜山","釜山","釜山","濟州島","濟州島","濟州島","濟州島","濟州島","濟州-首爾","首爾","首爾","首爾","首爾"];
             let daily = [];
@@ -486,11 +485,6 @@
                     if(diffMins > 0 && diffMins <= 60) borderClass = 'border-2 border-orange-400 shadow-orange-100';
                 }
 
-                // 26.0 智慧連結：不再使用失效連結，全部轉向 Google Search Query
-                let mapLinkHTML = item.loc === '輸入地址' 
-                    ? `<button class="text-xs text-[var(--kr-accent)] mt-1 font-bold bg-white px-2 py-1 rounded shadow-sm react-btn" onclick="toggleEdit('${item.id}')"><i class="fa-solid fa-pen"></i> 手動補充地址</button>` 
-                    : `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.loc)}" target="_blank" class="block text-xs text-blue-500 mt-1 truncate font-bold"><i class="fa-solid fa-map-pin mr-1 text-[var(--kr-accent)]"></i>${item.loc}</a>`;
-
                 html += `
                 <div class="liquid-glass mb-0 ${borderClass}" id="wrap_item_${item.id}">
                     <div class="item-header"><img id="img_${item.id}" src="${item.img}">
@@ -510,7 +504,7 @@
                         </div>
                         <h4 class="text-xl font-bold mt-2 text-gray-800" id="display_title_${item.id}">${item.task}</h4>
                         <div id="loc_display_${item.id}">
-                            ${mapLinkHTML}
+                            ${item.loc === '輸入地址' ? `<button class="text-xs text-[var(--kr-accent)] mt-1 font-bold bg-white px-2 py-1 rounded shadow-sm react-btn" onclick="toggleEdit('${item.id}')"><i class="fa-solid fa-pen"></i> 手動補充地址</button>` : `<a href="https://maps.google.com/?q=${encodeURIComponent(item.loc)}" target="_blank" class="block text-xs text-blue-500 mt-1 truncate font-bold"><i class="fa-solid fa-map-pin mr-1 text-[var(--kr-accent)]"></i>${item.loc}</a>`}
                         </div>
                         
                         <button class="w-full text-center mt-4 py-2 bg-[rgba(255,255,255,0.6)] rounded-xl text-gray-500 text-xs font-bold border border-white react-btn" onclick="toggleExpand('${item.id}', this)">展開詳細</button>
@@ -561,7 +555,7 @@
         function toggleEdit(id) { document.getElementById(`display_info_${id}`).classList.toggle('hidden'); document.getElementById(`edit_form_${id}`).classList.toggle('hidden'); }
         async function updateItemTime(dIdx, iIdx, val) { currentTrip.daily[dIdx].items[iIdx].time = val; await saveDB('trips', currentTrip.id, currentTrip); }
         
-        // ================= 26.0 智慧搜尋引擎 (The Search-Driven Engine) =================
+        // ================= 25.0 智慧搜尋引擎 (The Search-Driven Engine) =================
         const KnowledgeBase = {
             "lee jae mo pizza busan stn.": {
                 address: "South Korea, Busan, Dong-gu, Jungang-daero, 197 2층",
@@ -620,29 +614,27 @@
             let found = false;
             for(let key in KnowledgeBase) {
                 if(lowerVal.includes(key) || key.includes(lowerVal)) {
-                    currentSearchData = { name: val, ...KnowledgeBase[key], isFallback: false };
+                    currentSearchData = { name: val, ...KnowledgeBase[key] };
                     found = true; break;
                 }
             }
 
-            // 26.0 智慧地址備援：當未知景點時，地址直接使用輸入名稱，以觸發精確搜尋
             if(!found) {
                 let extPhone = val.match(/(?:\+?\d{1,3}[-.\s]?)?\(?\d{2,4}\)?[-.\s]?\d{3,4}[-.\s]?\d{3,4}/);
                 let extLink = val.match(/[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/);
                 currentSearchData = {
                     name: val.replace(/(http.*|\+?\d{8,})/, '').trim() || "自定義景點",
-                    address: val, // 移除了「未收錄精確地址」
+                    address: val.includes('http') ? '見連結' : '未收錄精確地址 (請確認後手動補充)',
                     hours: "09:00 - 18:00 (預設)",
                     phone: extPhone ? extPhone[0] : '無',
                     link: extLink ? extLink[0] : '無',
-                    lat: 0, lng: 0,
-                    isFallback: true
+                    lat: 0, lng: 0
                 };
             }
 
             document.getElementById('smart-search-preview').innerHTML = `
                 <div class="font-bold text-gray-800 border-b border-gray-100 pb-2 mb-3 text-sm">${currentSearchData.name}</div>
-                <div class="flex items-start gap-3"><i class="fa-solid fa-map-location-dot mt-1 text-[var(--kr-accent)] w-4 text-center"></i> <span class="flex-1 leading-snug">${currentSearchData.address} ${currentSearchData.isFallback ? '(Google 搜尋預覽)' : ''}</span></div>
+                <div class="flex items-start gap-3"><i class="fa-solid fa-map-location-dot mt-1 text-[var(--kr-accent)] w-4 text-center"></i> <span class="flex-1 leading-snug">${currentSearchData.address}</span></div>
                 <div class="flex items-start gap-3"><i class="fa-regular fa-clock mt-1 text-[var(--kr-accent)] w-4 text-center"></i> <span class="flex-1">${currentSearchData.hours}</span></div>
                 <div class="flex items-start gap-3"><i class="fa-solid fa-phone mt-1 text-[var(--kr-accent)] w-4 text-center"></i> <span class="flex-1">${currentSearchData.phone}</span></div>
                 <div class="flex items-start gap-3 truncate"><i class="fa-solid fa-link mt-1 text-[var(--kr-accent)] w-4 text-center"></i> <span class="truncate flex-1">${currentSearchData.link}</span></div>
@@ -673,6 +665,7 @@
             currentTrip.daily[currentDayIdx].items.push(newItm);
             await saveDB('trips', currentTrip.id, currentTrip);
             
+            // 寫入聯絡資訊與訂位連結至筆記
             let noteStr = `【系統抓取資訊】\n電話: ${currentSearchData.phone}\n連結: ${currentSearchData.link}\n營業時間: ${currentSearchData.hours}`;
             await saveFileData(newItm.id, 'note', noteStr);
 
@@ -781,7 +774,7 @@
         async function handleFlightChange(fId, field, value) { let f = currentTrip.flights.find(x => x.id === fId); if(f) { f[field] = value; await saveDB('trips', currentTrip.id, currentTrip); await syncToItinerary(); renderTransportStay(); if(document.getElementById('daily').classList.contains('active')) renderDaily(currentDayIdx); } }
         async function handleStayChange(sId, field, value) { let s = currentTrip.stays.find(x => x.id === sId); if(s) { s[field] = value; if(field==='name' && !s.addr.includes(value)) s.addr=value; await saveDB('trips', currentTrip.id, currentTrip); await syncToItinerary(); renderTransportStay(); if(document.getElementById('daily').classList.contains('active')) renderDaily(currentDayIdx); } }
 
-        // 26.0 航班同步邏輯修復：強制更新視圖並滾動至該航班日期卡片
+        // 25.0 航班同步邏輯修復：強制更新視圖並滾動至該航班日期卡片
         async function autoSyncFlight(idx, fId) {
             const fInput = document.getElementById(`flight_num_${fId}`).value.toUpperCase().trim();
             if(!fInput) return alert("請輸入航班號");
