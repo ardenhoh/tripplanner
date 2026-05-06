@@ -9,23 +9,24 @@
   
   <style>
     :root{
-      --bg:#f4f7fb;
-      --card:rgba(255,255,255,.72);
-      --card2:rgba(255,255,255,.88);
+      --bg:#f5f5f7;
+      --card:rgba(255,255,255,.76);
+      --card2:rgba(255,255,255,.92);
       --text:#111827;
       --muted:#64748b;
-      --accent:#3b82f6;
-      --accent2:#8b5cf6;
-      --line:rgba(255,255,255,.88);
-      --shadow:0 10px 30px rgba(15,23,42,.06);
-      --shadow-strong:0 20px 60px rgba(15,23,42,.10);
+      --accent:#007AFF;
+      --accent2:#6C7A93;
+      --line:rgba(255,255,255,.92);
+      --shadow:0 10px 24px rgba(15,23,42,.05);
+      --shadow-strong:0 18px 48px rgba(15,23,42,.08);
     }
     *{ box-sizing:border-box; }
     html{ scroll-behavior:smooth; }
+    html, body{ overflow-x: hidden; }
     body{
       background:
-        radial-gradient(circle at top, rgba(255,255,255,.95), transparent 40%),
-        linear-gradient(180deg, #f7f9fc 0%, #edf2f7 100%);
+        radial-gradient(circle at top, rgba(255,255,255,.98), transparent 42%),
+        linear-gradient(180deg, #f8f8fa 0%, #eef1f6 100%);
       color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", sans-serif;
       min-height: 100vh;
@@ -70,6 +71,29 @@
     }
     .btn:active{ transform: scale(.98); opacity: .92; }
     .modal-hidden{ display: none; }
+    .modal-shell{
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 0.75rem;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+    .modal-sheet{
+      position: relative;
+      width: min(100%, 42rem);
+      max-width: 100%;
+      max-height: calc(100dvh - 1.5rem);
+      overflow-y: auto;
+      overflow-x: hidden;
+      box-sizing: border-box;
+    }
+
     .helper-badge{
       border: 1px solid rgba(148,163,184,.20);
       background: rgba(255,255,255,.82);
@@ -184,9 +208,9 @@
       gap: 12px;
       padding: 14px;
       border-radius: 24px;
-      border: 1px solid rgba(255,255,255,.7);
-      background: rgba(255,255,255,.62);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.72);
+      border: 1px solid rgba(255,255,255,.72);
+      background: rgba(255,255,255,.66);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.82);
     }
     @keyframes floatSlow { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
     @keyframes drift { 0%, 100% { transform: translate3d(-8px, 0, 0) scale(1); } 50% { transform: translate3d(8px, -4px, 0) scale(1.03); } }
@@ -200,49 +224,46 @@
 <body class="antialiased">
   <div id="app"></div>
 
-  <div id="trip-modal" class="fixed inset-0 z-50 modal-hidden">
+  <div id="trip-modal" class="modal-shell modal-hidden">
     <div class="absolute inset-0 bg-black/35"></div>
-    <div class="relative mx-auto mt-8 w-[94vw] max-w-2xl glass-strong rounded-3xl p-5 md:p-6">
-      <div class="flex items-center justify-between gap-3 mb-4">
-        <div>
-          <h2 id="trip-modal-title" class="text-xl md:text-2xl font-bold">建立新的旅行</h2>
-          <p class="text-sm text-slate-500 mt-1">以日期與目的地路線為基礎，自動生成可編輯行程。</p>
-        </div>
-        <button class="btn w-10 h-10 rounded-full bg-black/5 hover:bg-black/10" data-action="close-trip-modal" aria-label="關閉">
+    <div class="modal-sheet glass-strong rounded-[32px] p-5 md:p-6 mt-0">
+      <div class="flex items-center justify-between gap-3 mb-5">
+        <h2 id="trip-modal-title" class="text-xl md:text-2xl font-semibold tracking-tight">建立新的旅行</h2>
+        <button class="btn w-10 h-10 rounded-full bg-black/5 hover:bg-black/10 shrink-0" data-action="close-trip-modal" aria-label="關閉">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <label class="block">
-          <span class="text-sm font-semibold">行程名稱</span>
-          <input id="new-trip-title" class="mt-2 w-full rounded-2xl border border-white bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300" placeholder="例如：首爾 5 日慢旅行" />
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+        <label class="block min-w-0">
+          <span class="text-sm font-medium text-slate-600">行程名稱</span>
+          <input id="new-trip-title" class="mt-2 w-full max-w-full rounded-2xl border border-white bg-white/82 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300" placeholder="例如：首爾 5 日慢旅行" />
         </label>
 
-        <label class="block">
-          <span class="text-sm font-semibold">主題色</span>
-          <input id="new-trip-color" type="color" class="mt-2 h-[48px] w-full rounded-2xl border border-white bg-white/80 p-2" value="#9A9283" />
+        <label class="block min-w-0">
+          <span class="text-sm font-medium text-slate-600">主題色</span>
+          <input id="new-trip-color" type="color" class="mt-2 h-[48px] w-full max-w-full rounded-2xl border border-white bg-white/82 p-2" value="#9A9283" />
         </label>
 
-        <label class="block">
-          <span class="text-sm font-semibold">起始日期</span>
-          <input id="new-trip-start" type="date" class="mt-2 w-full rounded-2xl border border-white bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300" />
+        <label class="block min-w-0">
+          <span class="text-sm font-medium text-slate-600">起始日期</span>
+          <input id="new-trip-start" type="date" class="mt-2 w-full max-w-full rounded-2xl border border-white bg-white/82 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300" />
         </label>
 
-        <label class="block">
-          <span class="text-sm font-semibold">天數</span>
-          <input id="new-trip-days" type="number" min="1" max="90" value="7" class="mt-2 w-full rounded-2xl border border-white bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300" />
+        <label class="block min-w-0">
+          <span class="text-sm font-medium text-slate-600">天數</span>
+          <input id="new-trip-days" type="number" min="1" max="90" value="7" class="mt-2 w-full max-w-full rounded-2xl border border-white bg-white/82 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300" />
         </label>
 
-        <label class="block md:col-span-2">
-          <span class="text-sm font-semibold">目的地路線</span>
-          <textarea id="new-trip-destinations" rows="3" class="mt-2 w-full rounded-2xl border border-white bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300" placeholder="例如：首爾, 釜山, 濟州島&#10;系統會根據天數自動展開到每天"></textarea>
-          <p class="mt-2 text-xs text-slate-500">這裡是行程生成的主資料來源，不再使用寫死的 14 天游程模板。</p>
+        <label class="block md:col-span-2 min-w-0">
+          <span class="text-sm font-medium text-slate-600">目的地路線</span>
+          <textarea id="new-trip-destinations" rows="3" class="mt-2 w-full max-w-full rounded-2xl border border-white bg-white/82 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300 resize-none" placeholder="例如：首爾, 釜山, 濟州島&#10;系統會根據天數自動展開到每天"></textarea>
+          <p class="mt-2 text-xs text-slate-500">會依你的輸入自動展開成每日行程。</p>
         </label>
 
-        <label class="block md:col-span-2">
-          <span class="text-sm font-semibold">備註</span>
-          <textarea id="new-trip-notes" rows="3" class="mt-2 w-full rounded-2xl border border-white bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300" placeholder="例如：親子行程、重視咖啡店、交通偏地鐵"></textarea>
+        <label class="block md:col-span-2 min-w-0">
+          <span class="text-sm font-medium text-slate-600">備註</span>
+          <textarea id="new-trip-notes" rows="3" class="mt-2 w-full max-w-full rounded-2xl border border-white bg-white/82 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300 resize-none" placeholder="例如：親子行程、重視咖啡店、交通偏地鐵"></textarea>
         </label>
       </div>
 
@@ -323,6 +344,12 @@
       const d = new Date(`${iso}T00:00:00`);
       if (Number.isNaN(d.getTime())) return iso || "";
       return new Intl.DateTimeFormat("zh-Hant", { year: "numeric", month: "2-digit", day: "2-digit", weekday: "short" }).format(d);
+    }
+
+    function displayDateYMD(iso){
+      const d = new Date(`${iso}T00:00:00`);
+      if (Number.isNaN(d.getTime())) return iso || "";
+      return new Intl.DateTimeFormat("zh-Hant", { year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
     }
 
     const WEATHER_MOODS = [
@@ -434,7 +461,7 @@
       const start = formatDateISO(new Date());
       return normalizeTrip({
         id: uuid(),
-        title: "我的第一個旅行",
+        title: "未命名旅行",
         startDate: start,
         daysCount: 5,
         destinationsInput: "首爾, 釜山, 濟州島",
@@ -754,12 +781,6 @@
                   <h1 class="text-2xl md:text-3xl font-bold tracking-tight">我的旅行繪本</h1>
                 </div>
                 <div class="flex flex-wrap gap-2">
-                  <button class="btn rounded-2xl px-4 py-3 bg-white/70 border border-white hover:bg-white" data-action="open-import-modal">
-                    <i class="fa-solid fa-file-import mr-2"></i>匯入
-                  </button>
-                  <button class="btn rounded-2xl px-4 py-3 bg-white/70 border border-white hover:bg-white" data-action="export-state">
-                    <i class="fa-solid fa-file-export mr-2"></i>匯出
-                  </button>
                   <button class="btn rounded-2xl px-5 py-3 bg-[var(--accent)] text-white font-semibold" data-action="open-trip-modal">
                     <i class="fa-solid fa-plus mr-2"></i>新增行程
                   </button>
@@ -781,7 +802,7 @@
               <div class="glass rounded-3xl p-5 md:col-span-2">
                 <p class="text-sm text-slate-500">現在使用中的行程</p>
                 <p class="text-2xl font-bold mt-2">${active ? active.title : "尚未建立"}</p>
-                <p class="text-sm text-slate-500 mt-1">${active ? `${active.daysCount} 天 · 起始 ${displayDate(active.startDate)}` : "先建立一個旅行開始編輯"}</p>
+                <p class="text-sm text-slate-500 mt-1">${active ? `${displayDateYMD(active.startDate)} 至 ${displayDateYMD(addDays(active.startDate, Math.max(0, active.daysCount - 1)))}` : "先建立一個旅行開始編輯"}</p>
               </div>
             </section>
 
@@ -816,20 +837,20 @@
       return `
         <article class="glass rounded-3xl p-5 flex flex-col gap-4 border border-white/80" style="border-left: 10px solid ${trip.color}">
           <div class="flex items-start justify-between gap-3">
-            <div>
-              <h3 class="text-xl font-bold">${escapeHtml(trip.title)}</h3>
-              <p class="text-sm text-slate-500 mt-1">${trip.daysCount} 天 · ${displayDate(trip.startDate)} 起</p>
+            <div class="min-w-0">
+              <h3 class="text-xl font-semibold tracking-tight truncate">${escapeHtml(trip.title)}</h3>
+              <p class="text-sm text-slate-500 mt-1">${displayDateYMD(trip.startDate)} · ${displayDateYMD(addDays(trip.startDate, Math.max(0, trip.daysCount - 1)))}</p>
             </div>
-            <span class="helper-badge rounded-full px-3 py-1 text-xs font-semibold">完成 ${completion}%</span>
+            <span class="helper-badge rounded-full px-3 py-1 text-xs font-semibold shrink-0">完成 ${completion}%</span>
           </div>
 
-          <div class="flex flex-wrap gap-2">
-            ${(trip.destinationsInput ? splitDestinations(trip.destinationsInput) : []).slice(0, 4).map(d => `<span class="rounded-full bg-white/80 px-3 py-1 text-xs border border-white">${escapeHtml(d)}</span>`).join("") || `<span class="rounded-full bg-white/80 px-3 py-1 text-xs border border-white">未設定目的地</span>`}
+          <div class="rounded-2xl bg-white/70 border border-white px-4 py-3">
+            <div class="text-xs text-slate-500">目的地</div>
+            <div class="mt-1 text-sm font-medium text-slate-700 truncate">${escapeHtml((trip.destinationsInput ? splitDestinations(trip.destinationsInput).join(" · ") : "未設定目的地") || "未設定目的地")}</div>
           </div>
 
           <div class="text-sm text-slate-500">
-            <p>第一天：${firstDay ? `${formatDateLabel(firstDay.date)} · ${escapeHtml(firstDay.destination || "")}` : "尚未生成"}</p>
-            <p class="mt-1">最後一天：${lastDay ? `${formatDateLabel(lastDay.date)} · ${escapeHtml(lastDay.destination || "")}` : "尚未生成"}</p>
+            <p>天數：${trip.daysCount} 天</p>
           </div>
 
           <div class="flex flex-wrap gap-2 pt-2">
@@ -860,26 +881,19 @@
           <div class="mx-auto max-w-7xl px-4 md:px-6 py-4">
             <div class="flex flex-col gap-4">
               <div class="flex items-center justify-between gap-3">
-                <div class="flex items-center gap-3 min-w-0">
-                  <button class="btn w-11 h-11 rounded-2xl bg-white/75 border border-white shadow-sm" data-action="go-home">
+                <div class="flex items-center gap-2 min-w-0 flex-1">
+                  <button class="btn w-11 h-11 rounded-2xl bg-white/80 border border-white shadow-sm shrink-0" data-action="go-home" aria-label="返回首頁" title="返回首頁">
                     <i class="fa-solid fa-arrow-left"></i>
+                  </button>
+                  <button class="btn w-11 h-11 rounded-2xl bg-white/80 border border-white shadow-sm shrink-0" data-action="open-search" aria-label="搜尋" title="搜尋">
+                    <i class="fa-solid fa-magnifying-glass"></i>
                   </button>
                   <div class="min-w-0">
                     <p class="text-sm text-slate-500">行程編輯器</p>
-                    <h1 class="text-xl md:text-3xl font-semibold tracking-tight truncate">${escapeHtml(trip.title)}</h1>
+                    <input data-bind="trip.title" value="${escapeAttr(trip.title)}" class="w-full min-w-0 bg-transparent border-0 p-0 text-xl md:text-3xl font-semibold tracking-tight truncate outline-none focus:ring-0" />
                   </div>
                 </div>
-                <div class="flex flex-wrap gap-2 justify-end">
-                  <button class="btn rounded-2xl px-4 py-3 bg-white/75 border border-white shadow-sm" data-action="open-search">
-                    <i class="fa-solid fa-magnifying-glass mr-2"></i>輔助搜尋
-                  </button>
-                  <button class="btn rounded-2xl px-4 py-3 bg-white/75 border border-white shadow-sm" data-action="open-import-modal">
-                    匯入
-                  </button>
-                  <button class="btn rounded-2xl px-4 py-3 bg-white/75 border border-white shadow-sm" data-action="export-state">
-                    匯出
-                  </button>
-                </div>
+                <div class="flex flex-wrap gap-2 justify-end"></div>
               </div>
 
               <div class="grid grid-cols-1 lg:grid-cols-[1.25fr_.95fr] gap-4">
@@ -895,19 +909,23 @@
                       ${weatherVisualMarkup(heroWeather, "lg")}
                     </div>
                   </div>
-                  <div class="relative z-10 mt-5 flex flex-wrap gap-3">
+                  <div class="relative z-10 mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div class="rounded-2xl bg-white/70 border border-white px-4 py-3">
-                      <div class="text-xs text-slate-500">起始日期</div>
-                      <div class="mt-1 font-semibold">${displayDate(trip.startDate)}</div>
+                      <div class="text-xs text-slate-500">出發日期</div>
+                      <div class="mt-1 font-semibold">${displayDateYMD(trip.startDate)}</div>
+                    </div>
+                    <div class="rounded-2xl bg-white/70 border border-white px-4 py-3">
+                      <div class="text-xs text-slate-500">回程日期</div>
+                      <div class="mt-1 font-semibold">${displayDateYMD(addDays(trip.startDate, Math.max(0, trip.days.length - 1)))}</div>
                     </div>
                     <div class="rounded-2xl bg-white/70 border border-white px-4 py-3">
                       <div class="text-xs text-slate-500">旅程天數</div>
                       <div class="mt-1 font-semibold">${trip.days.length} 天</div>
                     </div>
-                    <div class="rounded-2xl bg-white/70 border border-white px-4 py-3">
-                      <div class="text-xs text-slate-500">預估氣溫</div>
-                      <div class="mt-1 font-semibold">${heroWeather.temp}°C</div>
-                    </div>
+                  </div>
+                  <div class="relative z-10 mt-4 rounded-2xl bg-white/58 border border-white px-4 py-3">
+                    <div class="text-xs text-slate-500">目的地</div>
+                    <div class="mt-1 font-semibold truncate">${escapeHtml(splitDestinations(trip.destinationsInput).join(" · ") || "未設定")}</div>
                   </div>
                 </div>
 
@@ -1138,8 +1156,8 @@
           <div class="absolute right-0 top-0 h-full w-full max-w-xl glass-strong p-4 md:p-6 overflow-y-auto">
             <div class="flex items-start justify-between gap-3 mb-4">
               <div>
-                <h2 class="text-2xl font-bold">輔助搜尋</h2>
-                <p class="text-sm text-slate-500 mt-1">這裡只提供建議，點選後才會插入到你的行程中。</p>
+                <h2 class="text-2xl font-semibold tracking-tight">搜尋</h2>
+                <p class="text-sm text-slate-500 mt-1">只作輔助，不會覆蓋你的主行程。</p>
               </div>
               <button class="btn w-10 h-10 rounded-full bg-black/5 hover:bg-black/10" data-action="close-search"><i class="fa-solid fa-xmark"></i></button>
             </div>
@@ -1181,16 +1199,16 @@
 
             <section class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
               <div class="glass rounded-3xl p-5">
-                <p class="text-sm text-slate-500">總天數</p>
-                <p class="text-3xl font-bold mt-2">${trip.days.length}</p>
+                <p class="text-sm text-slate-500">出發日期</p>
+                <p class="text-xl font-semibold mt-2">${displayDateYMD(trip.startDate)}</p>
               </div>
               <div class="glass rounded-3xl p-5">
-                <p class="text-sm text-slate-500">目的地數量</p>
-                <p class="text-3xl font-bold mt-2">${splitDestinations(trip.destinationsInput).length || 1}</p>
+                <p class="text-sm text-slate-500">回程日期</p>
+                <p class="text-xl font-semibold mt-2">${displayDateYMD(addDays(trip.startDate, Math.max(0, trip.days.length - 1)))}</p>
               </div>
               <div class="glass rounded-3xl p-5">
-                <p class="text-sm text-slate-500">預算</p>
-                <p class="text-3xl font-bold mt-2">${Number(trip.budget || 0).toLocaleString()}</p>
+                <p class="text-sm text-slate-500">目的地</p>
+                <p class="text-xl font-semibold mt-2 truncate">${escapeHtml(splitDestinations(trip.destinationsInput).join(" · ") || "未設定")}</p>
               </div>
             </section>
           </main>
@@ -1220,8 +1238,10 @@
       if (app.tripModalOpen) modal.classList.remove("modal-hidden");
       else modal.classList.add("modal-hidden");
       const importModal = document.getElementById("import-modal");
-      if (app.importModalOpen) importModal.classList.remove("modal-hidden");
-      else importModal.classList.add("modal-hidden");
+      if (importModal) {
+        if (app.importModalOpen) importModal.classList.remove("modal-hidden");
+        else importModal.classList.add("modal-hidden");
+      }
     }
 
     function bindLiveInputs(){
@@ -1351,25 +1371,7 @@
       if (action === "insert-suggestion") {
         openSearch();
       }
-      if (action === "export-state") exportState();
-      if (action === "open-import-modal") {
-        app.importModalOpen = true;
-        render();
-        document.getElementById("import-modal").classList.remove("modal-hidden");
-      }
-      if (action === "close-import-modal") {
-        app.importModalOpen = false;
-        closeImportModal();
-      }
-      if (action === "do-import") {
-        const text = document.getElementById("import-json").value.trim();
-        if (!text) return;
-        try {
-          await importFromText(text);
-        } catch (err) {
-          alert("匯入失敗：" + err.message);
-        }
-      }
+
     });
 
     document.addEventListener("keydown", (e) => {
@@ -1379,7 +1381,8 @@
         app.importModalOpen = false;
         closeSearch();
         closeTripModal();
-        closeImportModal();
+        const importModal = document.getElementById("import-modal");
+        if (importModal) closeImportModal();
       }
     });
 
