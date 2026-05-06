@@ -41,7 +41,7 @@
         .nav-item.active { color: var(--kr-text); transform: translateY(-4px); }
         .nav-item.active::after { content:''; position:absolute; bottom:-6px; left:50%; transform:translateX(-50%); width:4px; height:4px; background:var(--kr-accent); border-radius:50%; }
 
-        /* 23.0 小時天氣無溢出重構：高度對齊日曆，內部 padding 與 gap 分佈 */
+        /* 24.0 小時天氣無溢出重構：鎖定 65px 與 flex-shrink: 0 */
         .h-scroll-container { margin: -10px -5px; padding: 10px 5px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; scroll-behavior: smooth; }
         .h-scroll-container::-webkit-scrollbar { display: none; }
         .h-scroll { display: flex; gap: 8px; width: max-content; }
@@ -49,12 +49,12 @@
         .day-btn.active { background: var(--kr-accent); color: #fff; border-color: var(--kr-accent); font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         
         .hourly-item { 
-            flex: 0 0 55px; height: 65px; /* 高度與日曆完全對齊 */
+            flex: 0 0 55px; height: 65px; flex-shrink: 0; /* 24.0 鎖定高度與不縮放 */
             text-align: center; font-size: 0.7rem; line-height: 1.1; 
             border-radius: 12px; background: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.3); 
             scroll-snap-align: center; transition: 0.2s; display: flex; flex-direction: column; 
             justify-content: center; align-items: center; box-sizing: border-box; overflow: hidden; 
-            padding: 6px 4px; gap: 4px; /* 加入 padding 與 gap，不再擠成一團 */
+            padding: 6px 4px; gap: 4px; 
         }
         .hourly-item.active-hour { background: var(--kr-accent); color: white; font-weight: bold; transform: scale(1.1); border-color: transparent; box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 10; }
         .hourly-item .time-txt { font-size: 0.65rem; font-weight: bold; }
@@ -114,12 +114,12 @@
         .thumb-box { width: 60px; height: 60px; border-radius: 10px; object-fit: cover; cursor: pointer; border: 1px solid #eee; }
         .thumb-del-btn { position: absolute; top: -6px; right: -6px; background: #ef4444; color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 10px; display: flex; align-items: center; justify-content: center; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
-        /* 23.0 全屏預覽強化：50px 以上熱區，白色圓環底色 */
+        /* 24.0 全屏預覽優化：X 按鈕使用 rgba(255,255,255,0.3) 與 blur(10px) */
         #fullscreen-preview { display: none; position: fixed; inset: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.95); z-index: 5000; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(15px); overflow: hidden; }
         #preview-wrapper { width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; }
         #preview-img { max-width: 100%; max-height: 100%; object-fit: contain; transform-origin: center; transition: transform 0.1s ease-out; cursor: grab; }
         #preview-iframe { width: 100vw; height: 100vh; border: none; background: white; }
-        .close-fullscreen { position: fixed; top: 25px; right: 25px; background: rgba(255,255,255,0.25); backdrop-filter: blur(10px); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 28px; z-index: 5100; border: 2px solid rgba(255,255,255,0.7); box-shadow: 0 4px 15px rgba(0,0,0,0.5); transition: 0.2s; }
+        .close-fullscreen { position: fixed; top: 25px; right: 25px; background: rgba(255,255,255,0.3); backdrop-filter: blur(10px); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 28px; z-index: 5100; border: 2px solid rgba(255,255,255,0.7); box-shadow: 0 4px 15px rgba(0,0,0,0.5); transition: 0.2s; }
         .close-fullscreen:active { transform: scale(0.9); background: rgba(255,255,255,0.5); }
 
         .budget-ring { position: relative; width: 110px; height: 110px; border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; transition: background 0.3s; }
@@ -135,7 +135,7 @@
         .wheel-item { height: 40px; line-height: 40px; scroll-snap-align: center; font-size: 1.1rem; font-weight: bold; color: var(--kr-text); transition: 0.2s; }
         .picker-selection-bar { position: absolute; top: 55px; left: 0; right: 0; height: 40px; border-top: 1px solid rgba(0,0,0,0.1); border-bottom: 1px solid rgba(0,0,0,0.1); pointer-events: none; z-index: -1; background: rgba(0,0,0,0.03); }
 
-        /* 23.0 語意純淨化：僅保留圖示切換 */
+        /* 語意純淨化：僅保留圖示切換 */
         details > summary { list-style: none; }
         details > summary::-webkit-details-marker { display: none; }
         details > summary .toggle-icon { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -214,7 +214,6 @@
             <div id="transport-stay" class="tab-section">
                 <h2 class="text-xl font-bold mb-6 text-center hand-drawn">交通與住宿 🏨✈️</h2>
                 
-                <!-- 23.0 <details> 純 CSS 箭頭旋轉，移除文字 -->
                 <details class="liquid-glass mb-4 group" open>
                     <summary class="p-4 font-bold cursor-pointer flex justify-between items-center group-summary">
                         <span><i class="fa-solid fa-plane mr-2 text-[var(--kr-accent)]"></i> 航班資訊</span>
@@ -297,7 +296,7 @@
         </nav>
     </div>
 
-    <!-- 23.0 全屏檔案預覽 Modal: 大熱區 fa-xmark -->
+    <!-- 24.0 全屏檔案預覽 Modal: 背景與熱區優化 -->
     <div id="fullscreen-preview" onclick="closePreview()">
         <div class="close-fullscreen react-btn" onclick="event.stopPropagation(); closePreview()"><i class="fa-solid fa-xmark"></i></div>
         <div id="preview-wrapper" onclick="event.stopPropagation()">
@@ -315,7 +314,7 @@
 
     <script>
         // ================= 資料庫 & 初始化 =================
-        const dbName = "TravelBookDB_v23"; let db;
+        const dbName = "TravelBookDB_v24"; let db;
         const initDB = new Promise((resolve) => {
             const req = indexedDB.open(dbName, 1);
             req.onupgradeneeded = (e) => {
@@ -336,14 +335,14 @@
         function toggleHomeOmni() { const btn = document.getElementById('home-omni-btn'); const menu = document.getElementById('home-omni-menu'); btn.classList.toggle('active'); menu.classList.toggle('active'); }
         function toggleTripOmni() { const btn = document.getElementById('trip-omni-btn'); const menu = document.getElementById('trip-omni-menu'); btn.classList.toggle('active'); menu.classList.toggle('active'); }
 
-        // ================= 23.0 嚴格 50 字以上深度約束文案 (14天完整 JSON) =================
+        // ================= 24.0 嚴格 50 字以上深度約束文案 (14天完整 JSON) =================
         function generate14DaysData() {
             const regions = ["吉隆坡","釜山","釜山","釜山","濟州島","濟州島","濟州島","濟州島","濟州島","濟州-首爾","首爾","首爾","首爾","首爾"];
             let daily = [];
             
-            const deepIntro = "作為一名專注於細節的數據分析師，我強烈推薦這座完美融合包浩斯極簡美學與工業鋼骨結構的地標建築。這裡不僅在空間幾何上展現了極致的對稱與流體力學，更在自然採光與不鏽鋼材質的折射中，營造出冷冽卻充滿生命力的視覺張力。強烈建議預留至少兩個小時，仔細品味其建築空間的流動感與光影的微妙變化。"; 
-            const deepPos = "這裡絕對是追求質感與極簡風格的旅人首選！現場的光線折射與清水模材質紋理真的無可挑剔，每一個轉角都像是精心計算過的取景框，隨手一拍都是自帶高級感濾鏡的大片，發到小紅書絕對能收穫滿滿的讚與收藏。周邊的配套設施也極度完善，無論是動線設計還是咖啡休息區的安排，都展現了極高的服務水準與細節控的堅持。"; 
-            const deepNeg = "唯一需要警戒的變量是週末的遊客密度，這會顯著降低空間的質感體驗。建議避開尖峰時段，否則排隊的人流數據會讓你感到焦慮。此外，周邊商業設施的定價策略偏高，性價比係數較低，建議自行攜帶飲用水或在進入該區域前完成用餐，將預算保留給真正值得的深度體驗，避免不必要的情緒內耗。"; 
+            const deepIntro = "身為對空間與數據敏感的分析師，這座建築是包浩斯風格與工業設計完美結合的體現。其幾何對稱性、不鏽鋼骨架以及大面積玻璃帷幕，在光線的折射下形成極具張力的光影數據矩陣。建議在此停留至少兩小時，仔細觀察自然光如何在冰冷的金屬表面流動，這是體會空間理性的最佳實踐場域。"; 
+            const deepPos = "這裡的空間規劃絕對是細節控的極致追求。動線安排符合人體工學數據，採光設計使清水模牆面顯得層次分明且不冰冷。每一個視角都能截取到充滿秩序美學的構圖，隨手拍攝的畫面都自帶高級濾鏡，在社群平台上勢必能獲得極佳的互動反饋，周邊完善的配套設施更是大幅提升了整體的探索體驗。"; 
+            const deepNeg = "唯一需要高度關注的變量在於週末與連續假期的人流密度，這會嚴重干擾對空間質感的深度體驗。強烈建議在平日上午前往以避開擁擠高峰。另外，周邊的餐飲消費定價偏向觀光客溢價，性價比數值偏低，建議各位提前準備飲用水，並在其他區域完成用餐，將寶貴的預算集中於更能產生價值的情緒體驗上。"; 
 
             for(let i=0; i<14; i++) {
                 let dayDate = new Date(2026, 9, 29); dayDate.setDate(dayDate.getDate() + i);
@@ -474,7 +473,6 @@
                     if(diffMins > 0 && diffMins <= 60) borderClass = 'border-2 border-orange-400 shadow-orange-100';
                 }
 
-                // 23.0 - 新增 dIdx, iIdx 到 smartGoogleMapParse 確保行程卡片能精確覆蓋
                 html += `
                 <div class="liquid-glass mb-0 ${borderClass}">
                     <div class="item-header"><img id="img_${item.id}" src="${item.img}">
@@ -497,7 +495,6 @@
                             ${item.loc === '輸入地址' ? `<button class="text-xs text-[var(--kr-accent)] mt-1 font-bold bg-white px-2 py-1 rounded shadow-sm react-btn" onclick="toggleEdit('${item.id}')"><i class="fa-solid fa-pen"></i> 點此輸入名稱或地圖連結</button>` : `<a href="https://maps.google.com/?q=${encodeURIComponent(item.loc)}" target="_blank" class="block text-xs text-blue-500 mt-1 truncate font-bold"><i class="fa-solid fa-map-pin mr-1 text-[var(--kr-accent)]"></i>${item.loc}</a>`}
                         </div>
                         
-                        <!-- 23.0 語意純淨化：移除展開按鈕 Emoji -->
                         <button class="w-full text-center mt-4 py-2 bg-[rgba(255,255,255,0.6)] rounded-xl text-gray-500 text-xs font-bold border border-white react-btn" onclick="toggleExpand('${item.id}', this)">展開詳細</button>
                         
                         <div class="expand-content">
@@ -532,7 +529,6 @@
 
         async function optimizeDailyRoute() { toggleTripOmni(); let items = currentTrip.daily[currentDayIdx].items; if(items.length <= 3) return alert("中間行程過少，無需優化！"); let startNode = items[0]; let endNode = items[items.length - 1]; let unvisited = items.slice(1, items.length - 1); let optimized = []; let current = startNode; while(unvisited.length > 0) { let nearestIdx = 0; let minDist = Infinity; for(let i=0; i<unvisited.length; i++) { let d = getDistKm(current.lat, current.lng, unvisited[i].lat, unvisited[i].lng); if(d < minDist) { minDist = d; nearestIdx = i; } } current = unvisited.splice(nearestIdx, 1)[0]; optimized.push(current); } currentTrip.daily[currentDayIdx].items = [startNode, ...optimized, endNode]; await saveDB('trips', currentTrip.id, currentTrip); renderDaily(currentDayIdx); alert("已重排中間最短距離路線！"); }
         
-        // 23.0 狀態偵測：徹底移除 Emoji
         function toggleExpand(id, btn) { 
             const w = document.getElementById(`wrap_${id}`); 
             w.classList.toggle('expanded'); 
@@ -547,46 +543,50 @@
         function toggleEdit(id) { document.getElementById(`display_info_${id}`).classList.toggle('hidden'); document.getElementById(`edit_form_${id}`).classList.toggle('hidden'); }
         async function updateItemTime(dIdx, iIdx, val) { currentTrip.daily[dIdx].items[iIdx].time = val; await saveDB('trips', currentTrip.id, currentTrip); }
         
-        // ================= 23.0 The Omniscience Parser (全能解析引擎) =================
-        const mockGeoDB = {
-            "default": { name: "解析地標名稱", hours: "09:00" },
-            "COEX": { name: "COEX 星空圖書館", hours: "10:30" },
-            "hotel": { name: "精選飯店", hours: "15:00" }
-        };
-        
+        // ================= 24.0 The Omniscience Parser 2.0 (萬能解析引擎) =================
         async function smartGoogleMapParse(input, id, type = 'item', dIdx = null, iIdx = null) {
             let val = input.value.trim(); 
             let targetNameEl = type === 'stay' ? document.getElementById(`stay_name_${id}`) : document.getElementById(`edit_task_${id}`);
             
-            if(type === 'item' && targetNameEl) { if(targetNameEl.value === '新行程' || targetNameEl.dataset.autoSync === "true") { targetNameEl.value = val; targetNameEl.dataset.autoSync = "true"; } }
+            if(type === 'item' && targetNameEl) { 
+                if(targetNameEl.value === '新行程' || targetNameEl.dataset.autoSync === "true") { 
+                    targetNameEl.value = val; targetNameEl.dataset.autoSync = "true"; 
+                } 
+            }
 
-            if (!val.includes('http')) return; // 不是連結不處理
+            if (!val.includes('http')) return; 
 
             input.value = "📍 Google Maps 萬能解析中...";
             let finalUrl = val;
+            let extractedName = "解析地標";
+            let lat = 0, lng = 0;
 
-            // 第一層：短連結自動脫殼 (使用 allorigins 代理)
+            // 第一層：allorigins 非同步提取 (5秒強制超時) + <title> 脫殼
             if(val.includes('maps.app.goo.gl') || val.includes('goo.gl/maps')) {
                 try {
-                    let res = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(val));
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 5000);
+                    let res = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(val), { signal: controller.signal });
+                    clearTimeout(timeoutId);
                     let data = await res.json();
                     
                     if (data && data.contents) {
                         let matchUrl = data.contents.match(/<meta property="og:url" content="([^"]+)"/);
-                        if (matchUrl && matchUrl[1]) {
-                            finalUrl = matchUrl[1];
+                        if (matchUrl && matchUrl[1]) finalUrl = matchUrl[1];
+
+                        let matchTitle = data.contents.match(/<title>([^<]+)<\/title>/);
+                        if (matchTitle && matchTitle[1]) {
+                            extractedName = matchTitle[1].replace(/\s*-\s*Google\s*(地圖|Maps)\s*$/i, '').trim();
                         }
                     }
-                } catch(e) { console.error("URL 脫殼失敗", e); }
+                } catch(e) { console.error("URL 脫殼失敗或超時", e); }
             }
 
-            // 第二層：地名與座標精準提取
-            let extractedName = "解析地標";
-            let lat = 0, lng = 0;
-
+            // 第二層：精準 URL 正則提取
             try {
-                if(finalUrl.includes('/place/')) {
-                    extractedName = decodeURIComponent(finalUrl.split('/place/')[1].split('/')[0].replace(/\+/g, ' '));
+                let placeMatch = finalUrl.match(/\/place\/([^\/]+)/);
+                if(placeMatch && placeMatch[1]) {
+                    extractedName = decodeURIComponent(placeMatch[1].replace(/\+/g, ' '));
                 }
             } catch(e) {}
 
@@ -596,19 +596,22 @@
                 lng = parseFloat(coordMatch[2]);
             }
 
-            // 輔助時間填充
-            let hours = mockGeoDB["default"].hours;
+            let hours = "09:00";
             if (extractedName.includes("圖書館") || extractedName.includes("COEX")) hours = "10:30";
             if (type === 'stay') hours = "15:00";
 
-            // 第三層：自動寫入與覆蓋邏輯
+            // 第三層：強制異步覆蓋與即時渲染
             setTimeout(async () => {
                 if(type === 'stay') {
                     input.value = extractedName;
-                    input.dispatchEvent(new Event('change')); // 觸發儲存
+                    input.dispatchEvent(new Event('change'));
                     let stay = currentTrip.stays.find(s => s.id === id);
                     if(stay) { stay.name = extractedName; stay.addr = extractedName; stay.lat = lat; stay.lng = lng; }
+                    
+                    await saveDB('trips', currentTrip.id, currentTrip);
+                    await syncToItinerary();
                     renderTransportStay();
+                    if(document.getElementById('daily').classList.contains('active')) renderDaily(currentDayIdx);
                 } else {
                     input.value = extractedName + " (精準座標地址)";
                     if(targetNameEl) { targetNameEl.value = extractedName; }
@@ -621,9 +624,10 @@
                         itm.task = extractedName;
                         itm.lat = lat;
                         itm.lng = lng;
+                        await saveDB('trips', currentTrip.id, currentTrip);
+                        renderDaily(dIdx);
                     }
                 }
-                await saveDB('trips', currentTrip.id, currentTrip);
             }, 300);
         }
 
@@ -636,7 +640,7 @@
 
         async function addNewAttraction() { 
             toggleTripOmni(); 
-            currentTrip.daily[currentDayIdx].items.push({ id: `d${currentDayIdx}_${Date.now()}`, time: "12:00", task: "新行程", loc: "輸入地址", lat: 0, lng: 0, endTime: "22:00", img: "https://images.unsplash.com/photo-1556012018-50c5c0da73bf?w=600", isAuto: false, intro:"作為一名專注於細節的數據分析師，我強烈推薦這座完美融合包浩斯極簡美學與工業鋼骨結構的地標建築。這裡不僅在空間幾何上展現了極致的對稱與流體力學，更在自然採光與不鏽鋼材質的折射中，營造出冷冽卻充滿生命力的視覺張力。強烈建議預留至少兩個小時，仔細品味其建築空間的流動感與光影的微妙變化。", review:{pos:"這裡絕對是追求質感與極簡風格的旅人首選！現場的光線折射與清水模材質紋理真的無可挑剔，每一個轉角都像是精心計算過的取景框，隨手一拍都是自帶高級感濾鏡的大片，發到小紅書絕對能收穫滿滿的讚與收藏。周邊的配套設施也極度完善，無論是動線設計還是咖啡休息區的安排，都展現了極高的服務水準與細節控的堅持。",neg:"唯一需要警戒的變量是週末的遊客密度，這會顯著降低空間的質感體驗。建議避開尖峰時段，否則排隊的人流數據會讓你感到焦慮。此外，周邊商業設施的定價策略偏高，性價比係數較低，建議自行攜帶飲用水或在進入該區域前完成用餐，將預算保留給真正值得的深度體驗，避免不必要的情緒內耗。"} }); 
+            currentTrip.daily[currentDayIdx].items.push({ id: `d${currentDayIdx}_${Date.now()}`, time: "12:00", task: "新行程", loc: "輸入地址", lat: 0, lng: 0, endTime: "22:00", img: "https://images.unsplash.com/photo-1556012018-50c5c0da73bf?w=600", isAuto: false, intro:"身為對空間與數據敏感的分析師，這座建築是包浩斯風格與工業設計完美結合的體現。其幾何對稱性、不鏽鋼骨架以及大面積玻璃帷幕，在光線的折射下形成極具張力的光影數據矩陣。建議在此停留至少兩小時，仔細觀察自然光如何在冰冷的金屬表面流動，這是體會空間理性的最佳實踐場域。", review:{pos:"這裡的空間規劃絕對是細節控的極致追求。動線安排符合人體工學數據，採光設計使清水模牆面顯得層次分明且不冰冷。每一個視角都能截取到充滿秩序美學的構圖，隨手拍攝的畫面都自帶高級濾鏡，在社群平台上勢必能獲得極佳的互動反饋，周邊完善的配套設施更是大幅提升了整體的探索體驗。",neg:"唯一需要高度關注的變量在於週末與連續假期的人流密度，這會嚴重干擾對空間質感的深度體驗。強烈建議在平日上午前往以避開擁擠高峰。另外，周邊的餐飲消費定價偏向觀光客溢價，性價比數值偏低，建議各位提前準備飲用水，並在其他區域完成用餐，將寶貴的預算集中於更能產生價值的情緒體驗上。"} }); 
             await saveDB('trips', currentTrip.id, currentTrip); renderDaily(currentDayIdx); setTimeout(() => window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'}), 100); 
         }
         async function deleteItem(dIdx, iIdx) { if(currentTrip.daily[dIdx].items[iIdx].isAuto) return alert("自動連動卡片請至交通住宿修改！"); if(!confirm("確定刪除此行程？")) return; currentTrip.daily[dIdx].items.splice(iIdx, 1); await saveDB('trips', currentTrip.id, currentTrip); renderDaily(currentDayIdx); }
@@ -704,8 +708,13 @@
                 if(parts.length === 2) {
                     let dIn = parts[0].trim(), dOut = parts[1].trim();
                     let dInIdx = currentTrip.daily.findIndex(d => d.date === dIn); let dOutIdx = currentTrip.daily.findIndex(d => d.date === dOut);
-                    if(dInIdx !== -1) currentTrip.daily[dInIdx].items.push({ id: `stay_in_${s.id}`, time: "15:00", task: `入住 ${s.name}`, loc: s.addr || "飯店地址", lat: s.lat||0, lng: s.lng||0, isAuto: true, img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600", intro:"作為一名專注於細節的數據分析師，我強烈推薦這座完美融合包浩斯極簡美學與工業鋼骨結構的地標建築。這裡不僅在空間幾何上展現了極致的對稱與流體力學，更在自然採光與不鏽鋼材質的折射中，營造出冷冽卻充滿生命力的視覺張力。強烈建議預留至少兩個小時，仔細品味其建築空間的流動感與光影的微妙變化。", review:{pos:"這裡絕對是追求質感與極簡風格的旅人首選！現場的光線折射與清水模材質紋理真的無可挑剔，每一個轉角都像是精心計算過的取景框，隨手一拍都是自帶高級感濾鏡的大片，發到小紅書絕對能收穫滿滿的讚與收藏。周邊的配套設施也極度完善，無論是動線設計還是咖啡休息區的安排，都展現了極高的服務水準與細節控的堅持。",neg:"唯一需要警戒的變量是週末的遊客密度，這會顯著降低空間的質感體驗。建議避開尖峰時段，否則排隊的人流數據會讓你感到焦慮。此外，周邊商業設施的定價策略偏高，性價比係數較低，建議自行攜帶飲用水或在進入該區域前完成用餐，將預算保留給真正值得的深度體驗，避免不必要的情緒內耗。"} });
-                    if(dOutIdx !== -1) currentTrip.daily[dOutIdx].items.unshift({ id: `stay_out_${s.id}`, time: "09:00", task: `從 ${s.name} 出發`, loc: s.addr || "飯店地址", lat: s.lat||0, lng: s.lng||0, isAuto: true, img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600", intro:"作為一名專注於細節的數據分析師，我強烈推薦這座完美融合包浩斯極簡美學與工業鋼骨結構的地標建築。這裡不僅在空間幾何上展現了極致的對稱與流體力學，更在自然採光與不鏽鋼材質的折射中，營造出冷冽卻充滿生命力的視覺張力。強烈建議預留至少兩個小時，仔細品味其建築空間的流動感與光影的微妙變化。", review:{pos:"這裡絕對是追求質感與極簡風格的旅人首選！現場的光線折射與清水模材質紋理真的無可挑剔，每一個轉角都像是精心計算過的取景框，隨手一拍都是自帶高級感濾鏡的大片，發到小紅書絕對能收穫滿滿的讚與收藏。周邊的配套設施也極度完善，無論是動線設計還是咖啡休息區的安排，都展現了極高的服務水準與細節控的堅持。",neg:"唯一需要警戒的變量是週末的遊客密度，這會顯著降低空間的質感體驗。建議避開尖峰時段，否則排隊的人流數據會讓你感到焦慮。此外，周邊商業設施的定價策略偏高，性價比係數較低，建議自行攜帶飲用水或在進入該區域前完成用餐，將預算保留給真正值得的深度體驗，避免不必要的情緒內耗。"} });
+                    
+                    const deepIntro = "身為對空間與數據敏感的分析師，這座建築是包浩斯風格與工業設計完美結合的體現。其幾何對稱性、不鏽鋼骨架以及大面積玻璃帷幕，在光線的折射下形成極具張力的光影數據矩陣。建議在此停留至少兩小時，仔細觀察自然光如何在冰冷的金屬表面流動，這是體會空間理性的最佳實踐場域。"; 
+                    const deepPos = "這裡的空間規劃絕對是細節控的極致追求。動線安排符合人體工學數據，採光設計使清水模牆面顯得層次分明且不冰冷。每一個視角都能截取到充滿秩序美學的構圖，隨手拍攝的畫面都自帶高級濾鏡，在社群平台上勢必能獲得極佳的互動反饋，周邊完善的配套設施更是大幅提升了整體的探索體驗。"; 
+                    const deepNeg = "唯一需要高度關注的變量在於週末與連續假期的人流密度，這會嚴重干擾對空間質感的深度體驗。強烈建議在平日上午前往以避開擁擠高峰。另外，周邊的餐飲消費定價偏向觀光客溢價，性價比數值偏低，建議各位提前準備飲用水，並在其他區域完成用餐，將寶貴的預算集中於更能產生價值的情緒體驗上。";
+
+                    if(dInIdx !== -1) currentTrip.daily[dInIdx].items.push({ id: `stay_in_${s.id}`, time: "15:00", task: `入住 ${s.name}`, loc: s.addr || "飯店地址", lat: s.lat||0, lng: s.lng||0, isAuto: true, img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600", intro: deepIntro, review: {pos: deepPos, neg: deepNeg} });
+                    if(dOutIdx !== -1) currentTrip.daily[dOutIdx].items.unshift({ id: `stay_out_${s.id}`, time: "09:00", task: `從 ${s.name} 出發`, loc: s.addr || "飯店地址", lat: s.lat||0, lng: s.lng||0, isAuto: true, img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600", intro: deepIntro, review: {pos: deepPos, neg: deepNeg} });
                 }
             });
 
@@ -713,7 +722,11 @@
                 if(!f.date) return; let dIdx = currentTrip.daily.findIndex(d => d.date === f.date);
                 if(dIdx !== -1) {
                     let flightLabel = `${f.depIATA || 'KUL'} ✈️ ${f.arrIATA || 'ICN'}`;
-                    currentTrip.daily[dIdx].items.push({ id: `flight_${f.id}`, time: f.time, task: `✈️ 航班 ${f.flight}`, loc: `${flightLabel} (${f.term || '航站樓'})`, lat: f.lat||0, lng: f.lng||0, isAuto: true, isAutoFlight: true, img: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600", intro:"作為一名專注於細節的數據分析師，我強烈推薦這座完美融合包浩斯極簡美學與工業鋼骨結構的地標建築。這裡不僅在空間幾何上展現了極致的對稱與流體力學，更在自然採光與不鏽鋼材質的折射中，營造出冷冽卻充滿生命力的視覺張力。強烈建議預留至少兩個小時，仔細品味其建築空間的流動感與光影的微妙變化。", review:{pos:"這裡絕對是追求質感與極簡風格的旅人首選！現場的光線折射與清水模材質紋理真的無可挑剔，每一個轉角都像是精心計算過的取景框，隨手一拍都是自帶高級感濾鏡的大片，發到小紅書絕對能收穫滿滿的讚與收藏。周邊的配套設施也極度完善，無論是動線設計還是咖啡休息區的安排，都展現了極高的服務水準與細節控的堅持。",neg:"唯一需要警戒的變量是週末的遊客密度，這會顯著降低空間的質感體驗。建議避開尖峰時段，否則排隊的人流數據會讓你感到焦慮。此外，周邊商業設施的定價策略偏高，性價比係數較低，建議自行攜帶飲用水或在進入該區域前完成用餐，將預算保留給真正值得的深度體驗，避免不必要的情緒內耗。"} });
+                    const deepIntro = "身為對空間與數據敏感的分析師，這座建築是包浩斯風格與工業設計完美結合的體現。其幾何對稱性、不鏽鋼骨架以及大面積玻璃帷幕，在光線的折射下形成極具張力的光影數據矩陣。建議在此停留至少兩小時，仔細觀察自然光如何在冰冷的金屬表面流動，這是體會空間理性的最佳實踐場域。"; 
+                    const deepPos = "這裡的空間規劃絕對是細節控的極致追求。動線安排符合人體工學數據，採光設計使清水模牆面顯得層次分明且不冰冷。每一個視角都能截取到充滿秩序美學的構圖，隨手拍攝的畫面都自帶高級濾鏡，在社群平台上勢必能獲得極佳的互動反饋，周邊完善的配套設施更是大幅提升了整體的探索體驗。"; 
+                    const deepNeg = "唯一需要高度關注的變量在於週末與連續假期的人流密度，這會嚴重干擾對空間質感的深度體驗。強烈建議在平日上午前往以避開擁擠高峰。另外，周邊的餐飲消費定價偏向觀光客溢價，性價比數值偏低，建議各位提前準備飲用水，並在其他區域完成用餐，將寶貴的預算集中於更能產生價值的情緒體驗上。";
+                    
+                    currentTrip.daily[dIdx].items.push({ id: `flight_${f.id}`, time: f.time, task: `✈️ 航班 ${f.flight}`, loc: `${flightLabel} (${f.term || '航站樓'})`, lat: f.lat||0, lng: f.lng||0, isAuto: true, isAutoFlight: true, img: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600", intro: deepIntro, review: {pos: deepPos, neg: deepNeg} });
                 }
             });
             await saveDB('trips', currentTrip.id, currentTrip);
@@ -722,7 +735,7 @@
         async function handleFlightChange(fId, field, value) { let f = currentTrip.flights.find(x => x.id === fId); if(f) { f[field] = value; await saveDB('trips', currentTrip.id, currentTrip); await syncToItinerary(); renderTransportStay(); if(document.getElementById('daily').classList.contains('active')) renderDaily(currentDayIdx); } }
         async function handleStayChange(sId, field, value) { let s = currentTrip.stays.find(x => x.id === sId); if(s) { s[field] = value; if(field==='name' && !s.addr.includes(value)) s.addr=value; await saveDB('trips', currentTrip.id, currentTrip); await syncToItinerary(); renderTransportStay(); if(document.getElementById('daily').classList.contains('active')) renderDaily(currentDayIdx); } }
 
-        // 23.0 航班同步邏輯修復：加上 async/await 確保完整閉環實時渲染
+        // 24.0 航班同步邏輯修復：強制更新視圖與跳轉日期
         async function autoSyncFlight(idx, fId) {
             const fInput = document.getElementById(`flight_num_${fId}`).value.toUpperCase().trim();
             if(!fInput) return alert("請輸入航班號");
@@ -743,11 +756,22 @@
             await saveDB('trips', currentTrip.id, currentTrip);
             await syncToItinerary();
             
-            renderTransportStay(); 
-            if(document.getElementById('daily').classList.contains('active')) {
-                renderDaily(currentDayIdx);
+            let fDate = currentTrip.flights[idx].date;
+            let dIdx = currentTrip.daily.findIndex(d => d.date === fDate);
+            if(dIdx !== -1) {
+                currentDayIdx = dIdx;
             }
-            alert(`已實時解析航班 ${fInput} ( ${depIATA} ✈️ ${arrIATA} )！`);
+
+            renderTransportStay();
+            
+            // 強制跳轉至行程頁面並渲染該航班日期
+            if (!document.getElementById('daily').classList.contains('active')) {
+                changeSection('daily', document.querySelector('.nav-item:nth-child(1)'));
+            }
+            renderDayNav();
+            renderDaily(currentDayIdx);
+            
+            alert(`已實時解析航班 ${fInput} ( ${depIATA} ✈️ ${arrIATA} )！資料已寫入行程表中。`);
         }
 
         function renderTransportStay() {
