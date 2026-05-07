@@ -13,12 +13,12 @@
        ========================================================================== */
     :root {
       --apple-ease: cubic-bezier(0.32, 0.72, 0, 1);
-      --rim-opacity: 0.4;
       --blur-radius: 25px;
       --focus-scale: 0.98;
       --apple-blue: #0071e3;
       --text-secondary: rgba(60, 60, 67, 0.6);
       --glass-bg: rgba(255, 255, 255, 0.45);
+      --rim-glow: rgba(255, 255, 255, 0.4); /* 環境感知光邊 */
     }
 
     body {
@@ -26,7 +26,7 @@
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
       -webkit-font-smoothing: antialiased;
       overflow: hidden; color: #1D1D1F;
-      overscroll-behavior: none; /* 系統級防護 */
+      overscroll-behavior: none; /* 系統級剛性防護 */
     }
 
     /* ----------------------------------------------------
@@ -43,11 +43,19 @@
     }
     @keyframes ambientShift { 0% { background-position: 0% 0%; } 100% { background-position: 100% 100%; } }
 
+    /* 獨立的 GPU 天氣渲染層 (Persistent Rendering Overlay) */
+    #weather-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 38vh; min-height: 350px;
+      z-index: -5; pointer-events: none; opacity: 0;
+      transition: opacity 0.6s var(--apple-ease);
+      will-change: opacity, transform; contain: strict; backface-visibility: hidden;
+    }
+
     #content-layer {
       position: relative; z-index: 1; height: 100dvh; overflow-y: auto; overflow-x: hidden;
       -webkit-overflow-scrolling: touch; 
       padding-bottom: calc(env(safe-area-inset-bottom) + 20px);
-      transition: padding-bottom 0.4s var(--apple-ease), transform 0.4s var(--apple-ease);
+      transition: padding-bottom 0.4s var(--apple-ease);
     }
 
     #chrome-layer { position: fixed; inset: 0; z-index: 90; pointer-events: none; }
@@ -63,63 +71,52 @@
       -webkit-backdrop-filter: blur(var(--blur-radius)) saturate(180%);
       border-radius: 28px;
       box-shadow: 
-        inset 0 0 0 0.5px rgba(255, 255, 255, var(--rim-opacity)),
+        inset 0 0 0 0.5px var(--rim-glow),
         0 12px 40px rgba(0, 0, 0, 0.05);
-      transition: all 0.4s var(--apple-ease);
+      transition: box-shadow 1s ease, background 0.4s ease; /* 緩慢漫射 */
     }
 
-    /* 環境感知：暗色/雨天模式補償 */
     .theme-dark .liquid-glass { 
       --glass-bg: rgba(0, 0, 0, 0.2); 
-      --rim-opacity: 0.15; 
       color: #FFF; 
       --text-secondary: rgba(235, 235, 245, 0.6); 
     }
     .scrolling .liquid-glass { --blur-radius: 8px; }
 
-    /* ----------------------------------------------------
-       Phase 3: 天氣系統與 GPU 狀態總線
-       ---------------------------------------------------- */
-    .weather-header { height: 38vh; min-height: 350px; position: relative; overflow: hidden; transition: opacity 0.5s ease; }
-    .particle-layer { 
-      position: absolute; inset: 0; pointer-events: none; z-index: 0; 
-      opacity: 0; transition: opacity 0.4s var(--apple-ease); /* 淡入喚醒 */
-      will-change: transform; backface-visibility: hidden; contain: strict; 
-    }
-    
     /* 物理級硬體加速粒子 */
-    .rain { position: absolute; width: 1.5px; background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.8)); animation: rainFall linear infinite; }
-    @keyframes rainFall { 0% { transform: translate3d(0, -50px, 0); opacity: 0; } 20% { opacity: 1; } 100% { transform: translate3d(0, 600px, 0); opacity: 0; } }
+    .weather-particle { position: absolute; will-change: transform; backface-visibility: hidden; }
+    .rain { width: 1.5px; background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.8)); animation: rainFall linear infinite; }
+    @keyframes rainFall { 0% { transform: translate3d(0, -50px, 0); opacity: 0; } 20% { opacity: 1; } 100% { transform: translate3d(0, 800px, 0); opacity: 0; } }
 
-    /* 5.5 View: 卡片式預報封裝 (物理脊椎) */
+    /* ----------------------------------------------------
+       Phase 3: 5.5 View 卡片式預報封裝 (物理脊椎)
+       ---------------------------------------------------- */
+    .weather-header { height: 38vh; min-height: 350px; position: relative; }
     .forecast-wrapper { width: 100%; max-width: 48rem; margin: 0 auto; padding: 0 24px; position: relative; z-index: 10; }
     
     .forecast-slot { 
       display: flex; overflow-x: auto; 
-      height: 115px; /* 高度物理提升，防裁切 */
+      height: 115px; /* 物理提升高度，防裁切 */
       -webkit-overflow-scrolling: touch;
       touch-action: pan-x; /* 嚴格手勢鎖定 */
       overscroll-behavior-x: contain;
       scrollbar-width: none; /* 噪聲消除 */
-      padding-right: 9%; /* 5.5 暗示性截斷 */
     }
     .forecast-slot::-webkit-scrollbar { display: none; }
     
-    /* 滑動吸附守衛 */
-    .snap-active { scroll-snap-type: x mandatory; }
+    .snap-active { scroll-snap-type: x mandatory; scroll-snap-stop: always; }
     
     .forecast-item { 
       flex: 0 0 18.18%; /* 精確 1/5.5 */
       display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
       scroll-snap-align: center;
-      padding-top: 14px; /* 重心上移律 */
-      transition: opacity 0.3s;
+      padding-top: 14px; /* 黃金垂直中心律 */
     }
 
     /* ----------------------------------------------------
        Phase 4: Timeline 排版秩序 (Physical Spine)
        ---------------------------------------------------- */
-    .day-section { min-height: 80px; position: relative; padding-left: 64px; } /* 彈性高度佔位 */
+    .day-section { min-height: 80px; position: relative; padding-left: 64px; }
     
     .liquid-orb-wrapper { position: absolute; left: 0; top: 0; width: 48px; height: 48px; border-radius: 50%; background: white; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 10; }
     .liquid-orb { background: linear-gradient(135deg, #f9feff 0%, #eefdff 100%); width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
@@ -138,9 +135,9 @@
       font-size: 12px; font-weight: 600; color: var(--text-secondary);
       margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; font-family: "SF Pro Rounded", -apple-system, sans-serif;
     }
-
+    
     /* 動態字體防禦 */
-    .dynamic-title { font-size: clamp(24px, 6vw, 32px); font-weight: 700; line-height: 1.1; max-width: 80%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .dynamic-title { font-size: clamp(24px, 6vw, 32px); font-weight: 700; line-height: 1.1; max-width: 60%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 8px; }
 
     .activity-item { margin-bottom: 16px; position: relative; }
     .activity-node {
@@ -181,12 +178,14 @@
     @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 50% { transform: translateX(8px); } 75% { transform: translateX(-8px); } }
     
     .tap-scale:active { transform: scale(0.96); opacity: 0.8; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
   </style>
 </head>
 <body class="theme-light">
 
   <div id="background-layer"></div>
-  <div id="content-layer"></div>
+  <div id="weather-overlay"></div>
+  <div id="content-layer" class="no-scrollbar"></div>
 
   <div id="chrome-layer">
     <button id="btn-fab" data-action="open-create-modal" class="fixed bottom-10 left-1/2 -translate-x-1/2 w-[64px] h-[64px] rounded-full z-[90] tap-scale pointer-events-auto" style="display: none;">
@@ -215,6 +214,7 @@
       formatDate: (dateStr) => new Intl.DateTimeFormat('zh-Hant', { month: 'short', day: 'numeric', weekday: 'short' }).format(new Date(dateStr))
     };
 
+    // --- Data Manager & Predictive Cache ---
     const DataManager = {
       key: 'OS_105S_MASTER',
       state: { trips: [], activeId: null, view: 'home' },
@@ -228,68 +228,101 @@
       save() { localStorage.setItem(this.key, JSON.stringify(this.state)); }
     };
 
-    const EnvironmentCoordinator = {
-      compute(code) {
-        const isRainy = [51,53,55,61,63,65,80,81,82,95].includes(code);
+    // --- Real-time Weather Engine (Open-Meteo) ---
+    const WeatherAPI = {
+      async fetchWeather(destination, tripId) {
+        try {
+          // 1. Geocoding (地名 -> 座標)
+          const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(destination)}&count=1&language=zh`);
+          const geoData = await geoRes.json();
+          
+          if (!geoData.results || !geoData.results.length) {
+            throw new Error("LocationUnknown");
+          }
+          const { latitude, longitude, name, country } = geoData.results[0];
+
+          // 2. Forecast (座標 -> 天氣)
+          const wRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&hourly=temperature_2m,weathercode&timezone=auto&forecast_days=2`);
+          const wData = await wRes.json();
+          
+          return this.parseData(wData, name || destination);
+        } catch (e) {
+          console.warn("Weather API Failed:", e);
+          return null; // 觸發降級防禦
+        }
+      },
+
+      parseData(data, locationName) {
+        const current = data.current_weather;
+        const code = current.weathercode;
+        const isRainy = [51,53,55,61,63,65,66,67,80,81,82,95,96,99].includes(code);
         const isCloudy = [1,2,3,45,48].includes(code);
+        
+        // 解析 24H 預報 (取當前時間往後 24 小時)
+        const nowIdx = data.hourly.time.findIndex(t => new Date(t).getTime() >= Date.now());
+        const startIdx = Math.max(0, nowIdx - 2); // 往前保留 2 小時，便於 UI 居中
+        const hourlySlice = data.hourly.time.slice(startIdx, startIdx + 24).map((timeStr, idx) => {
+            const hCode = data.hourly.weathercode[startIdx + idx];
+            return {
+                hour: new Date(timeStr).getHours(),
+                temp: Math.round(data.hourly.temperature_2m[startIdx + idx]),
+                icon: [51,53,55,61,63,65,80,81,82,95].includes(hCode) ? '🌧️' : ([1,2,3,45,48].includes(hCode) ? '☁️' : '☀️')
+            };
+        });
+
+        // 環境感知色溫計算
+        let envGlow = "rgba(255, 255, 255, 0.4)";
+        if (current.temperature < 15) envGlow = "rgba(173, 216, 230, 0.4)"; // Cold Blue
+        if (current.temperature > 28) envGlow = "rgba(255, 191, 0, 0.2)"; // Hot Amber
+
         return {
+          temp: Math.round(current.temperature),
+          status: isRainy ? '雨' : (isCloudy ? '多雲' : '晴朗'),
+          code: code,
+          enableRain: isRainy,
           themeId: isRainy ? 'theme-dark' : 'theme-light',
           bgGradient: isRainy ? 'from-[#3a4750] to-[#2c3e50]' : (isCloudy ? 'from-[#7da2b8] to-[#bacfdc]' : 'from-[#5cb0ff] to-[#80c6ff]'),
-          enableRain: isRainy
+          envGlow: envGlow,
+          locationName: locationName,
+          forecast: hourlySlice,
+          timestamp: Date.now()
         };
       }
     };
 
-    const WeatherEngine = {
-      async fetch(city) {
-        return new Promise(resolve => {
-          setTimeout(() => {
-            // 模擬請求
-            const isRainy = Math.random() > 0.5;
-            resolve({
-              temp: 24 + Math.floor(Math.random()*6),
-              status: isRainy ? 'Rainy' : 'Clear',
-              code: isRainy ? 61 : 1,
-              high: 30, low: 22,
-              forecast: Array.from({length: 24}, (_, i) => ({ 
-                hour: i, temp: 24 + Math.floor(Math.random()*4), icon: isRainy ? '🌧️' : '☀️' 
-              }))
-            });
-          }, 500); 
-        });
-      }
-    };
-
-    // 冪等化粒子引擎 (Idempotent System)
+    // --- 冪等化粒子引擎 (Idempotent Render Lock) ---
     const ParticleEngine = {
-      _isActive: false,
+      _currentId: null,
       dispose() {
-        const container = document.getElementById('particle-slot');
-        if (container) {
-          container.style.opacity = "0";
-          setTimeout(() => { container.innerHTML = ''; }, 400); // 確保平滑退出
+        const overlay = document.getElementById('weather-overlay');
+        if (overlay) {
+          overlay.style.opacity = "0";
+          setTimeout(() => { overlay.innerHTML = ''; }, 600); // Cross-fade 緩衝
         }
-        this._isActive = false;
+        this._currentId = null;
       },
-      init(enableRain) {
-        this.dispose(); // 先執行清理
-        if (!enableRain) return;
+      init(enableRain, renderId) {
+        if (this._currentId && this._currentId !== renderId) return; // Render-ID Lock 防競態
+        this._currentId = renderId;
         
-        setTimeout(() => {
-          const container = document.getElementById('particle-slot');
-          if (!container) return;
-          container.innerHTML = Array(25).fill().map(() => `<div class="rain" style="left:${Math.random()*100}%; animation-delay:-${Math.random()}s; height:${40+Math.random()*40}px"></div>`).join('');
+        const overlay = document.getElementById('weather-overlay');
+        if (!overlay) return;
+        
+        if (enableRain) {
+          // GPU 加速粒子
+          overlay.innerHTML = Array(35).fill().map(() => `<div class="weather-particle rain" style="left:${Math.random()*100}%; animation-delay:-${Math.random()}s; height:${30+Math.random()*40}px"></div>`).join('');
           
-          // 淡入喚醒
           requestAnimationFrame(() => {
-             container.style.opacity = "1";
+             overlay.style.opacity = "1";
           });
-          this._isActive = true;
-        }, 50); // 渲染後鉤子延遲
+        }
       }
     };
 
+    // --- Renderer Engine ---
     const Renderer = {
+      _currentRenderId: null,
+
       render() {
         const content = document.getElementById('content-layer');
         const fab = document.getElementById('btn-fab');
@@ -297,6 +330,10 @@
           fab.style.display = 'block';
           content.innerHTML = this.tempHome();
           GestureManager.bindSwipe();
+          document.body.className = 'theme-light'; // 首頁重置
+          ParticleEngine.dispose();
+          document.documentElement.style.setProperty('--rim-glow', 'rgba(255, 255, 255, 0.4)');
+          document.getElementById('background-layer').className = '';
         } else {
           fab.style.display = 'none';
           this.renderEditor();
@@ -342,23 +379,22 @@
         const trip = DataManager.state.trips.find(t => t.id === DataManager.state.activeId);
         const content = document.getElementById('content-layer');
         const city = trip.destination || '目的地';
+        const renderId = AppUtils.generateId();
+        this._currentRenderId = renderId;
         
-        // 骨架屏與物理脊椎封裝
+        // 渲染骨架屏與物理脊椎封裝
         content.innerHTML = `
           <div class="min-h-screen pb-40">
-            <header id="weather-header" class="weather-header">
-               <div id="bg-slot" class="absolute inset-0 bg-gradient-to-b from-gray-200 to-gray-300 opacity-90 transition-all duration-1000"></div>
-               <div id="particle-slot" class="particle-layer"></div>
-               
+            <header class="weather-header">
                <div class="relative z-10 pt-12 pb-4 flex flex-col items-center h-full justify-between">
                   <div class="w-full max-w-3xl mx-auto px-6 flex items-start">
                     <button data-action="go-home" class="w-10 h-10 liquid-glass rounded-full flex items-center justify-center tap-scale text-current"><i class="fa-solid fa-chevron-left"></i></button>
                   </div>
                   
                   <div class="flex flex-col items-center text-center -mt-8 w-full text-current">
-                    <h2 class="dynamic-title">${city}</h2>
+                    <h2 class="dynamic-title" id="city-title">${city}</h2>
                     <div id="temp-slot" class="text-[84px] font-thin leading-none tracking-tighter my-0.5 skeleton-pulse">--°</div>
-                    <p id="status-slot" class="font-medium opacity-90 text-[15px] tracking-wide skeleton-pulse">加載中...</p>
+                    <p id="status-slot" class="font-medium opacity-90 text-[15px] tracking-wide skeleton-pulse">獲取實時天氣...</p>
                   </div>
                   
                   <div class="forecast-wrapper">
@@ -373,51 +409,87 @@
           </div>
         `;
 
-        ParticleEngine.dispose(); // 請求前確保舊系統銷毀
+        ParticleEngine.dispose(); // 重置舊系統
 
-        // 異步數據拉取與環境感知
-        const w = await WeatherEngine.fetch(city);
-        const config = EnvironmentCoordinator.compute(w.code);
-
-        document.body.className = config.themeId;
-        document.getElementById('bg-slot').className = `absolute inset-0 bg-gradient-to-b ${config.bgGradient} opacity-90 transition-colors duration-1000`;
+        // API 請求與緩存回退
+        let wData = await WeatherAPI.fetchWeather(city, trip.id);
         
-        // Post-render Hook
-        ParticleEngine.init(config.enableRain);
+        // 競態鎖校驗
+        if (this._currentRenderId !== renderId) return;
+
+        if (!wData) {
+          // 降級防禦
+          wData = {
+             temp: '--', status: '未知', themeId: 'theme-light', bgGradient: 'from-gray-200 to-gray-300',
+             envGlow: 'rgba(255,255,255,0.4)', enableRain: false, forecast: [], locationUnknown: true
+          };
+        }
+
+        // 應用環境感知色溫
+        document.body.className = wData.themeId;
+        document.documentElement.style.setProperty('--rim-glow', wData.envGlow);
+        const bgLayer = document.getElementById('background-layer');
+        bgLayer.className = `absolute inset-0 bg-gradient-to-b ${wData.bgGradient} opacity-90 transition-colors duration-1000`;
+        
+        // 觸發渲染鉤子
+        ParticleEngine.init(wData.enableRain, renderId);
+
+        // 寫入 Header 資訊
+        if (wData.locationUnknown) {
+          document.getElementById('city-title').innerHTML = `${city} <span class="text-[16px] opacity-50">📍</span>`;
+        } else if (wData.locationName !== city) {
+           document.getElementById('city-title').innerText = wData.locationName;
+        }
 
         const tempSlot = document.getElementById('temp-slot');
-        if(tempSlot){ tempSlot.classList.remove('skeleton-pulse'); tempSlot.innerText = `${w.temp}°`; }
+        if(tempSlot){ tempSlot.classList.remove('skeleton-pulse'); tempSlot.innerText = `${wData.temp}°`; }
         const statusSlot = document.getElementById('status-slot');
-        if(statusSlot){ statusSlot.classList.remove('skeleton-pulse'); statusSlot.innerText = `${w.status} · H:${w.high}° L:${w.low}°`; }
+        if(statusSlot){ statusSlot.classList.remove('skeleton-pulse'); statusSlot.innerText = wData.status; }
 
-        // 24H 預報與中心化吸附邏輯
-        const currentHour = new Date().getHours();
+        // 5.5 視圖與瞬時置中 (Instant Centering)
         const forecastSlot = document.getElementById('forecast-slot');
-        if(forecastSlot){
-            // 寫入 DOM (空態骨架防護)
-            forecastSlot.innerHTML = w.forecast.map(f => {
+        if(forecastSlot && wData.forecast.length > 0) {
+            const currentHour = new Date().getHours();
+            
+            forecastSlot.innerHTML = wData.forecast.map(f => {
                const isNow = f.hour === currentHour;
                const label = isNow ? 'Now' : (f.hour > 12 ? (f.hour-12)+'PM' : (f.hour===0?12:f.hour)+'AM');
-               return `<div id="${isNow ? 'current-hour-node' : ''}" class="forecast-item ${isNow ? 'opacity-100' : 'opacity-60'}">
-                         <span class="text-[13px] font-semibold opacity-90">${label}</span>
+               // 明度層級區分 Now
+               return `<div id="${isNow ? 'current-hour-node' : ''}" class="forecast-item ${isNow ? 'opacity-100 font-bold' : 'opacity-60'}">
+                         <span class="text-[13px] tracking-tight">${label}</span>
                          <span class="text-[22px] my-1">${f.icon}</span>
-                         <span class="font-bold text-[17px]">${f.temp}°</span>
+                         <span class="text-[17px] font-semibold">${f.temp}°</span>
                        </div>`;
             }).join('');
 
-            // 中心化物理位移 (非線性阻尼)
-            setTimeout(() => {
-              const nowNode = document.getElementById('current-hour-node');
-              if (nowNode && forecastSlot) {
-                forecastSlot.classList.remove('snap-active'); // 暫時關閉捕捉以確保絲滑
-                const centerPos = nowNode.offsetLeft + (nowNode.offsetWidth / 2) - (forecastSlot.offsetWidth / 2);
+            // 對稱內襯公式 (Symmetric Padding)
+            requestAnimationFrame(() => {
+                if (!forecastSlot) return;
+                const containerWidth = forecastSlot.clientWidth;
+                const itemWidth = containerWidth / 5.5;
+                const symPadding = (containerWidth - itemWidth) / 2;
                 
-                forecastSlot.scrollTo({ left: centerPos, behavior: 'smooth' });
-                
-                // 動畫結束後恢復磁吸
-                setTimeout(() => { forecastSlot.classList.add('snap-active'); }, 500);
-              }
-            }, 100);
+                // 動態注入 Padding 確保兩端可置中
+                forecastSlot.style.paddingLeft = `${symPadding}px`;
+                forecastSlot.style.paddingRight = `${symPadding}px`;
+
+                const nowNode = document.getElementById('current-hour-node');
+                if (nowNode) {
+                  // 零閃爍定位：在 First Paint 前強制寫入 scrollLeft
+                  forecastSlot.style.scrollSnapType = 'none'; // 暫關磁吸
+                  const centerPos = nowNode.offsetLeft + (nowNode.offsetWidth / 2) - (containerWidth / 2);
+                  forecastSlot.scrollLeft = centerPos;
+                  
+                  // 恢復剛性磁吸
+                  setTimeout(() => { forecastSlot.classList.add('snap-active'); }, 50);
+                } else {
+                  forecastSlot.classList.add('snap-active');
+                }
+            });
+        } else if (forecastSlot) {
+            // 離線 Skeleton 渲染
+            forecastSlot.innerHTML = Array(6).fill().map(() => `<div class="forecast-item opacity-40"><span class="w-8 h-3 bg-black/10 rounded skeleton-pulse mt-2"></span><span class="text-[22px] my-1 opacity-50">☁️</span><span class="w-6 h-4 bg-black/10 rounded skeleton-pulse"></span></div>`).join('');
+            forecastSlot.style.paddingLeft = '24px';
         }
       },
 
@@ -433,7 +505,7 @@
             </div>
             
             <div id="activities-${day.id}" class="space-y-4">
-              ${day.activities && day.activities.length ? day.activities.map(act => `<div class="activity-item liquid-glass p-4"><div class="activity-node"></div><div class="font-bold text-[17px]">${act.title}</div></div>`).join('') : ''}
+              ${day.activities && day.activities.length ? day.activities.map(act => `<div class="activity-item liquid-glass p-4"><div class="activity-node"></div><div class="flex-1"><div class="text-[12px] font-bold opacity-50 uppercase mb-0.5 tracking-wider">${act.time || '全天'}</div><div class="font-bold text-[17px]">${act.title}</div></div></div>`).join('') : ''}
             </div>
             <div class="mt-4" id="add-btn-area-${day.id}">
               <button data-action="start-quick-add" data-day="${day.id}" class="text-[var(--apple-blue)] font-bold text-[15px] tap-scale flex items-center gap-2">
@@ -512,7 +584,7 @@
           const action = target.dataset.action;
 
           if (action === 'open-trip') { DataManager.state.activeId = target.dataset.id; DataManager.state.view = 'editor'; Renderer.render(); }
-          else if (action === 'go-home') { DataManager.state.view = 'home'; DataManager.state.activeId = null; ParticleEngine.dispose(); Renderer.render(); }
+          else if (action === 'go-home') { DataManager.state.view = 'home'; DataManager.state.activeId = null; Renderer.render(); }
           else if (action === 'open-create-modal') UI.openCreateModal();
           else if (action === 'close-modal') UI.closeModal();
           else if (action === 'confirm-create') UI.confirmCreateTrip();
@@ -566,7 +638,7 @@
       }
     };
 
-    // --- Phase 5: Contract Modal (Streamlined) ---
+    // --- Phase 5: Modal (Optimistic Creation) ---
     const UI = {
       openCreateModal() {
         const layer = document.getElementById('modal-layer');
@@ -601,8 +673,8 @@
       },
 
       validate() {
-        const title = document.getElementById('new-trip-title');
-        const dest = document.getElementById('new-trip-dest');
+        const title = document.getElementById('new-trip-title').value;
+        const dest = document.getElementById('new-trip-dest').value;
         const start = document.getElementById('new-trip-start').value;
         const end = document.getElementById('new-trip-end').value;
         const btn = document.getElementById('btn-confirm-create');
@@ -643,16 +715,11 @@
         let daysArray = [];
         let currDate = new Date(v.start);
         for(let i=0; i<v.diffDays; i++) {
-           const dStr = AppUtils.formatDate(currDate);
-           daysArray.push({
-             id: AppUtils.generateId(),
-             dateString: dStr,
-             destination: i === 0 ? v.dest : '', 
-             activities: []
-           });
+           daysArray.push({ id: AppUtils.generateId(), dateString: AppUtils.formatDate(currDate), destination: i === 0 ? v.dest : '', activities: [] });
            currDate.setDate(currDate.getDate() + 1);
         }
 
+        // 樂觀建立
         DataManager.state.trips.unshift({
           id: AppUtils.generateId(),
           title, destination: v.dest, startDate: v.start, endDate: v.end,
