@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>Travel Log | OS 1.0.5 Industrial 🧳</title>
+  <title>Travel Log | OS 1.0.5-S 🧳</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js" defer></script>
   <style>
     /* ==========================================================================
-       OS 1.0.5 (Industrial Stable) - Gemini Team
+       OS 1.0.5-S (Streamlined) - Gemini Team
        Apple iOS 26 Liquid Glass Environment
        ========================================================================== */
     :root {
@@ -53,7 +53,7 @@
     #modal-layer { position: fixed; inset: 0; z-index: 100; pointer-events: none; }
 
     /* ----------------------------------------------------
-       Phase 2: Liquid Glass 2.0 (Physical Rim Light)
+       Phase 2: Liquid Glass 2.0 (Streamlined)
        ---------------------------------------------------- */
     .liquid-glass {
       position: relative; border: none !important;
@@ -61,76 +61,65 @@
       backdrop-filter: blur(var(--blur-radius)) saturate(180%);
       -webkit-backdrop-filter: blur(var(--blur-radius)) saturate(180%);
       border-radius: 28px;
-      /* 光學擴散，模擬物理厚度 */
       box-shadow: 
         inset 0 0 0 0.5px rgba(255, 255, 255, var(--rim-opacity)),
         0 12px 40px rgba(0, 0, 0, 0.05);
-      transition: opacity 0.3s, transform 0.4s var(--apple-ease), filter 0.4s var(--apple-ease), box-shadow 0.4s var(--apple-ease);
+      transition: opacity 0.4s var(--apple-ease), transform 0.4s var(--apple-ease);
     }
 
-    .theme-dark .liquid-glass {
-      background: rgba(0, 0, 0, 0.2);
-      --rim-opacity: 0.15; /* 亮度感知補償 */
-      color: #FFF;
-    }
-
-    /* 滾動降級守衛 */
+    .theme-dark .liquid-glass { background: rgba(0, 0, 0, 0.2); --rim-opacity: 0.15; color: #FFF; }
     .scrolling .liquid-glass { --blur-radius: 8px; }
 
-    /* 光學連線與小球 (還原 1.0.3) */
-    .liquid-orb-wrapper { position: relative; border-radius: 50%; filter: drop-shadow(0 6px 12px rgba(0,113,227,0.15)); }
-    .liquid-orb {
-      background: linear-gradient(135deg, #f9feff 0%, #eefdff 100%);
-      border-radius: 50%; width: 100%; height: 100%; position: relative; overflow: hidden;
-      box-shadow: inset 4px 4px 12px rgba(255,255,255,1);
+    /* ----------------------------------------------------
+       Phase 3: 天氣系統 (iOS 5.5 View & GPU Particles)
+       ---------------------------------------------------- */
+    .weather-header { height: 38vh; min-height: 350px; position: relative; overflow: hidden; transition: opacity 0.5s ease; }
+    .particle-layer { position: absolute; inset: 0; pointer-events: none; z-index: 0; opacity: 1; transition: opacity 0.5s ease; will-change: transform; }
+    .rain { position: absolute; width: 1.5px; background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.8)); animation: rainFall linear infinite; }
+    /* 完全硬體加速的粒子位移 */
+    @keyframes rainFall { 0% { transform: translate3d(0, -50px, 0); opacity: 0; } 20% { opacity: 1; } 100% { transform: translate3d(0, 600px, 0); opacity: 0; } }
+
+    /* 5.5 View 暗示佈局 */
+    .forecast-slot { 
+      display: flex; gap: 0; overflow-x: auto; scroll-snap-type: x mandatory; 
+      padding-right: 9%; padding-left: 24px; -webkit-overflow-scrolling: touch;
     }
-    .liquid-orb::after {
-      content: ''; position: absolute; top: -20%; left: -20%; width: 140%; height: 140%;
-      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0) 50%);
-      filter: blur(8px); animation: orbWobble 4s infinite ease-in-out alternate; pointer-events: none;
-    }
-    @keyframes orbWobble { 0% { transform: scale(1); } 100% { transform: scale(1.1) translate(4px, 6px); } }
-    
-    .optical-line { width: 1px; height: 12px; background: linear-gradient(to bottom, rgba(0,0,0,0.15), rgba(0,0,0,0.02)); margin: 4px 0; }
-    .theme-dark .optical-line { background: linear-gradient(to bottom, rgba(255,255,255,0.25), rgba(255,255,255,0.05)); }
+    .forecast-item { flex: 0 0 18.18%; display: flex; flex-direction: column; align-items: center; scroll-snap-align: start; }
 
     /* ----------------------------------------------------
-       Phase 3: 天氣系統與 Timeline (1.0.3 + 1.0.5)
+       Phase 4: Timeline 導航軸線與層級 (Physical Spine)
        ---------------------------------------------------- */
-    .weather-header { height: 38vh; min-height: 350px; position: relative; overflow: hidden; transition: all 1s var(--apple-ease); }
-    .particle-layer { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
-    .rain { position: absolute; width: 1.5px; background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.8)); animation: rainFall linear infinite; }
-    @keyframes rainFall { 0% { transform: translateY(-50px); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(600px); opacity: 0; } }
-
-    .timeline-container { position: relative; padding-left: 24px; margin-top: 16px; }
+    .day-section { min-height: 80px; position: relative; padding-left: 64px; }
+    
+    .liquid-orb-wrapper { position: absolute; left: 0; top: 0; width: 48px; height: 48px; border-radius: 50%; background: white; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 10; }
+    .liquid-orb { background: linear-gradient(135deg, #f9feff 0%, #eefdff 100%); width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .theme-dark .liquid-orb-wrapper { background: #1c1c1e; }
+    .theme-dark .liquid-orb { background: linear-gradient(135deg, #2c2c2e 0%, #1c1c1e 100%); }
+    
+    /* 貫穿的垂直結構線 */
     .timeline-line {
-      position: absolute; left: 38px; top: 0; bottom: 0;
+      position: absolute; left: 23px; top: 56px; bottom: -16px;
       width: 1.5px; background: linear-gradient(to bottom, var(--apple-blue), transparent);
       opacity: 0.3; transition: all 0.4s var(--apple-ease);
     }
-    
-    /* 子節點縮進 */
-    .activity-item { margin-left: 32px; margin-bottom: 16px; position: relative; }
+
+    /* 導航塊：日期與城市名左對齊，4px 間距 */
+    .header-block { display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 24px; }
+    .date-label {
+      font-size: 12px; font-weight: 600; color: rgba(60, 60, 67, 0.6);
+      margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; font-family: "SF Pro Rounded", -apple-system, sans-serif;
+    }
+    .theme-dark .date-label { color: rgba(235, 235, 245, 0.6); }
+
+    .activity-item { margin-bottom: 16px; position: relative; }
     .activity-node {
-      position: absolute; left: -22px; top: 22px;
+      position: absolute; left: -45px; top: 22px;
       width: 8px; height: 8px; border-radius: 50%;
       background: var(--apple-blue); box-shadow: 0 0 8px rgba(0,113,227,0.4);
     }
 
-    /* 視差浮動日期標籤 */
-    .parallax-pill {
-      position: absolute; left: 60px; top: -6px;
-      font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 12px;
-      background: rgba(255,255,255,0.6); backdrop-filter: blur(10px);
-      box-shadow: 0 2px 10px rgba(0,0,0,0.02); opacity: 0.8; pointer-events: none;
-      transition: transform 0.1s linear; z-index: 10;
-    }
-    .theme-dark .parallax-pill { background: rgba(0,0,0,0.3); color: white; }
-
-    /* ----------------------------------------------------
-       Phase 4: iOS 交互、深度聚焦與錯誤反饋
-       ---------------------------------------------------- */
-    .is-unfocused { opacity: 0.3; transform: scale(var(--focus-scale)); filter: blur(1.5px) brightness(0.95); pointer-events: none; }
+    /* 深度聚焦與原地編輯 */
+    .is-unfocused { opacity: 0.3; transform: scale(var(--focus-scale)); filter: blur(1.5px); pointer-events: none; transition: all 0.4s var(--apple-ease); }
     
     .inplace-input {
       background: rgba(0,0,0,0.03); border-radius: 12px; padding: 12px 16px; width: 100%;
@@ -140,24 +129,21 @@
     .theme-dark .inplace-input { background: rgba(255,255,255,0.1); }
     .inplace-input.error { box-shadow: inset 0 0 0 1px rgba(255,59,48,0.5); }
 
-    /* 容量指示器 */
-    .capacity-gauge-track { width: 100%; height: 4px; background: rgba(0,0,0,0.05); border-radius: 2px; overflow: hidden; margin-top: 8px; }
-    .capacity-gauge-fill { height: 100%; background: var(--apple-blue); border-radius: 2px; transition: width 0.4s var(--apple-ease), background 0.4s; }
-    .gauge-warning { background: #FF3B30; animation: gaugePulse 2s infinite alternate; }
-    @keyframes gaugePulse { 0% { opacity: 0.6; } 100% { opacity: 1; } }
-
-    /* 刪除滑動 */
+    /* ----------------------------------------------------
+       UI 元素還原與手勢防護
+       ---------------------------------------------------- */
     .swipe-container { position: relative; overflow: hidden; border-radius: 28px; }
-    .swipe-actions {
-      position: absolute; right: 0; top: 0; bottom: 0; width: 120px;
-      display: flex; align-items: center; justify-content: flex-end; padding-right: 28px;
-      background: #FF3B30; color: white; font-size: 22px; z-index: 0; opacity: 0;
+    .swipe-actions { 
+      position: absolute; right: 0; top: 0; bottom: 0; width: 120px; 
+      background: #FF3B30; display: flex; align-items: center; justify-content: flex-end; padding-right: 28px;
+      color: white; font-size: 22px; opacity: 0; transition: opacity 0.3s; z-index: 0;
       -webkit-mask-image: linear-gradient(to right, transparent 0%, black 30px);
-      transition: opacity 0.3s;
     }
     .swipe-card { position: relative; z-index: 1; transition: transform 0.4s var(--apple-ease); will-change: transform; }
+    
+    .optical-line { width: 1px; height: 12px; background: linear-gradient(to bottom, rgba(0,0,0,0.15), rgba(0,0,0,0.02)); margin: 4px 0; }
+    .theme-dark .optical-line { background: linear-gradient(to bottom, rgba(255,255,255,0.25), rgba(255,255,255,0.05)); }
 
-    /* 動畫 */
     .skeleton-pulse { animation: skeletonPulse 1s ease-in-out infinite alternate; opacity: 0.5; }
     @keyframes skeletonPulse { 0% { opacity: 0.3; } 100% { opacity: 0.7; } }
     .apple-pulse { animation: pulse 0.4s var(--apple-ease); }
@@ -186,15 +172,11 @@
 
   <script>
     // ==========================================================================
-    // OS 1.0.5 Core Logic (Contract, Smart Generator, Sharded Cache)
+    // OS 1.0.5-S Core Logic 
     // ==========================================================================
 
     const AppUtils = {
-      generateId: () => {
-        try { return crypto.randomUUID(); } 
-        catch (e) { return 'id-' + Date.now() + Math.random().toString(36).slice(2, 9); }
-      },
-      // 確保 UTC 精準天數計算，避免夏令時導致的偏差
+      generateId: () => 'id-' + Date.now() + Math.random().toString(36).slice(2, 9),
       getDiffDays: (start, end) => {
         if(!start || !end) return 0;
         const d1 = new Date(start); const d2 = new Date(end);
@@ -203,19 +185,15 @@
         return Math.floor((utc2 - utc1) / 86400000) + 1;
       },
       formatDate: (dateStr) => {
-        const d = new Date(dateStr);
-        return new Intl.DateTimeFormat('zh-Hant', { month: 'short', day: 'numeric', weekday: 'short' }).format(d);
+        return new Intl.DateTimeFormat('zh-Hant', { month: 'short', day: 'numeric', weekday: 'short' }).format(new Date(dateStr));
       }
     };
 
-    // --- Phase 0: 事務鎖與緩衝池 (Sharded Cache) ---
+    // --- Phase 0: Data Manager ---
     const DataManager = {
-      key: 'OS_105_MASTER',
-      bufferKey: 'OS_105_CEMETERY',
+      key: 'OS_105S_MASTER',
       state: { trips: [], activeId: null, view: 'home' },
-
       init() {
-        // Shadow Backup & Transaction Lock
         const raw = localStorage.getItem('TRAVEL_LOG_DATA') || localStorage.getItem(this.key);
         if (raw) {
           localStorage.setItem('TRAVEL_LOG_BACKUP_SHADOW', raw); 
@@ -226,30 +204,11 @@
           }));
           this.save();
         }
-        this.cleanBuffer();
       },
-      save() { localStorage.setItem(this.key, JSON.stringify(this.state)); },
-      
-      // 緩衝池機制 (Data Cemetery)
-      saveToBuffer(dateStr, activities) {
-        if(!activities.length) return;
-        let pool = JSON.parse(localStorage.getItem(this.bufferKey) || '{}');
-        pool[dateStr] = { timestamp: Date.now(), data: activities };
-        localStorage.setItem(this.bufferKey, JSON.stringify(pool));
-      },
-      getFromBuffer(dateStr) {
-        let pool = JSON.parse(localStorage.getItem(this.bufferKey) || '{}');
-        return pool[dateStr] ? pool[dateStr].data : [];
-      },
-      cleanBuffer() {
-        let pool = JSON.parse(localStorage.getItem(this.bufferKey) || '{}');
-        const now = Date.now();
-        for(let k in pool) { if (now - pool[k].timestamp > 7 * 86400000) delete pool[k]; } // TTL 7天
-        localStorage.setItem(this.bufferKey, JSON.stringify(pool));
-      }
+      save() { localStorage.setItem(this.key, JSON.stringify(this.state)); }
     };
 
-    // --- Phase 1: 天氣與環境協調器 ---
+    // --- Phase 1: Environment & Weather Engine ---
     const EnvironmentCoordinator = {
       compute(code) {
         const isRainy = [51,53,55,61,63,65,80,81,82,95].includes(code);
@@ -276,7 +235,7 @@
                 hour: i, temp: 24 + Math.floor(Math.random()*4), icon: isRainy ? '🌧️' : '☀️' 
               }))
             });
-          }, 600); // 模擬加載
+          }, 600); 
         });
       }
     };
@@ -285,16 +244,15 @@
       render(enable) {
         const container = document.getElementById('particle-slot');
         if (!container) return;
-        container.innerHTML = enable ? Array(30).fill().map(() => `<div class="rain" style="left:${Math.random()*100}%; animation-delay:-${Math.random()}s; height:${30+Math.random()*50}px"></div>`).join('') : '';
+        container.innerHTML = enable ? Array(30).fill().map(() => `<div class="rain" style="left:${Math.random()*100}%; animation-delay:-${Math.random()}s; height:${40+Math.random()*40}px"></div>`).join('') : '';
       }
     };
 
-    // --- Phase 2: 渲染引擎與 Timeline Adapter ---
+    // --- Phase 2: Renderer Engine ---
     const Renderer = {
       render() {
         const content = document.getElementById('content-layer');
         const fab = document.getElementById('btn-fab');
-        
         if (DataManager.state.view === 'home') {
           fab.style.display = 'block';
           content.innerHTML = this.tempHome();
@@ -345,32 +303,31 @@
         const content = document.getElementById('content-layer');
         const city = trip.destination || '目的地';
         
-        // 骨架屏首屏渲染
+        // 骨架屏
         content.innerHTML = `
           <div class="min-h-screen pb-40">
-            <header class="weather-header">
-               <div id="bg-slot" class="absolute inset-0 bg-gradient-to-b from-gray-200 to-gray-300 opacity-90 transition-colors duration-1000"></div>
+            <header id="weather-header" class="weather-header">
+               <div id="bg-slot" class="absolute inset-0 bg-gradient-to-b from-gray-200 to-gray-300 opacity-90 transition-all duration-1000"></div>
                <div id="particle-slot" class="particle-layer"></div>
-               <div class="relative z-10 px-6 pt-12 pb-6 flex flex-col items-center h-full justify-between">
-                  <button data-action="go-home" class="self-start w-10 h-10 liquid-glass rounded-full flex items-center justify-center tap-scale text-current"><i class="fa-solid fa-chevron-left"></i></button>
+               <div class="relative z-10 pt-12 pb-6 flex flex-col items-center h-full justify-between">
+                  <button data-action="go-home" class="self-start w-10 h-10 liquid-glass rounded-full flex items-center justify-center tap-scale text-current ml-6"><i class="fa-solid fa-chevron-left"></i></button>
                   <div class="flex flex-col items-center text-center -mt-6 w-full text-current">
                     <h2 class="text-[32px] font-medium tracking-tight mb-0 truncate w-full px-12">${city}</h2>
                     <div id="temp-slot" class="text-[84px] font-thin leading-none tracking-tighter my-0.5 skeleton-pulse">--°</div>
                     <p id="status-slot" class="font-medium opacity-90 text-[15px] tracking-wide skeleton-pulse">拉取天氣數據...</p>
                   </div>
-                  <div id="forecast-slot" class="w-full liquid-glass rounded-[24px] px-2 flex gap-2 overflow-x-auto no-scrollbar snap-x snap-mandatory mt-6 text-current h-[100px] items-center"></div>
+                  <div id="forecast-slot" class="w-full liquid-glass rounded-[24px] forecast-slot no-scrollbar py-4 h-[100px] mt-6"></div>
                </div>
             </header>
-            <div class="max-w-3xl mx-auto px-6 mt-8 space-y-12 relative" id="timeline-wrapper">
-              ${trip.days.map((d, i) => this.tempDay(d, i)).join('')}
+            <div class="max-w-3xl mx-auto px-6 mt-12 space-y-10">
+              ${trip.days.map((d, i) => this.tempDay(d, i, trip.destination)).join('')}
             </div>
           </div>
         `;
 
-        // 視差滾動綁定
-        SafariFix.bindParallax();
+        this.initVisibilityObserver();
 
-        // 異步咬合天氣數據
+        // 異步咬合
         const w = await WeatherEngine.fetch(city);
         const config = EnvironmentCoordinator.compute(w.code);
 
@@ -379,13 +336,9 @@
         ParticleEngine.render(config.enableRain);
 
         const tempSlot = document.getElementById('temp-slot');
-        if(tempSlot){
-          tempSlot.classList.remove('skeleton-pulse'); tempSlot.innerText = `${w.temp}°`;
-        }
+        if(tempSlot){ tempSlot.classList.remove('skeleton-pulse'); tempSlot.innerText = `${w.temp}°`; }
         const statusSlot = document.getElementById('status-slot');
-        if(statusSlot) {
-          statusSlot.classList.remove('skeleton-pulse'); statusSlot.innerText = `${w.status} · H:${w.high}° L:${w.low}°`;
-        }
+        if(statusSlot){ statusSlot.classList.remove('skeleton-pulse'); statusSlot.innerText = `${w.status} · H:${w.high}° L:${w.low}°`; }
 
         const currentHour = new Date().getHours();
         const forecastSlot = document.getElementById('forecast-slot');
@@ -393,52 +346,40 @@
             forecastSlot.innerHTML = w.forecast.map(f => {
                const isNow = f.hour === currentHour;
                const label = isNow ? 'Now' : (f.hour > 12 ? (f.hour-12)+'PM' : (f.hour===0?12:f.hour)+'AM');
-               return `<div id="${isNow ? 'current-hour-node' : ''}" class="flex-shrink-0 w-[60px] flex flex-col items-center justify-center scroll-snap-align-center">
+               return `<div id="${isNow ? 'current-hour-node' : ''}" class="forecast-item">
                          <span class="text-[12px] font-semibold opacity-90">${label}</span>
                          <span class="text-[22px] my-1">${f.icon}</span>
                          <span class="font-bold text-[16px]">${f.temp}°</span>
                        </div>`;
             }).join('');
-
-            // ResizeObserver 精確定位
-            const ro = new ResizeObserver(() => {
-              const node = document.getElementById('current-hour-node');
-              if (node && forecastSlot.scrollWidth > forecastSlot.clientWidth) {
-                forecastSlot.scrollTo({ left: node.offsetLeft - forecastSlot.clientWidth/2 + node.offsetWidth/2, behavior: 'smooth' });
-                ro.disconnect();
-              }
-            });
-            ro.observe(forecastSlot);
         }
       },
 
-      tempDay(day, idx) {
+      tempDay(day, idx, mainDest) {
         return `
-          <div class="relative">
-            <div class="parallax-pill">${day.dateString}</div>
-            <div class="flex items-center gap-4 mb-6 relative z-10">
-              <div class="w-12 h-12 liquid-orb-wrapper flex-shrink-0"><div class="liquid-orb flex flex-col items-center justify-center text-[var(--apple-blue)]"><span class="text-[9px] font-black uppercase mt-1 opacity-90">Day</span><span class="text-xl font-bold leading-none -mt-0.5">${idx+1}</span></div></div>
-              <h3 class="text-[22px] font-bold tracking-tight">${day.destination || '目的地'}</h3>
+          <div class="day-section">
+            <div class="liquid-orb-wrapper"><div class="liquid-orb text-[var(--apple-blue)]"><span class="text-[9px] font-black mt-1">DAY</span><span class="text-xl font-bold leading-none -mt-0.5">${idx+1}</span></div></div>
+            <div class="timeline-line"></div>
+            
+            <div class="header-block">
+              <span class="date-label">${day.dateString}</span>
+              <h3 class="text-[22px] font-bold tracking-tight leading-none">${day.destination || mainDest}</h3>
             </div>
-            <div class="timeline-container">
-              <div class="timeline-line"></div>
-              <div id="activities-${day.id}" class="space-y-4">
-                ${this.tempActivities(day)}
-              </div>
-              <div class="mt-4 ml-6" id="add-btn-area-${day.id}">
-                <button data-action="start-quick-add" data-day="${day.id}" class="text-[var(--apple-blue)] font-bold text-[15px] tap-scale flex items-center gap-2">
-                  <i class="fa-solid fa-plus-circle"></i> 添加活動
-                </button>
-              </div>
+            
+            <div id="activities-${day.id}" class="space-y-4">
+              ${this.tempActivities(day)}
+            </div>
+            <div class="mt-4" id="add-btn-area-${day.id}">
+              <button data-action="start-quick-add" data-day="${day.id}" class="text-[var(--apple-blue)] font-bold text-[15px] tap-scale flex items-center gap-2">
+                <i class="fa-solid fa-plus-circle"></i> 添加活動
+              </button>
             </div>
           </div>
         `;
       },
 
       tempActivities(day) {
-        if (!day.activities || !day.activities.length) {
-          return `<div class="ml-6 text-sm opacity-40 font-medium py-3 border border-dashed border-black/10 dark:border-white/10 rounded-xl px-4 flex items-center gap-2"><i class="fa-solid fa-sparkles"></i> 探索此城的靈感...</div>`;
-        }
+        if (!day.activities || !day.activities.length) return ``; // 徹底留白
         return day.activities.map(act => `
           <div class="activity-item liquid-glass p-4" data-id="${act.id}">
             <div class="activity-node"></div>
@@ -450,10 +391,19 @@
             </div>
           </div>
         `).join('');
+      },
+
+      initVisibilityObserver() {
+        const header = document.getElementById('weather-header');
+        const particles = document.getElementById('particle-slot');
+        const observer = new IntersectionObserver(([entry]) => {
+          if(particles) particles.style.opacity = entry.isIntersecting ? "1" : "0";
+        }, { threshold: 0 });
+        if (header) observer.observe(header);
       }
     };
 
-    // --- Phase 3: 手勢與視口防禦 ---
+    // --- Phase 3: Gestures & Viewport Defense ---
     const GestureManager = {
       bindSwipe() {
         document.querySelectorAll('.swipe-card').forEach(card => {
@@ -461,7 +411,7 @@
           const actions = card.previousElementSibling;
           
           card.ontouchstart = (e) => {
-            if (e.touches[0].clientX < 20) return; // 20px 邊緣保護
+            if (e.touches[0].clientX < 20) return; // 20px 死區，保護 iOS 返回手勢
             startX = e.touches[0].clientX;
             card.style.transition = 'none';
           };
@@ -505,36 +455,17 @@
             if (offset > 50) {
               content.style.paddingBottom = `${offset + 20}px`;
               const activeEl = document.activeElement;
-              // 40% 黃金重心
+              // 鎖定視口中心
               if (activeEl) setTimeout(() => activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
             } else {
               content.style.paddingBottom = 'calc(env(safe-area-inset-bottom) + 20px)';
             }
           });
         }
-      },
-      bindParallax() {
-        const content = document.getElementById('content-layer');
-        content.addEventListener('scroll', () => {
-          const y = content.scrollTop;
-          document.querySelectorAll('.parallax-pill').forEach(pill => {
-             // 0.1 係數視差位移
-             pill.style.transform = `translateY(${y * 0.1}px)`;
-          });
-        }, { passive: true });
-        
-        // 彈簧歸位
-        content.addEventListener('scrollend', () => {
-           document.querySelectorAll('.parallax-pill').forEach(pill => {
-             pill.style.transition = 'transform 0.4s cubic-bezier(0.32, 0.72, 0, 1)';
-             pill.style.transform = `translateY(0px)`;
-             setTimeout(() => pill.style.transition = 'transform 0.1s linear', 400);
-           });
-        });
       }
     };
 
-    // --- Phase 4: App 核心控制器 (Contract & Flow) ---
+    // --- Phase 4: App Controller & In-place Edit ---
     const App = {
       init() {
         DataManager.init();
@@ -560,7 +491,6 @@
         DataManager.save(); Renderer.render();
       },
 
-      // 原地流式編輯
       startQuickAdd(dayId) {
         const container = document.getElementById(`activities-${dayId}`);
         document.getElementById(`add-btn-area-${dayId}`).style.display = 'none';
@@ -573,7 +503,6 @@
           </div>
         `;
         
-        if (container.innerHTML.includes('探索此城')) container.innerHTML = '';
         container.insertAdjacentHTML('beforeend', html);
         
         document.querySelectorAll('.activity-item:not(#'+slotId+')').forEach(el => el.classList.add('is-unfocused'));
@@ -603,13 +532,12 @@
       }
     };
 
-    // --- Phase 5: 契約 Modal (1.0.5 Contract UI) ---
+    // --- Phase 5: Contract Modal (Extreme Clean) ---
     const UI = {
       openCreateModal() {
         const layer = document.getElementById('modal-layer');
         layer.style.pointerEvents = 'auto';
         
-        // 獲取今天與明天日期作為預設
         const today = new Date(); const tmr = new Date(today); tmr.setDate(tmr.getDate()+1);
         const formatD = (d) => d.toISOString().split('T')[0];
 
@@ -619,14 +547,13 @@
             <h2 class="text-2xl font-bold mb-8 text-center tracking-tight">新的冒險 ☁️</h2>
             <div class="space-y-4">
               <input id="new-trip-title" type="text" class="inplace-input" style="background:rgba(255,255,255,0.4)" placeholder="行程名稱 (例: 札幌雪祭)" oninput="UI.validate()">
-              <input id="new-trip-dest" type="text" class="inplace-input" style="background:rgba(255,255,255,0.4)" placeholder="首站目的地 (必填，如：東京)" oninput="UI.validate()">
-              <div class="flex gap-4">
+              <input id="new-trip-dest" type="text" class="inplace-input" style="background:rgba(255,255,255,0.4)" placeholder="首站目的地 (必填)" oninput="UI.validate()">
+              <div class="flex gap-4 mb-6">
                 <input id="new-trip-start" type="date" class="inplace-input" style="background:rgba(255,255,255,0.4)" value="${formatD(today)}" onchange="UI.syncDate(); UI.validate()">
                 <input id="new-trip-end" type="date" class="inplace-input" style="background:rgba(255,255,255,0.4)" value="${formatD(tmr)}" onchange="UI.validate()">
               </div>
-              <div class="capacity-gauge-track"><div id="capacity-fill" class="capacity-gauge-fill" style="width:0%"></div></div>
             </div>
-            <button id="btn-confirm-create" data-action="confirm-create" class="w-full h-14 bg-[#1D1D1F] text-white rounded-2xl font-bold mt-8 tap-scale opacity-30 pointer-events-none transition-opacity">建立行程</button>
+            <button id="btn-confirm-create" data-action="confirm-create" class="w-full h-14 bg-[#1D1D1F] text-white rounded-2xl font-bold mt-2 tap-scale opacity-30 pointer-events-none transition-opacity">建立行程</button>
           </div>
         `;
         setTimeout(() => { document.getElementById('modal-card').classList.remove('translate-y-full'); UI.validate(); }, 10);
@@ -645,22 +572,13 @@
         const start = document.getElementById('new-trip-start').value;
         const end = document.getElementById('new-trip-end').value;
         const btn = document.getElementById('btn-confirm-create');
-        const fill = document.getElementById('capacity-fill');
         
-        // 移除錯誤狀態
         dest.classList.remove('error');
 
         let diffDays = AppUtils.getDiffDays(start, end);
         if (diffDays < 1) diffDays = 1;
         
-        // 容量指示器
-        const pct = Math.min((diffDays / 30) * 100, 100);
-        fill.style.width = `${pct}%`;
-        fill.className = 'capacity-gauge-fill';
-        if(diffDays > 15 && diffDays <= 25) fill.style.background = 'var(--apple-blue)';
-        else if(diffDays > 25) { fill.style.background = '#FF3B30'; fill.classList.add('gauge-warning'); }
-
-        // 契約驗證
+        // 嚴格契約驗證
         if(title.value.trim() && dest.value.trim() && diffDays <= 30) {
           btn.style.opacity = '1'; btn.style.pointerEvents = 'auto';
         } else {
@@ -689,20 +607,15 @@
 
         const title = document.getElementById('new-trip-title').value;
         
-        // Smart Generator (自動生成天數)
         let daysArray = [];
         let currDate = new Date(v.start);
         for(let i=0; i<v.diffDays; i++) {
            const dStr = AppUtils.formatDate(currDate);
-           
-           // 檢查緩衝池
-           const recoveredData = DataManager.getFromBuffer(dStr);
-           
            daysArray.push({
              id: AppUtils.generateId(),
              dateString: dStr,
-             destination: i === 0 ? v.dest : '', // 僅首日繼承目的地，其餘留白引導填寫
-             activities: recoveredData
+             destination: i === 0 ? v.dest : '', 
+             activities: []
            });
            currDate.setDate(currDate.getDate() + 1);
         }
