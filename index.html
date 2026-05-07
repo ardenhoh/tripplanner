@@ -3,130 +3,131 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>Travel Log | 行程助手 🧳</title>
+  <title>Travel Log | OS 1.0.4 🧳</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js" defer></script>
   <style>
     /* ==========================================================================
-       OS 1.0.3 - Industrial Stable
+       OS 1.0.4 - Industrial Stable (Gemini Team Edition)
        Apple iOS 26 Liquid Glass Environment
        ========================================================================== */
     :root {
-      --apple-bg: #f5f5f7;
-      --apple-text: #1D1D1F; 
-      --apple-secondary: #86868b;
+      --apple-ease: cubic-bezier(0.32, 0.72, 0, 1);
+      --rim-opacity: 0.4;
+      --blur-radius: 25px;
+      --focus-scale: 0.98;
       --apple-blue: #0071e3;
     }
 
     body {
-      margin: 0; padding: 0; 
-      background-color: var(--apple-bg);
+      margin: 0; padding: 0; background-color: #f5f5f7;
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
       -webkit-font-smoothing: antialiased;
-      overflow: hidden; /* 物理鎖死底層，交由 ContentLayer 處理滾動 */
+      overflow: hidden; /* 由 ContentLayer 處理滾動，鎖死底層 */
+      color: #1D1D1F;
     }
 
     /* ----------------------------------------------------
-       Phase 1: 四層穩定殼層 (The Shell Layers)
+       Phase 1: 四層實體殼層 (Layered Shell)
        ---------------------------------------------------- */
-    /* Layer 0: 常駐流體背景 (GPU 加速) */
     #background-layer {
       position: fixed; inset: -20%; z-index: -10; pointer-events: none;
-      background: radial-gradient(circle at 20% 20%, #e8f0fe 0%, transparent 50%),
-                  radial-gradient(circle at 80% 80%, #f6eef2 0%, transparent 50%),
-                  radial-gradient(circle at 50% 50%, #f4f6f9 0%, transparent 50%);
+      background: radial-gradient(circle at 15% 15%, #e8f0fe 0%, transparent 50%),
+                  radial-gradient(circle at 85% 85%, #f6eef2 0%, transparent 50%);
       background-size: 200% 200%; filter: blur(100px);
       transition: filter 1.5s ease, background 1.5s ease;
       will-change: transform;
       animation: ambientShift 30s ease-in-out infinite alternate;
     }
-    @keyframes ambientShift { 
-      0% { background-position: 0% 0%; } 
-      100% { background-position: 100% 100%; } 
-    }
-    
-    /* Layer 1: 主內容層 */
+    @keyframes ambientShift { 0% { background-position: 0% 0%; } 100% { background-position: 100% 100%; } }
+
     #content-layer {
-      position: relative; z-index: 1; height: 100dvh; overflow-y: auto;
-      transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), filter 0.5s ease;
-      -webkit-overflow-scrolling: touch;
+      position: relative; z-index: 1; height: 100dvh; overflow-y: auto; overflow-x: hidden;
+      -webkit-overflow-scrolling: touch; 
+      padding-bottom: calc(env(safe-area-inset-bottom) + 20px);
+      transition: padding-bottom 0.4s var(--apple-ease), transform 0.4s var(--apple-ease);
       transform-origin: center center;
     }
 
-    /* Layer 2: 全局導航/按鈕層 */
     #chrome-layer { position: fixed; inset: 0; z-index: 90; pointer-events: none; }
-
-    /* Layer 3: 獨立系統彈窗層 */
     #modal-layer { position: fixed; inset: 0; z-index: 100; pointer-events: none; }
 
     /* ----------------------------------------------------
-       視覺層級退讓 (Modal 開啟時 Content 輕微退縮，但不糊掉編輯區)
-       ---------------------------------------------------- */
-    body.modal-open #content-layer { transform: scale(0.98); }
-    /* 模糊僅作用於 Modal 的 Backdrop，保護焦點文本銳利度 */
-    .modal-backdrop { backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); }
-
-    /* ----------------------------------------------------
-       iOS 26 Liquid Glass 材質與光影
+       Phase 2: Liquid Glass 2.0 (Physical Rim Light)
        ---------------------------------------------------- */
     .liquid-glass {
+      position: relative; border: none !important;
       background: rgba(255, 255, 255, 0.45);
-      backdrop-filter: blur(40px) saturate(180%);
-      -webkit-backdrop-filter: blur(40px) saturate(180%);
-      box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.4), 0 8px 32px rgba(0, 0, 0, 0.03);
+      backdrop-filter: blur(var(--blur-radius)) saturate(180%);
+      -webkit-backdrop-filter: blur(var(--blur-radius)) saturate(180%);
+      border-radius: 28px;
+      /* 光學擴散厚度感 */
+      box-shadow: 
+        inset 0 0 0 0.5px rgba(255, 255, 255, var(--rim-opacity)),
+        0 12px 40px rgba(0, 0, 0, 0.05);
+      transition: all 0.4s var(--apple-ease);
     }
+
     .theme-dark .liquid-glass {
-      background: rgba(0, 0, 0, 0.15);
-      box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.15), 0 8px 32px rgba(0, 0, 0, 0.1);
+      background: rgba(0, 0, 0, 0.2);
+      --rim-opacity: 0.2; /* 亮度感知：深色模式光感柔和 */
       color: #FFF;
     }
-    
-    .liquid-orb-wrapper { position: relative; border-radius: 50%; filter: drop-shadow(0 6px 12px rgba(0, 113, 227, 0.1)); }
-    .liquid-orb {
-      background: linear-gradient(135deg, #f9feff 0%, #eefdff 100%);
-      border-radius: 50%; width: 100%; height: 100%; position: relative; overflow: hidden;
-      box-shadow: inset 4px 4px 12px rgba(255, 255, 255, 1);
-    }
-    .liquid-orb::after {
-      content: ''; position: absolute; top: -20%; left: -20%; width: 140%; height: 140%;
-      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0) 50%);
-      filter: blur(8px); animation: orbWobble 4s infinite ease-in-out alternate; pointer-events: none;
-    }
-    @keyframes orbWobble { 0% { transform: scale(1); } 100% { transform: scale(1.1) translate(4px, 6px); } }
+
+    /* 三級模糊降級 (滾動性能保護) */
+    .scrolling .liquid-glass { --blur-radius: 8px; }
 
     /* ----------------------------------------------------
-       交互與佈局組件
+       Phase 3: 深度聚焦 (Depth Focus) 與交互反饋
        ---------------------------------------------------- */
-    .input-std {
-      height: 52px; border-radius: 16px; background: rgba(255, 255, 255, 0.6);
-      padding: 0 16px; border: none; box-shadow: inset 0 0 0 0.5px rgba(0,0,0,0.05);
-      width: 100%; box-sizing: border-box; font-size: 16px; color: var(--apple-text); outline: none; transition: 0.2s;
+    .is-unfocused {
+      opacity: 0.4; transform: scale(var(--focus-scale));
+      filter: blur(1.5px) brightness(0.95);
     }
-    .input-std:focus { background: rgba(255, 255, 255, 0.95); box-shadow: inset 0 0 0 0.5px var(--apple-blue); }
 
-    /* 邊緣羽化遮罩 (消除左滑刪除硬線條) */
+    .apple-pulse { animation: pulse 0.4s var(--apple-ease); }
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
+    .tap-scale:active { transform: scale(0.96); opacity: 0.8; }
+
+    /* ----------------------------------------------------
+       Phase 4: Daily Planner (Timeline UI)
+       ---------------------------------------------------- */
+    .timeline-container { position: relative; padding-left: 56px; }
+    .timeline-line {
+      position: absolute; left: 27px; top: 0; bottom: 0;
+      width: 1.5px; background: linear-gradient(to bottom, var(--apple-blue), transparent);
+      opacity: 0.3; transition: all 0.4s var(--apple-ease);
+    }
+    .timeline-line.conflict {
+      background: linear-gradient(to bottom, #ff3b30, transparent);
+      animation: elasticRepulsion 0.6s var(--apple-ease) infinite alternate;
+    }
+    @keyframes elasticRepulsion { 0% { transform: translateX(0); } 100% { transform: translateX(2px); } }
+
+    .activity-node {
+      position: absolute; left: -34px; top: 18px;
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--apple-blue); box-shadow: 0 0 8px rgba(0, 113, 227, 0.4);
+    }
+
+    .inplace-input {
+      background: rgba(0,0,0,0.03); border-radius: 12px;
+      padding: 12px 16px; width: 100%; border: none; outline: none;
+      font-size: 17px; font-weight: 500; font-family: inherit;
+      color: inherit;
+    }
+
+    /* Swipe 手勢防護 */
     .swipe-container { position: relative; overflow: hidden; border-radius: 28px; }
     .swipe-actions {
       position: absolute; right: 0; top: 0; bottom: 0; width: 100px;
       display: flex; align-items: center; justify-content: flex-end; padding-right: 28px;
-      color: #FF3B30; font-size: 24px; z-index: 0; opacity: 0; transition: opacity 0.2s;
-      background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px);
+      color: #FF3B30; font-size: 24px; z-index: 0; opacity: 0;
+      background: rgba(255, 255, 255, 0.9);
       -webkit-mask-image: linear-gradient(to right, transparent 0%, black 24px);
-      mask-image: linear-gradient(to right, transparent 0%, black 24px);
     }
-    .swipe-card { position: relative; z-index: 1; transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); will-change: transform; }
+    .swipe-card { position: relative; z-index: 1; transition: transform 0.4s var(--apple-ease); will-change: transform; }
 
-    /* Modal 專用與 Scroll Guard 標記 */
-    .modal-active { pointer-events: auto !important; }
-    .allow-scroll { overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
-
-    /* 天氣粒子系統 */
-    .particle-layer { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
-    .rain { position: absolute; width: 1.5px; background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.8)); animation: rainFall linear infinite; }
-    @keyframes rainFall { 0% { transform: translateY(-50px); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(600px); opacity: 0; } }
-    
-    .tap-scale { transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
-    .tap-scale:active { transform: scale(0.95); }
     .no-scrollbar::-webkit-scrollbar { display: none; }
   </style>
 </head>
@@ -139,340 +140,351 @@
 
   <div id="chrome-layer">
     <button id="btn-fab" data-action="open-create-modal" class="fixed bottom-10 left-1/2 -translate-x-1/2 w-[64px] h-[64px] rounded-full z-[90] tap-scale pointer-events-auto" style="display: none;">
-       <div class="liquid-orb-wrapper w-full h-full">
-         <div class="liquid-orb flex items-center justify-center text-[var(--apple-blue)] shadow-lg">
-           <i class="fa-solid fa-plus text-2xl font-light"></i>
-         </div>
+       <div class="liquid-glass flex items-center justify-center text-[var(--apple-blue)] w-full h-full shadow-lg" style="border-radius: 50%;">
+         <i class="fa-solid fa-plus text-2xl font-light"></i>
        </div>
     </button>
   </div>
 
-  <div id="modal-layer">
-    </div>
+  <div id="modal-layer"></div>
 
   <script>
     // ==========================================================================
-    // OS 1.0.3 Architecture Logic
+    // OS 1.0.4 Industrial Logic Core
     // ==========================================================================
 
-    const STORAGE_KEY = "os1_0_3_master";
-    
-    // --- State Storage ---
-    const TripState = {
-      data: { trips: [], activeId: null, view: 'home' },
-      load() { const d = localStorage.getItem(STORAGE_KEY); if(d) this.data = JSON.parse(d); },
-      save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data)); }
+    const AppUtils = {
+      generateId: () => {
+        try { return crypto.randomUUID(); } 
+        catch (e) { return 'id-' + Date.now() + Math.random().toString(36).slice(2, 9); }
+      }
     };
 
-    // --- Global Environment Coordinator (純函數：只算不噴) ---
+    // --- Phase 0: 數據防護與遷移 (P0級) ---
+    const DataManager = {
+      key: 'OS_104_MASTER',
+      state: { trips: [], activeId: null, view: 'home' },
+
+      init() {
+        const raw = localStorage.getItem('TRAVEL_LOG_DATA') || localStorage.getItem(this.key);
+        if (raw) {
+          localStorage.setItem('TRAVEL_LOG_BACKUP_103', raw); // 影子備份
+          let parsed = JSON.parse(raw);
+          
+          // 數據清洗與升級
+          this.state.trips = (parsed.trips || []).map(t => ({
+            ...t,
+            days: (t.days || []).map(d => ({ 
+              ...d, 
+              activities: d.activities || [] // 強制補全 Daily Planner 結構
+            }))
+          }));
+          this.save();
+        }
+      },
+      save() { localStorage.setItem(this.key, JSON.stringify(this.state)); }
+    };
+
+    // --- Phase 1: 環境協調器 (純計算) ---
     const EnvironmentCoordinator = {
-      compute(weatherData) {
-        // 嚴格解耦：只輸出配置，不碰 DOM
-        const isRainy = [51,53,55,61,63,65,80,81,82,95,96,99].includes(weatherData.code);
-        const isCloudy = [1,2,3,45,48].includes(weatherData.code);
+      compute(weatherCode) {
+        const isRainy = [51,53,55,61,63,65,80,81,82,95].includes(weatherCode);
         return {
           themeId: isRainy ? 'theme-dark' : 'theme-light',
-          bgGradient: isRainy ? 'from-[#3a4750] to-[#2c3e50]' : (isCloudy ? 'from-[#7da2b8] to-[#bacfdc]' : 'from-[#5cb0ff] to-[#80c6ff]'),
-          enableRainParticles: isRainy,
-          textColor: isRainy ? 'text-white' : 'text-current'
+          bgGradient: isRainy ? 'from-[#3a4750] to-[#2c3e50]' : 'from-[#5cb0ff] to-[#80c6ff]'
         };
       }
     };
 
-    // --- Weather Engine (帶 Timeout 與 Cache) ---
-    const WeatherEngine = {
-      async fetch(cityName) {
-        const cacheKey = `wx_${cityName}`;
-        try {
-          // 模擬 API 延遲與即時抓取 (此處用靜態模擬以確保 GitHub Pages 不受 CORS 限制)
-          // 實戰中替換為 Open-Meteo 請求
-          const isRainy = Math.random() > 0.6; // 隨機天氣展示
-          const code = isRainy ? 61 : 1; 
-          const data = { 
-            temp: 24 + Math.floor(Math.random()*6), 
-            status: isRainy ? 'Rainy' : 'Clear', 
-            code: code,
-            high: 30, low: 22,
-            forecast: Array.from({length: 24}, (_, i) => ({ 
-              hour: i, 
-              temp: 24 + Math.floor(Math.random()*4), 
-              icon: isRainy ? '🌧️' : '☀️' 
-            }))
-          };
-          localStorage.setItem(cacheKey, JSON.stringify(data));
-          return data;
-        } catch(e) {
-          return JSON.parse(localStorage.getItem(cacheKey)) || { code: 1, temp: 25, status: 'Cloudy', forecast: [] };
-        }
-      }
-    };
-
-    // --- Dormant Particle System (休眠系統：節省 CPU) ---
-    const ParticleEngine = {
-      render(isRainy) {
-        const container = document.getElementById('particle-slot');
-        if (!container) return;
-        if (isRainy) {
-          // 喚醒粒子
-          container.innerHTML = Array(30).fill().map(() => `<div class="rain" style="left:${Math.random()*100}%; animation-delay:-${Math.random()}s"></div>`).join('');
-        } else {
-          // 休眠：徹底清空 DOM，停止渲染循環
-          container.innerHTML = '';
-        }
-      }
-    };
-
-    // --- iOS Guarded Scroll Lock (雙重守衛) ---
-    const ScrollGuard = {
-      startY: 0,
-      handler: null,
-      enable() {
-        this.handler = this.handleTouchMove.bind(this);
-        const modalLayer = document.getElementById('modal-layer');
-        modalLayer.addEventListener('touchmove', this.handler, { passive: false });
-        modalLayer.addEventListener('touchstart', (e) => this.startY = e.touches[0].clientY, { passive: true });
-        
-        // Keyboard-aware
-        if(window.visualViewport) {
-          window.visualViewport.addEventListener('resize', this.handleKeyboard);
-        }
-      },
-      disable() {
-        const modalLayer = document.getElementById('modal-layer');
-        if(this.handler) modalLayer.removeEventListener('touchmove', this.handler);
-        if(window.visualViewport) window.visualViewport.removeEventListener('resize', this.handleKeyboard);
-      },
-      handleTouchMove(e) {
-        const target = e.target.closest('.allow-scroll');
-        if (!target) {
-          e.preventDefault(); // 阻擋 Backdrop 穿透
-          return;
-        }
-        // 邊界穿透防護
-        const currentY = e.touches[0].clientY;
-        const isScrollingUp = currentY > this.startY; // 向下拉
-        const isScrollingDown = currentY < this.startY; // 向上拉
-        if (isScrollingUp && target.scrollTop === 0) { e.preventDefault(); }
-        if (isScrollingDown && target.scrollTop + target.clientHeight >= target.scrollHeight) { e.preventDefault(); }
-      },
-      handleKeyboard() {
-        // 當鍵盤彈起時，保持聚焦元素在視圖內
-        if(document.activeElement && document.activeElement.tagName === 'INPUT') {
-          setTimeout(() => document.activeElement.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
-        }
-      }
-    };
-
-    // --- Renderer (分層渲染系統) ---
+    // --- Phase 2: 局部渲染與視圖更新 ---
     const Renderer = {
-      updateContent() {
-        const container = document.getElementById('content-layer');
-        if (TripState.data.view === 'home') {
-          document.getElementById('btn-fab').style.display = 'flex';
-          container.innerHTML = this.templateHome();
+      render() {
+        const content = document.getElementById('content-layer');
+        const fab = document.getElementById('btn-fab');
+        
+        if (DataManager.state.view === 'home') {
+          fab.style.display = 'block';
+          content.innerHTML = this.tempHome();
           GestureManager.bindSwipe();
         } else {
-          document.getElementById('btn-fab').style.display = 'none';
-          this.initEditorFrame();
-          this.renderHeaderPatch();
+          fab.style.display = 'none';
+          this.renderEditor();
         }
       },
 
-      initEditorFrame() {
-        // 只初始化空殼，保護內部表單/ Timeline 結構不被頻繁重繪
-        const trip = TripState.data.trips.find(t => t.id === TripState.data.activeId);
-        const container = document.getElementById('content-layer');
-        container.innerHTML = `
-          <div class="min-h-screen pb-24">
-            <header class="weather-header h-[38vh] min-h-[350px] relative overflow-hidden transition-all duration-1000">
-               <div id="bg-slot" class="absolute inset-0 bg-gradient-to-b opacity-90 transition-colors duration-1000"></div>
-               <div id="particle-slot" class="particle-layer"></div>
-               <div class="relative z-10 px-6 pt-12 pb-6 flex flex-col items-center h-full justify-between">
-                  <button data-action="go-home" class="self-start w-10 h-10 liquid-glass rounded-full flex items-center justify-center tap-scale text-current"><i class="fa-solid fa-chevron-left"></i></button>
-                  <div class="flex flex-col items-center text-center -mt-6 w-full text-current">
-                    <h2 id="city-slot" class="text-[32px] font-medium tracking-tight mb-0 truncate w-full px-12">加載中...</h2>
-                    <div id="temp-slot" class="text-[84px] font-thin leading-none tracking-tighter my-0.5">--°</div>
-                    <p id="status-slot" class="font-medium opacity-90 text-[15px] tracking-wide">--</p>
-                  </div>
-                  <div id="forecast-slot" class="w-full liquid-glass rounded-[24px] px-2 flex gap-2 overflow-x-auto no-scrollbar snap-x snap-mandatory mt-6 text-current h-[100px] items-center">
-                  </div>
-               </div>
-            </header>
-            <main class="max-w-3xl mx-auto px-6 mt-8 space-y-4">
-              ${trip.days.map((d, i) => this.templateDay(d, i)).join('')}
-            </main>
-          </div>
-        `;
-      },
-
-      async renderHeaderPatch() {
-        const trip = TripState.data.trips.find(t => t.id === TripState.data.activeId);
-        const city = trip.days[0]?.destination || 'Kuala Lumpur';
-        
-        const w = await WeatherEngine.fetch(city);
-        const config = EnvironmentCoordinator.compute(w);
-
-        // 1. 套用 Theme Class (CSS 驅動過渡)
-        document.body.className = config.themeId;
-        document.getElementById('bg-slot').className = `absolute inset-0 bg-gradient-to-b ${config.bgGradient} opacity-90 transition-colors duration-1000`;
-        
-        // 2. 觸發休眠粒子系統
-        ParticleEngine.render(config.enableRainParticles);
-
-        // 3. 局部 Slot Patching (絕不重繪主 ContentLayer，保護 Input 焦點)
-        document.getElementById('city-slot').innerText = city;
-        document.getElementById('temp-slot').innerText = `${w.temp}°`;
-        document.getElementById('status-slot').innerText = `${w.status} · H:${w.high}° L:${w.low}°`;
-
-        const currentHour = new Date().getHours();
-        document.getElementById('forecast-slot').innerHTML = w.forecast.map(f => {
-           const isNow = f.hour === currentHour;
-           const label = isNow ? 'Now' : (f.hour > 12 ? (f.hour-12)+'PM' : (f.hour===0?12:f.hour)+'AM');
-           return `<div id="${isNow ? 'current-hour-node' : ''}" class="flex-shrink-0 w-[60px] flex flex-col items-center justify-center scroll-snap-align-center">
-                     <span class="text-[12px] font-semibold opacity-90">${label}</span>
-                     <span class="text-[22px] my-1">${f.icon}</span>
-                     <span class="font-bold text-[16px]">${f.temp}°</span>
-                   </div>`;
-        }).join('');
-
-        // 置中當前時間
-        setTimeout(() => {
-          const node = document.getElementById('current-hour-node');
-          const scroll = document.getElementById('forecast-slot');
-          if(node && scroll) scroll.scrollTo({ left: node.offsetLeft - scroll.offsetWidth/2 + node.offsetWidth/2, behavior: 'smooth' });
-        }, 100);
-      },
-
-      renderModalPatch(type) {
-        const layer = document.getElementById('modal-layer');
-        if(!type) {
-          // Close Modal
-          const container = document.getElementById('modal-container');
-          if(container) container.classList.add('translate-y-full');
-          document.body.classList.remove('modal-open');
-          ScrollGuard.disable();
-          setTimeout(() => { layer.innerHTML = ''; layer.classList.remove('modal-active'); }, 400);
-          return;
+      patchSlot(id, html) {
+        const el = document.getElementById(id);
+        if (el && el.innerHTML !== html) {
+          el.innerHTML = html;
+          el.classList.add('apple-pulse');
+          setTimeout(() => el.classList.remove('apple-pulse'), 400);
         }
-
-        // Open Modal
-        document.body.classList.add('modal-open');
-        layer.classList.add('modal-active');
-        layer.innerHTML = `
-          <div data-action="close-modal" class="absolute inset-0 bg-black/20 modal-backdrop transition-opacity"></div>
-          <div id="modal-container" class="absolute bottom-0 left-0 w-full md:relative md:mx-auto md:mt-24 md:max-w-md liquid-glass rounded-t-[36px] md:rounded-[36px] p-8 pb-12 transition-transform duration-400 translate-y-full allow-scroll max-h-[90dvh]">
-             <div class="w-12 h-1.5 bg-black/10 rounded-full mx-auto mb-8"></div>
-             <h2 class="text-2xl font-bold mb-8 text-center tracking-tight text-[var(--apple-text)]">開始新的冒險</h2>
-             <div class="space-y-5">
-               <input id="in-title" type="text" class="input-std" placeholder="行程名稱 (例如：墨爾本五日遊)" />
-               <div class="grid grid-cols-2 gap-4 w-full">
-                 <div class="w-full min-w-0"><input id="in-start" type="text" placeholder="起始日期" onfocus="(this.type='date')" onblur="if(!this.value)this.type='text'" class="input-std text-center w-full" /></div>
-                 <div class="w-full min-w-0"><input id="in-end" type="text" placeholder="返程日期" onfocus="(this.type='date')" onblur="if(!this.value)this.type='text'" class="input-std text-center w-full" /></div>
-               </div>
-               <input id="in-dests" type="text" class="input-std" placeholder="目的地城市" />
-             </div>
-             <button data-action="confirm-create" class="w-full h-[52px] mt-8 rounded-2xl bg-[var(--apple-text)] text-white font-bold tap-scale shadow-lg">建立行程</button>
-          </div>
-        `;
-        setTimeout(() => document.getElementById('modal-container').classList.remove('translate-y-full'), 10);
-        ScrollGuard.enable();
       },
 
-      templateHome() {
+      tempHome() {
         return `
           <div class="max-w-3xl mx-auto px-6 py-20">
-            <h1 class="text-[34px] font-extrabold mb-10 tracking-tight flex items-center gap-2">行程助手 🧳</h1>
-            <div class="space-y-5">
-              ${TripState.data.trips.length ? TripState.data.trips.map(t => `
-                <div class="swipe-container group bg-transparent" data-id="${t.id}">
+            <h1 class="text-[34px] font-extrabold mb-10 tracking-tight">行程助手 🧳</h1>
+            <div class="space-y-6">
+              ${DataManager.state.trips.map(t => `
+                <div class="swipe-container group" data-id="${t.id}">
                   <div class="swipe-actions"><i class="fa-solid fa-trash-can"></i></div>
-                  <div class="swipe-card p-6 liquid-glass rounded-[28px] cursor-pointer" data-action="open-trip" data-id="${t.id}">
-                    <div class="flex justify-between items-start mb-6">
-                       <div class="liquid-orb-wrapper w-[46px] h-[46px]"><div class="liquid-orb flex items-center justify-center text-[var(--apple-blue)]"><i class="fa-solid fa-plane"></i></div></div>
-                       <div class="flex flex-col items-end gap-1 mt-1"><span class="text-[13px] font-bold opacity-80">${t.startDate}</span><div class="w-[1px] h-[10px] bg-black/15 mr-[5px]"></div><span class="text-[13px] font-bold opacity-80">${t.endDate}</span></div>
-                    </div>
+                  <div class="swipe-card liquid-glass p-6 cursor-pointer tap-scale" data-action="open-trip" data-id="${t.id}">
+                    <div class="text-[13px] font-bold opacity-40 mb-2 tracking-wide">${t.startDate} ─ ${t.endDate}</div>
                     <h3 class="text-[22px] font-bold tracking-tight">${t.title}</h3>
                   </div>
                 </div>
-              `).join('') : `<div class="py-24 text-center text-[var(--apple-secondary)] font-bold liquid-glass rounded-[32px]">準備好出發了嗎？</div>`}
+              `).join('')}
             </div>
           </div>
         `;
       },
 
-      templateDay(day, idx) {
-        return `
-          <div class="relative pl-20 pb-6 group">
-            <div class="absolute left-0 top-1 w-[56px] h-[56px] liquid-orb-wrapper"><div class="liquid-orb flex flex-col items-center justify-center text-[var(--apple-blue)] tap-scale"><span class="text-[10px] font-black uppercase mt-1 opacity-90">Day</span><span class="text-xl font-bold leading-none -mt-0.5">${idx+1}</span></div></div>
-            <div class="liquid-glass rounded-[24px] p-5">
-               <input type="text" class="w-full bg-transparent border-b border-black/10 py-2 text-xl font-bold text-[var(--apple-text)] outline-none" value="${day.destination}" placeholder="目的地" onblur="App.updateDest('${day.id}', this.value)" />
+      renderEditor() {
+        const trip = DataManager.state.trips.find(t => t.id === DataManager.state.activeId);
+        const content = document.getElementById('content-layer');
+        content.innerHTML = `
+          <div class="min-h-screen pb-40">
+            <header class="px-6 pt-16 flex items-center justify-between mb-8">
+               <button data-action="go-home" class="w-10 h-10 liquid-glass rounded-full flex items-center justify-center tap-scale"><i class="fa-solid fa-chevron-left"></i></button>
+               <h2 class="text-lg font-bold tracking-tight">${trip.title}</h2>
+               <div class="w-10"></div>
+            </header>
+            <div class="px-6 space-y-12">
+              ${trip.days.map((d, i) => this.tempDay(d, i)).join('')}
             </div>
           </div>
         `;
+      },
+
+      tempDay(day, idx) {
+        return `
+          <div class="relative">
+            <div class="flex items-center gap-4 mb-6">
+              <div class="w-8 h-8 rounded-full bg-[var(--apple-blue)] text-white text-xs font-bold flex items-center justify-center shadow-lg">D${idx+1}</div>
+              <h3 class="text-[22px] font-bold tracking-tight">${day.destination || '你想去哪？'}</h3>
+            </div>
+            <div class="timeline-container">
+              <div class="timeline-line" id="line-${day.id}"></div>
+              <div id="activities-${day.id}" class="space-y-4">
+                ${this.tempActivities(day)}
+              </div>
+              <div class="mt-6" id="add-btn-area-${day.id}">
+                <button data-action="start-quick-add" data-day="${day.id}" class="text-[var(--apple-blue)] font-bold text-[15px] tap-scale flex items-center gap-2">
+                  <i class="fa-solid fa-plus-circle"></i> 添加活動
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      },
+
+      tempActivities(day) {
+        if (!day.activities || !day.activities.length) return `<div class="text-sm opacity-30 italic py-2">該日尚未安排活動</div>`;
+        return day.activities.map(act => `
+          <div class="activity-item relative liquid-glass p-5" data-id="${act.id}">
+            <div class="activity-node"></div>
+            <div class="flex justify-between items-center">
+              <div class="flex-1">
+                <div class="text-[12px] font-bold opacity-40 uppercase mb-1 tracking-wider">${act.time || '全天'}</div>
+                <div class="font-bold text-[18px]">${act.title}</div>
+              </div>
+              <div class="text-xl opacity-40">📍</div>
+            </div>
+          </div>
+        `).join('');
       }
     };
 
-    // --- Gesture Manager (手勢獨立化) ---
+    // --- Phase 3: 手勢與視口管理 (iPhone 穩定性) ---
     const GestureManager = {
       bindSwipe() {
         document.querySelectorAll('.swipe-card').forEach(card => {
-          const container = card.parentElement;
-          const actions = container.querySelector('.swipe-actions');
-          let startX = 0, currentX = 0, isDragging = false;
-          
-          card.addEventListener('touchstart', e => { startX = e.touches[0].clientX; isDragging = true; card.style.transition = 'none'; }, {passive: true});
-          card.addEventListener('touchmove', e => {
-            if(!isDragging) return;
-            const diff = e.touches[0].clientX - startX;
-            if(diff < 0) { actions.style.opacity = '1'; currentX = Math.max(diff, -100); card.style.transform = `translateX(${currentX}px)`; }
-          }, {passive: true});
-          card.addEventListener('touchend', () => {
-            isDragging = false; card.style.transition = 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)';
-            if(currentX < -65) {
-              card.style.transform = `translateX(-120vw)`;
-              setTimeout(() => {
-                TripState.data.trips = TripState.data.trips.filter(t => t.id !== container.dataset.id);
-                TripState.save(); Renderer.updateContent();
-              }, 300);
-            } else { card.style.transform = `translateX(0)`; setTimeout(() => actions.style.opacity = '0', 200); }
-            currentX = 0;
-          });
+          let startX = 0, currentX = 0;
+          card.ontouchstart = (e) => {
+            if (e.touches[0].clientX < 20) return; // iOS 邊緣死區 (Edge Swipe 防護)
+            startX = e.touches[0].clientX;
+            card.style.transition = 'none';
+          };
+          card.ontouchmove = (e) => {
+            if (startX === 0) return;
+            currentX = Math.max(e.touches[0].clientX - startX, -100);
+            if (currentX < 0) card.style.transform = `translateX(${currentX}px)`;
+          };
+          card.ontouchend = () => {
+            if (startX === 0) return;
+            card.style.transition = 'transform 0.4s var(--apple-ease)';
+            if (currentX < -65) {
+              card.style.transform = 'translateX(-120vw)';
+              setTimeout(() => App.deleteTrip(card.parentElement.dataset.id), 300);
+            } else { card.style.transform = 'translateX(0)'; }
+            startX = 0; currentX = 0;
+          };
         });
       }
     };
 
-    // --- App Controller (全域事件委託) ---
+    const SafariFix = {
+      init() {
+        // 滾動感知降級
+        const content = document.getElementById('content-layer');
+        let scrollTimer;
+        content.addEventListener('scroll', () => {
+          document.body.classList.add('scrolling');
+          clearTimeout(scrollTimer);
+          scrollTimer = setTimeout(() => document.body.classList.remove('scrolling'), 150);
+        }, { passive: true });
+
+        // VisualViewport 鍵盤補償
+        if (window.visualViewport) {
+          window.visualViewport.addEventListener('resize', () => {
+            const offset = window.innerHeight - window.visualViewport.height;
+            if (offset > 50) {
+              content.style.paddingBottom = `${offset + 20}px`;
+              // 40% 重心定位
+              const activeEl = document.activeElement;
+              if (activeEl) setTimeout(() => activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+            } else {
+              content.style.paddingBottom = 'calc(env(safe-area-inset-bottom) + 20px)';
+            }
+          });
+        }
+      }
+    };
+
+    // --- Phase 4: 全局控制器 (App Controller) ---
     const App = {
-      init() { TripState.load(); Renderer.updateContent(); this.bindEvents(); },
-      bindEvents() {
+      init() {
+        DataManager.init();
+        Renderer.render();
+        SafariFix.init();
+        this.bindDelegation();
+      },
+
+      bindDelegation() {
         document.addEventListener('click', e => {
           const target = e.target.closest('[data-action]');
-          if(!target) return;
+          if (!target) return;
           const action = target.dataset.action;
-          
-          if(action === 'open-create-modal') Renderer.renderModalPatch('create');
-          if(action === 'close-modal') Renderer.renderModalPatch(null);
-          if(action === 'confirm-create') this.createTrip();
-          if(action === 'open-trip') { TripState.data.activeId = target.dataset.id; TripState.data.view = 'editor'; Renderer.updateContent(); }
-          if(action === 'go-home') { TripState.data.view = 'home'; TripState.data.activeId = null; Renderer.updateContent(); }
+
+          if (action === 'open-trip') {
+            DataManager.state.activeId = target.dataset.id;
+            DataManager.state.view = 'editor';
+            Renderer.render();
+          }
+          else if (action === 'go-home') {
+            DataManager.state.view = 'home';
+            DataManager.state.activeId = null;
+            Renderer.render();
+          }
+          else if (action === 'open-create-modal') this.openCreateModal();
+          else if (action === 'close-modal') this.closeModal();
+          else if (action === 'confirm-create') this.confirmCreateTrip();
+          else if (action === 'start-quick-add') this.startQuickAdd(target.dataset.day);
         });
       },
-      createTrip() {
-        const title = document.getElementById('in-title').value, start = document.getElementById('in-start').value, end = document.getElementById('in-end').value, dest = document.getElementById('in-dests').value;
-        if(title && start && end) {
-          TripState.data.trips.unshift({ id: crypto.randomUUID(), title, startDate: start, endDate: end, days: [{id: crypto.randomUUID(), destination: dest}] });
-          TripState.save(); Renderer.renderModalPatch(null); this.openTrip(TripState.data.trips[0].id);
-        } else alert('請填寫完整資訊');
+
+      deleteTrip(id) {
+        DataManager.state.trips = DataManager.state.trips.filter(t => t.id !== id);
+        DataManager.save();
+        Renderer.render();
       },
-      openTrip(id) { TripState.data.activeId = id; TripState.data.view = 'editor'; Renderer.updateContent(); },
-      updateDest(dayId, newVal) {
-        const trip = TripState.data.trips.find(t => t.id === TripState.data.activeId);
+
+      // --- 深度交互：原地流式編輯 (In-place Flow Edit) ---
+      startQuickAdd(dayId) {
+        const container = document.getElementById(`activities-${dayId}`);
+        const btnArea = document.getElementById(`add-btn-area-${dayId}`);
+        btnArea.style.display = 'none'; // 隱藏添加按鈕
+
+        const slotId = 'slot-' + AppUtils.generateId();
+        const html = `
+          <div id="${slotId}" class="liquid-glass p-5 apple-pulse">
+            <input type="text" class="inplace-input" placeholder="去哪裡？做什麼？" onkeydown="if(event.key==='Enter') App.commitQuickAdd('${dayId}', '${slotId}', this.value)" onblur="App.cancelQuickAdd('${dayId}', '${slotId}', this.value)">
+            <div class="text-[11px] font-medium opacity-40 mt-3 text-right">按 Enter 同步 ☁️</div>
+          </div>
+        `;
+        
+        // 移除「尚未安排」提示
+        if (container.innerHTML.includes('尚未安排活動')) container.innerHTML = '';
+        container.insertAdjacentHTML('beforeend', html);
+        
+        // 心流保護 (Depth Focus)
+        document.querySelectorAll('.activity-item').forEach(el => el.classList.add('is-unfocused'));
+        
+        const input = document.getElementById(slotId).querySelector('input');
+        input.focus();
+      },
+
+      commitQuickAdd(dayId, slotId, value) {
+        if (!value.trim()) { this.cancelQuickAdd(dayId, slotId, ''); return; }
+        
+        const trip = DataManager.state.trips.find(t => t.id === DataManager.state.activeId);
         const day = trip.days.find(d => d.id === dayId);
-        if(day && day.destination !== newVal) { day.destination = newVal; TripState.save(); Renderer.renderHeaderPatch(); }
+        day.activities.push({ id: AppUtils.generateId(), title: value, time: '12:00' }); // 預設時間，實戰可擴展
+        DataManager.save();
+
+        this.restoreFocus(dayId);
+      },
+
+      cancelQuickAdd(dayId, slotId, value) {
+        if(value.trim()) { this.commitQuickAdd(dayId, slotId, value); return; } // 失焦保存
+        this.restoreFocus(dayId);
+      },
+
+      restoreFocus(dayId) {
+        document.querySelectorAll('.activity-item').forEach(el => el.classList.remove('is-unfocused'));
+        const trip = DataManager.state.trips.find(t => t.id === DataManager.state.activeId);
+        Renderer.patchSlot(`activities-${dayId}`, Renderer.tempActivities(trip.days.find(d => d.id === dayId)));
+        document.getElementById(`add-btn-area-${dayId}`).style.display = 'block';
+      },
+
+      // --- Modal 邏輯 (僅保留給行程創建) ---
+      openCreateModal() {
+        const layer = document.getElementById('modal-layer');
+        layer.style.pointerEvents = 'auto';
+        layer.innerHTML = `
+          <div class="absolute inset-0 bg-black/10 backdrop-blur-md" data-action="close-modal"></div>
+          <div id="modal-card" class="absolute bottom-0 left-0 w-full md:relative md:mx-auto md:mt-24 md:max-w-md liquid-glass rounded-t-[40px] md:rounded-[40px] p-8 pb-12 transition-transform duration-500 translate-y-full">
+            <h2 class="text-2xl font-bold mb-8 text-center">新的旅行 ☁️</h2>
+            <div class="space-y-4">
+              <input id="new-trip-title" type="text" class="inplace-input" style="background:rgba(255,255,255,0.5)" placeholder="行程名稱 (例如：北海道冬日遊)">
+              <div class="flex gap-4">
+                <input id="new-trip-start" type="date" class="inplace-input" style="background:rgba(255,255,255,0.5)">
+                <input id="new-trip-end" type="date" class="inplace-input" style="background:rgba(255,255,255,0.5)">
+              </div>
+            </div>
+            <button data-action="confirm-create" class="w-full h-14 bg-[#1D1D1F] text-white rounded-2xl font-bold mt-8 tap-scale">建立行程</button>
+          </div>
+        `;
+        setTimeout(() => document.getElementById('modal-card').classList.remove('translate-y-full'), 10);
+      },
+
+      closeModal() {
+        const card = document.getElementById('modal-card');
+        if (card) card.classList.add('translate-y-full');
+        setTimeout(() => {
+          document.getElementById('modal-layer').innerHTML = '';
+          document.getElementById('modal-layer').style.pointerEvents = 'none';
+        }, 400);
+      },
+
+      confirmCreateTrip() {
+        const title = document.getElementById('new-trip-title').value;
+        const start = document.getElementById('new-trip-start').value;
+        const end = document.getElementById('new-trip-end').value;
+        if (!title || !start) return;
+
+        DataManager.state.trips.unshift({
+          id: AppUtils.generateId(),
+          title, startDate: start, endDate: end,
+          days: [{ id: AppUtils.generateId(), destination: '首站目的地', activities: [] }]
+        });
+        DataManager.save();
+        this.closeModal();
+        Renderer.render();
       }
     };
 
-    // 啟動應用
     App.init();
   </script>
 </body>
