@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>Travel Log | OS 1.0.5-S 🧳</title>
+  <title>Travel Log | OS 1.0.5-S Streamlined 🧳</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js" defer></script>
   <style>
     /* ==========================================================================
-       OS 1.0.5-S (Streamlined) - Gemini Team
+       OS 1.0.5-S (Streamlined)
        Apple iOS 26 Liquid Glass Environment
        ========================================================================== */
     :root {
@@ -35,7 +35,7 @@
       background: radial-gradient(circle at 15% 15%, #e8f0fe 0%, transparent 50%),
                   radial-gradient(circle at 85% 85%, #f6eef2 0%, transparent 50%);
       background-size: 200% 200%; filter: blur(100px);
-      transition: filter 1.5s ease, background 1.5s ease;
+      transition: filter 1s var(--apple-ease), background 1s var(--apple-ease);
       will-change: transform;
       animation: ambientShift 30s ease-in-out infinite alternate;
     }
@@ -53,7 +53,7 @@
     #modal-layer { position: fixed; inset: 0; z-index: 100; pointer-events: none; }
 
     /* ----------------------------------------------------
-       Phase 2: Liquid Glass 2.0 (Streamlined)
+       Phase 2: Liquid Glass 2.0
        ---------------------------------------------------- */
     .liquid-glass {
       position: relative; border: none !important;
@@ -71,20 +71,24 @@
     .scrolling .liquid-glass { --blur-radius: 8px; }
 
     /* ----------------------------------------------------
-       Phase 3: 天氣系統 (iOS 5.5 View & GPU Particles)
+       Phase 3: 天氣系統 (5.5 View & GPU Particles)
        ---------------------------------------------------- */
     .weather-header { height: 38vh; min-height: 350px; position: relative; overflow: hidden; transition: opacity 0.5s ease; }
-    .particle-layer { position: absolute; inset: 0; pointer-events: none; z-index: 0; opacity: 1; transition: opacity 0.5s ease; will-change: transform; }
+    .particle-layer { position: absolute; inset: 0; pointer-events: none; z-index: 0; opacity: 1; transition: opacity 0.6s var(--apple-ease); will-change: transform; contain: strict; }
+    
+    /* 純 GPU 粒子位移，徹底釋放主線程 */
     .rain { position: absolute; width: 1.5px; background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.8)); animation: rainFall linear infinite; }
-    /* 完全硬體加速的粒子位移 */
     @keyframes rainFall { 0% { transform: translate3d(0, -50px, 0); opacity: 0; } 20% { opacity: 1; } 100% { transform: translate3d(0, 600px, 0); opacity: 0; } }
 
-    /* 5.5 View 暗示佈局 */
+    /* 5.5 View 觸控鎖定佈局 */
     .forecast-slot { 
       display: flex; gap: 0; overflow-x: auto; scroll-snap-type: x mandatory; 
-      padding-right: 9%; padding-left: 24px; -webkit-overflow-scrolling: touch;
+      padding-left: 24px; padding-right: 9%; /* Hinting */
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-x; /* 嚴格鎖定水平軸 */
+      overscroll-behavior-x: contain;
     }
-    .forecast-item { flex: 0 0 18.18%; display: flex; flex-direction: column; align-items: center; scroll-snap-align: start; }
+    .forecast-item { flex: 0 0 18.18%; display: flex; flex-direction: column; align-items: center; scroll-snap-align: center; transition: opacity 0.3s; }
 
     /* ----------------------------------------------------
        Phase 4: Timeline 導航軸線與層級 (Physical Spine)
@@ -96,14 +100,13 @@
     .theme-dark .liquid-orb-wrapper { background: #1c1c1e; }
     .theme-dark .liquid-orb { background: linear-gradient(135deg, #2c2c2e 0%, #1c1c1e 100%); }
     
-    /* 貫穿的垂直結構線 */
     .timeline-line {
       position: absolute; left: 23px; top: 56px; bottom: -16px;
       width: 1.5px; background: linear-gradient(to bottom, var(--apple-blue), transparent);
       opacity: 0.3; transition: all 0.4s var(--apple-ease);
     }
 
-    /* 導航塊：日期與城市名左對齊，4px 間距 */
+    /* 導航塊：極致簡化，4px 秩序 */
     .header-block { display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 24px; }
     .date-label {
       font-size: 12px; font-weight: 600; color: rgba(60, 60, 67, 0.6);
@@ -118,7 +121,6 @@
       background: var(--apple-blue); box-shadow: 0 0 8px rgba(0,113,227,0.4);
     }
 
-    /* 深度聚焦與原地編輯 */
     .is-unfocused { opacity: 0.3; transform: scale(var(--focus-scale)); filter: blur(1.5px); pointer-events: none; transition: all 0.4s var(--apple-ease); }
     
     .inplace-input {
@@ -231,6 +233,7 @@
               status: isRainy ? 'Rainy' : 'Clear',
               code: isRainy ? 61 : 1,
               high: 30, low: 22,
+              // 生成包含 24 小時的預報陣列
               forecast: Array.from({length: 24}, (_, i) => ({ 
                 hour: i, temp: 24 + Math.floor(Math.random()*4), icon: isRainy ? '🌧️' : '☀️' 
               }))
@@ -240,10 +243,12 @@
       }
     };
 
+    // 動態狀態總線聯動粒子
     const ParticleEngine = {
       render(enable) {
         const container = document.getElementById('particle-slot');
         if (!container) return;
+        // 使用 transform: translate3d 釋放 GPU 效能
         container.innerHTML = enable ? Array(30).fill().map(() => `<div class="rain" style="left:${Math.random()*100}%; animation-delay:-${Math.random()}s; height:${40+Math.random()*40}px"></div>`).join('') : '';
       }
     };
@@ -303,7 +308,7 @@
         const content = document.getElementById('content-layer');
         const city = trip.destination || '目的地';
         
-        // 骨架屏
+        // 渲染骨架屏與主結構
         content.innerHTML = `
           <div class="min-h-screen pb-40">
             <header id="weather-header" class="weather-header">
@@ -316,10 +321,10 @@
                     <div id="temp-slot" class="text-[84px] font-thin leading-none tracking-tighter my-0.5 skeleton-pulse">--°</div>
                     <p id="status-slot" class="font-medium opacity-90 text-[15px] tracking-wide skeleton-pulse">拉取天氣數據...</p>
                   </div>
-                  <div id="forecast-slot" class="w-full liquid-glass rounded-[24px] forecast-slot no-scrollbar py-4 h-[100px] mt-6"></div>
+                  <div id="forecast-slot" class="w-full liquid-glass rounded-[24px] forecast-slot py-4 h-[100px] mt-6"></div>
                </div>
             </header>
-            <div class="max-w-3xl mx-auto px-6 mt-12 space-y-10">
+            <div class="max-w-3xl mx-auto px-6 mt-12 space-y-8">
               ${trip.days.map((d, i) => this.tempDay(d, i, trip.destination)).join('')}
             </div>
           </div>
@@ -327,7 +332,7 @@
 
         this.initVisibilityObserver();
 
-        // 異步咬合
+        // 異步環境渲染
         const w = await WeatherEngine.fetch(city);
         const config = EnvironmentCoordinator.compute(w.code);
 
@@ -340,18 +345,28 @@
         const statusSlot = document.getElementById('status-slot');
         if(statusSlot){ statusSlot.classList.remove('skeleton-pulse'); statusSlot.innerText = `${w.status} · H:${w.high}° L:${w.low}°`; }
 
+        // Clock-Centric: 以當下時間為中心進行渲染與自動滾動
         const currentHour = new Date().getHours();
         const forecastSlot = document.getElementById('forecast-slot');
         if(forecastSlot){
             forecastSlot.innerHTML = w.forecast.map(f => {
                const isNow = f.hour === currentHour;
                const label = isNow ? 'Now' : (f.hour > 12 ? (f.hour-12)+'PM' : (f.hour===0?12:f.hour)+'AM');
-               return `<div id="${isNow ? 'current-hour-node' : ''}" class="forecast-item">
+               return `<div id="${isNow ? 'current-hour-node' : ''}" class="forecast-item ${isNow ? 'opacity-100' : 'opacity-60'}">
                          <span class="text-[12px] font-semibold opacity-90">${label}</span>
                          <span class="text-[22px] my-1">${f.icon}</span>
                          <span class="font-bold text-[16px]">${f.temp}°</span>
                        </div>`;
             }).join('');
+
+            // 中心化物理位移計算
+            setTimeout(() => {
+              const nowNode = document.getElementById('current-hour-node');
+              if (nowNode && forecastSlot) {
+                const centerPos = nowNode.offsetLeft + (nowNode.offsetWidth / 2) - (forecastSlot.offsetWidth / 2);
+                forecastSlot.scrollTo({ left: centerPos, behavior: 'smooth' });
+              }
+            }, 50);
         }
       },
 
@@ -379,7 +394,7 @@
       },
 
       tempActivities(day) {
-        if (!day.activities || !day.activities.length) return ``; // 徹底留白
+        if (!day.activities || !day.activities.length) return ``; // 絕對乾淨的留白，不產生廢話
         return day.activities.map(act => `
           <div class="activity-item liquid-glass p-4" data-id="${act.id}">
             <div class="activity-node"></div>
@@ -396,6 +411,7 @@
       initVisibilityObserver() {
         const header = document.getElementById('weather-header');
         const particles = document.getElementById('particle-slot');
+        // 視角休眠技術，移出視窗關閉 GPU 渲染
         const observer = new IntersectionObserver(([entry]) => {
           if(particles) particles.style.opacity = entry.isIntersecting ? "1" : "0";
         }, { threshold: 0 });
@@ -411,7 +427,7 @@
           const actions = card.previousElementSibling;
           
           card.ontouchstart = (e) => {
-            if (e.touches[0].clientX < 20) return; // 20px 死區，保護 iOS 返回手勢
+            if (e.touches[0].clientX < 20) return; // 20px 邊緣死區 (Safari Edge Swipe)
             startX = e.touches[0].clientX;
             card.style.transition = 'none';
           };
@@ -455,7 +471,6 @@
             if (offset > 50) {
               content.style.paddingBottom = `${offset + 20}px`;
               const activeEl = document.activeElement;
-              // 鎖定視口中心
               if (activeEl) setTimeout(() => activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
             } else {
               content.style.paddingBottom = 'calc(env(safe-area-inset-bottom) + 20px)';
@@ -532,7 +547,7 @@
       }
     };
 
-    // --- Phase 5: Contract Modal (Extreme Clean) ---
+    // --- Phase 5: Contract Modal (Streamlined) ---
     const UI = {
       openCreateModal() {
         const layer = document.getElementById('modal-layer');
@@ -548,8 +563,7 @@
             <div class="space-y-4">
               <input id="new-trip-title" type="text" class="inplace-input" style="background:rgba(255,255,255,0.4)" placeholder="行程名稱 (例: 札幌雪祭)" oninput="UI.validate()">
               <input id="new-trip-dest" type="text" class="inplace-input" style="background:rgba(255,255,255,0.4)" placeholder="首站目的地 (必填)" oninput="UI.validate()">
-              <div class="flex gap-4 mb-6">
-                <input id="new-trip-start" type="date" class="inplace-input" style="background:rgba(255,255,255,0.4)" value="${formatD(today)}" onchange="UI.syncDate(); UI.validate()">
+              <div class="flex gap-4 mb-[24px]"> <input id="new-trip-start" type="date" class="inplace-input" style="background:rgba(255,255,255,0.4)" value="${formatD(today)}" onchange="UI.syncDate(); UI.validate()">
                 <input id="new-trip-end" type="date" class="inplace-input" style="background:rgba(255,255,255,0.4)" value="${formatD(tmr)}" onchange="UI.validate()">
               </div>
             </div>
@@ -578,7 +592,7 @@
         let diffDays = AppUtils.getDiffDays(start, end);
         if (diffDays < 1) diffDays = 1;
         
-        // 嚴格契約驗證
+        // 驗證通過即解鎖，移除進度條累贅
         if(title.value.trim() && dest.value.trim() && diffDays <= 30) {
           btn.style.opacity = '1'; btn.style.pointerEvents = 'auto';
         } else {
