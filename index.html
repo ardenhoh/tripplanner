@@ -1,688 +1,164 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>Travel Log | OS 1.0.6 Titanium</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js" defer></script>
-  <style>
-    /* ==========================================================================
-       OS 1.0.6-S Titanium (Industrial Flagship)
-       Apple iOS 26 Liquid Glass Architecture
-       ========================================================================== */
-    :root {
-      --apple-ease: cubic-bezier(0.32, 0.72, 0, 1);
-      --apple-blue: #0071e3;
-      --glass-bg: rgba(255, 255, 255, 0.45);
-      --text-sec: rgba(255, 255, 255, 0.6);
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Travel OS - Liquid Glass POC</title>
+    <style>
+        :root {
+            /* 初始环境参数 - 模拟晨雾色调 */
+            --ambient-bg-1: #e0e7ff;
+            --ambient-bg-2: #f8fafc;
+            --glass-border: rgba(255, 255, 255, 0.4);
+            --text-color: #1e293b;
+            --motion-ease: cubic-bezier(0.23, 1, 0.32, 1);
+        }
 
-    body {
-      margin: 0; padding: 0; background-color: #f5f5f7;
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
-      -webkit-font-smoothing: antialiased; overflow: hidden; overscroll-behavior: none;
-      width: 100vw; height: 100dvh; position: fixed; /* Safari 物理防護：防地址欄抽搐 */
-    }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-    /* 金融級字體降級方案 */
-    .font-rounded { font-family: ui-rounded, "SF Pro Rounded", system-ui, -apple-system, sans-serif; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-color);
+            background: linear-gradient(135deg, var(--ambient-bg-1), var(--ambient-bg-2));
+            transition: background 2s var(--motion-ease);
+        }
 
-    /* ----------------------------------------------------
-       三明治渲染架構 (Sandwich Layering)
-       ---------------------------------------------------- */
-    #background-layer {
-      position: absolute; inset: -20%; z-index: -10; pointer-events: none;
-      background: radial-gradient(circle at 15% 15%, #e8f0fe 0%, transparent 50%),
-                  radial-gradient(circle at 85% 85%, #f6eef2 0%, transparent 50%);
-      background-size: 200% 200%; filter: blur(100px); will-change: transform;
-      animation: ambientShift 30s ease-in-out infinite alternate;
-    }
-    @keyframes ambientShift { 0% { background-position: 0% 0%; } 100% { background-position: 100% 100%; } }
+        /* 环境光影动画 */
+        .ambient-glow {
+            position: absolute;
+            width: 150%;
+            height: 150%;
+            background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.8) 0%, transparent 60%);
+            filter: blur(80px);
+            animation: drift 20s infinite alternate linear;
+            z-index: 0;
+        }
 
-    #weather-overlay {
-      position: absolute; top: 0; left: 0; width: 100%; height: 38vh;
-      z-index: 10; pointer-events: none; opacity: 0; transition: opacity 0.6s var(--apple-ease);
-      transform: translateZ(0); contain: strict;
-    }
+        @keyframes drift {
+            from { transform: translate(-10%, -10%); }
+            to { transform: translate(10%, 10%); }
+        }
 
-    #content-layer {
-      position: absolute; inset: 0; z-index: 20; overflow-y: auto; overflow-x: hidden;
-      padding-bottom: calc(env(safe-area-inset-bottom) + 90px);
-      -webkit-overflow-scrolling: touch; scroll-behavior: smooth;
-    }
+        /* Liquid Glass 卡片 */
+        .glass-card {
+            position: relative;
+            z-index: 10;
+            width: 85%;
+            max-width: 340px;
+            padding: 32px;
+            border-radius: 42px; /* 大圆角 */
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(40px) saturate(120%);
+            -webkit-backdrop-filter: blur(40px) saturate(120%);
+            border: 0.5px solid var(--glass-border);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.02);
+            text-align: left;
+            transform: translateZ(0); /* 开启 GPU 加速 */
+            transition: transform 0.6s var(--motion-ease);
+        }
 
-    /* ----------------------------------------------------
-       Apple 極簡天氣看板 v3 (Aesthetic Weather)
-       ---------------------------------------------------- */
-    .weather-header { height: 38vh; min-height: 350px; position: relative; color: #FFFFFF; }
-    .forecast-mask-wrapper { 
-      width: 100%; position: relative; z-index: 30;
-      -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
-      mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
-      pointer-events: none;
-    }
-    .forecast-slot { 
-      display: flex; overflow-x: auto; height: 110px; align-items: center; gap: 12px;
-      pointer-events: auto; scrollbar-width: none;
-    }
-    .forecast-slot::-webkit-scrollbar { display: none; }
-    .forecast-item { 
-      flex: 0 0 64px; display: flex; flex-direction: column; align-items: center; justify-content: center;
-      scroll-snap-align: center; text-shadow: 0 1px 4px rgba(0,0,0,0.2);
-    }
+        .glass-card:active {
+            transform: scale(0.98) translateZ(0);
+        }
 
-    /* ----------------------------------------------------
-       Liquid Glass & UI 元素
-       ---------------------------------------------------- */
-    .liquid-glass {
-      background: var(--glass-bg); backdrop-filter: blur(25px) saturate(180%);
-      -webkit-backdrop-filter: blur(25px) saturate(180%);
-      border-radius: 28px; box-shadow: inset 0 0 0 0.5px rgba(255,255,255,0.4), 0 12px 40px rgba(0,0,0,0.05);
-    }
+        .label {
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            opacity: 0.4;
+            margin-bottom: 8px;
+        }
 
-    .tab-bar {
-      position: absolute; bottom: 0; left: 0; width: 100%; z-index: 100;
-      padding-bottom: env(safe-area-inset-bottom);
-      background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(30px) saturate(180%);
-      -webkit-backdrop-filter: blur(30px) saturate(180%);
-      border-top: 0.5px solid rgba(0,0,0,0.1);
-      display: flex; justify-content: space-around; align-items: center; height: 84px;
-      transition: transform 0.4s var(--apple-ease);
-    }
-    .tab-bar.keyboard-hide { transform: translateY(100%); }
+        .time {
+            font-size: 48px;
+            font-weight: 200;
+            margin-bottom: 20px;
+            letter-spacing: -1px;
+        }
 
-    /* ----------------------------------------------------
-       物理交互保險 (Physical Interaction Guard)
-       徹底擊碎幻影牆死區，採用 display 切換 + isolation
-       ---------------------------------------------------- */
-    #modal-layer, #push-view-layer {
-      position: fixed; inset: 0; z-index: 999; display: none;
-      isolation: isolate; /* 建立獨立堆疊上下文 */
-    }
-    #modal-layer { align-items: flex-end; justify-content: center; }
-    #modal-layer.active { display: flex; }
-    
-    .modal-card {
-      width: 100%; max-width: 500px;
-      background: var(--glass-bg); backdrop-filter: blur(40px) saturate(180%);
-      -webkit-backdrop-filter: blur(40px) saturate(180%);
-      border-radius: 40px 40px 0 0; padding: 32px;
-      transform: translateY(100%); transition: transform 0.4s var(--apple-ease);
-    }
-    #modal-layer.active .modal-card { transform: translateY(0); }
+        .mood {
+            font-size: 16px;
+            line-height: 1.6;
+            font-weight: 300;
+            opacity: 0.8;
+        }
 
-    /* Push View 全螢幕推入視圖 */
-    #push-view-layer { background: #f5f5f7; transform: translateX(100%); transition: transform 0.4s var(--apple-ease); overflow-y: auto; padding-bottom: env(safe-area-inset-bottom); display: block; visibility: hidden; }
-    #push-view-layer.active { transform: translateX(0); visibility: visible; }
-
-    /* 16ms 響應級別 Input */
-    .inplace-input { 
-      background: rgba(0,0,0,0.05); border-radius: 14px; padding: 14px 18px; 
-      width: 100%; border: none; outline: none; font-size: 16px; 
-      -webkit-user-select: text; touch-action: manipulation;
-    }
-
-    /* 物理雨滴矩陣 */
-    .rain { width: 1px; background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.6)); position: absolute; animation: rainFall linear infinite; }
-    @keyframes rainFall { 0% { transform: rotate(15deg) translate3d(0, -50px, 0); opacity: 0; } 100% { transform: rotate(15deg) translate3d(0, 800px, 0); opacity: 0; } }
-
-    /* 行李清單 UI */
-    .inventory-card summary { list-style: none; display: flex; align-items: center; justify-content: space-between; outline: none; cursor: pointer; }
-    .inventory-card summary::-webkit-details-marker { display: none; }
-    .progress-bar-sticky { position: sticky; top: 0; z-index: 50; background: rgba(245,245,247,0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); }
-    .check-impact { animation: popCheck 0.3s var(--apple-ease); }
-    @keyframes popCheck { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
-
-    .snap-active { scroll-snap-type: x mandatory; scroll-snap-stop: always; }
-    .tap-scale:active { transform: scale(0.96); opacity: 0.8; }
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-  </style>
+        /* 悬浮触控岛 */
+        .dock {
+            position: absolute;
+            bottom: 40px;
+            width: 60px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+    </style>
 </head>
-<body class="theme-light">
+<body>
 
-  <div id="background-layer"></div>
-  <div id="weather-overlay"></div>
-  
-  <div id="content-layer" class="no-scrollbar"></div>
+    <div class="ambient-glow"></div>
 
-  <nav class="tab-bar" id="main-tab-bar" style="display: none;">
-    <div class="flex flex-col items-center tap-scale text-[var(--apple-blue)] w-1/4" data-tab="log">
-      <i class="fa-solid fa-map-location-dot text-xl"></i><span class="text-[10px] font-bold mt-1">行程</span>
+    <div class="glass-card" id="mainCard">
+        <div class="label" id="locationLabel">Kuala Lumpur</div>
+        <div class="time" id="clock">17:19</div>
+        <div class="mood" id="quote">正在感知光影，准备启程...</div>
     </div>
-    <div class="flex flex-col items-center tap-scale opacity-40 w-1/4" data-tab="vault">
-      <i class="fa-solid fa-briefcase text-xl"></i><span class="text-[10px] font-bold mt-1">保險箱</span>
-    </div>
-    <div class="flex flex-col items-center tap-scale opacity-40 w-1/4" data-tab="expense">
-      <i class="fa-solid fa-wallet text-xl"></i><span class="text-[10px] font-bold mt-1">記帳</span>
-    </div>
-    <div class="flex flex-col items-center tap-scale opacity-40 w-1/4" data-tab="inventory">
-      <i class="fa-solid fa-list-check text-xl"></i><span class="text-[10px] font-bold mt-1">行李</span>
-    </div>
-  </nav>
 
-  <div id="push-view-layer" class="no-scrollbar"></div>
-  <div id="modal-layer"></div>
+    <div class="dock"></div>
 
-  <script>
-    // ==========================================================================
-    // Titanium OS 1.0.6 Core Engine
-    // ==========================================================================
-
-    const AppUtils = {
-      genId: () => 'id-' + Math.random().toString(36).substr(2, 9),
-      getLocalToday: () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0],
-      formatDate: (s) => new Intl.DateTimeFormat('zh-Hant', { month: 'short', day: 'numeric', weekday: 'short' }).format(new Date(s)),
-      getDiffDays: (s, e) => {
-        if(!s || !e) return 0;
-        const [y1,m1,d1] = s.split('-'); const [y2,m2,d2] = e.split('-');
-        return Math.floor((new Date(y2,m2-1,d2) - new Date(y1,m1-1,d1)) / 86400000) + 1;
-      },
-      cascadeDelete: (tripId) => {
-        ['trip_fin_', 'trip_inv_', 'trip_vault_'].forEach(k => localStorage.removeItem(k + tripId));
-      },
-      vibrate: () => { 
-        if (navigator.vibrate) navigator.vibrate(12); 
-      },
-      // 物理交互保險：鎖定背景視圖
-      toggleViewLock: (lock) => {
-        const c = document.getElementById('content-layer');
-        if (lock) {
-            c.style.overflow = 'hidden';
-            c.setAttribute('aria-hidden', 'true');
-        } else {
-            c.style.overflow = 'auto';
-            c.removeAttribute('aria-hidden');
-        }
-      }
-    };
-
-    const DataManager = {
-      key: 'OS_106_MASTER',
-      state: { trips: [], activeId: null, currentTab: 'log' },
-      init() {
-        const raw = localStorage.getItem(this.key);
-        if (raw) this.state = JSON.parse(raw);
-        this.state.activeId = null; this.save();
-        
-        // 初始化財務快照
-        if(!localStorage.getItem('TB_FX_SNAPSHOT')) {
-            localStorage.setItem('TB_FX_SNAPSHOT', JSON.stringify({
-                timestamp: Date.now(), source: "System Default",
-                rates: { MYR: 1, JPY: 0.031, KRW: 0.0035, TWD: 0.15, USD: 4.7 }
-            }));
-        }
-      },
-      save() { localStorage.setItem(this.key, JSON.stringify(this.state)); }
-    };
-
-    const WeatherEngine = {
-      async getCoords(city) {
-        try {
-          const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=zh`);
-          const d = await res.json(); if (d.results) return d.results[0];
-          const f = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`);
-          const fd = await f.json(); return fd.length ? { latitude: fd[0].lat, longitude: fd[0].lon, name: city } : null;
-        } catch(e) { return null; }
-      },
-      async fetch24H(trip) {
-        // 時空感應：自動錨定當前日期城市
-        const today = AppUtils.getLocalToday(); let targetCity = trip.destination;
-        const currentDay = trip.days.find(d => d.dateString === AppUtils.formatDate(today));
-        if (currentDay && currentDay.anchorCity) targetCity = currentDay.anchorCity;
-
-        const c = await this.getCoords(targetCity); if (!c) return null;
-        const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${c.latitude}&longitude=${c.longitude}&current_weather=true&hourly=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min&timezone=auto`);
-        const d = await r.json(); const cur = d.current_weather;
-        const isRainy = [51,53,55,61,63,65,80,81,82,95].includes(cur.weathercode);
-        return {
-          temp: Math.round(cur.temperature), high: Math.round(d.daily.temperature_2m_max[0]), low: Math.round(d.daily.temperature_2m_min[0]),
-          status: isRainy ? '雨' : '晴朗', isRain: isRainy, city: c.name,
-          gradient: isRainy ? 'from-[#3a4750] to-[#2c3e50]' : 'from-[#5cb0ff] to-[#80c6ff]',
-          hourly: d.hourly.time.slice(0, 24).map((t, i) => ({
-            hour: new Date(t).getHours(), temp: Math.round(d.hourly.temperature_2m[i]),
-            icon: [51,53,55,61,63,65,80,81,82,95].includes(d.hourly.weathercode[i]) ? '🌧️' : '☀️'
-          }))
-        };
-      }
-    };
-
-    const ParticleEngine = {
-      _id: null,
-      dispose() { const o = document.getElementById('weather-overlay'); if(o) { o.style.opacity = "0"; setTimeout(() => o.innerHTML='', 600); } this._id = null; },
-      init(isRain, id) {
-        if(this._id === id) return; this._id = id;
-        const o = document.getElementById('weather-overlay'); if(!o) return;
-        if(isRain) {
-          o.innerHTML = Array(40).fill().map(() => `<div class="rain" style="left:${Math.random()*100}%; animation-duration:${0.6+Math.random()*0.4}s; animation-delay:-${Math.random()}s; height:15px"></div>`).join('');
-          requestAnimationFrame(() => o.style.opacity = "1");
-        }
-      }
-    };
-
-    const Renderer = {
-      _resizeTimer: null, _resizeHandler: null, _lastW: 0, _reqId: null,
-
-      render() {
-        const c = document.getElementById('content-layer');
-        if (!DataManager.state.activeId) {
-          c.innerHTML = this.tempHome();
-          document.getElementById('main-tab-bar').style.display = 'none';
-          document.getElementById('weather-overlay').style.opacity = '0';
-          document.body.className = 'theme-light';
-        } else {
-          document.getElementById('main-tab-bar').style.display = 'flex';
-          this.switchTab(DataManager.state.currentTab || 'log');
-        }
-      },
-
-      tempHome() {
-        return `
-          <div class="max-w-3xl mx-auto px-6 py-20">
-            <h1 class="text-[34px] font-extrabold mb-10 tracking-tight">我的行程 🧳</h1>
-            <div class="space-y-6">
-              ${DataManager.state.trips.map(t => `
-                <div class="relative overflow-hidden rounded-[28px] group" data-id="${t.id}">
-                  <div class="absolute right-0 inset-y-0 w-20 bg-[#FF3B30] flex items-center justify-center text-white tap-scale" data-action="delete-trip"><i class="fa-solid fa-trash"></i></div>
-                  <div class="liquid-glass p-6 tap-scale relative z-10 transition-transform duration-300 swipe-card" data-action="open-trip">
-                    <div class="text-[22px] font-bold">${t.title}</div>
-                    <div class="text-[13px] opacity-50">${t.destination} · ${t.days.length} 天</div>
-                  </div>
-                </div>
-              `).join('')}
-              <button class="w-full h-16 liquid-glass flex items-center justify-center text-[var(--apple-blue)] font-bold tap-scale" data-action="open-create-modal">+ 新建行程</button>
-            </div>
-          </div>`;
-      },
-
-      async switchTab(tab) {
-        DataManager.state.currentTab = tab; DataManager.save();
-        document.querySelectorAll('#main-tab-bar > div').forEach(el => el.classList.toggle('opacity-40', el.dataset.tab !== tab));
-        const trip = DataManager.state.trips.find(t => t.id === DataManager.state.activeId);
-        
-        if (tab === 'log') await this.renderLog(trip);
-        else if (tab === 'inventory') this.renderInventory(trip);
-        else if (tab === 'expense') this.renderExpense(trip);
-        else if (tab === 'vault') this.renderVault(trip);
-      },
-
-      async renderLog(trip) {
-        const c = document.getElementById('content-layer'); const rid = AppUtils.genId(); this._reqId = rid;
-
-        c.innerHTML = `
-          <header class="weather-header">
-            <div id="bg-slot" class="absolute inset-0 bg-[#5cb0ff] opacity-85 transition-colors duration-1000"></div>
-            <div class="relative z-20 pt-12 flex flex-col items-center h-full justify-between pb-4">
-              <div class="w-full px-6 flex justify-between">
-                <button data-action="go-home" class="w-10 h-10 liquid-glass rounded-full flex items-center justify-center tap-scale"><i class="fa-solid fa-chevron-left text-white"></i></button>
-              </div>
-              <div class="text-center w-full">
-                <h2 id="city-title" class="text-2xl font-bold mb-1">${trip.destination}</h2>
-                <div id="temp-val" class="text-[84px] font-thin leading-none tracking-tighter">--</div>
-                <div class="flex flex-col items-center"><p id="weather-status" class="font-medium opacity-90 text-[15px]">氣象同步中...</p><p id="hl-val" class="text-[13px] transition-opacity" style="opacity:0;">H:-- L:--</p></div>
-              </div>
-              <div class="forecast-mask-wrapper"><div id="forecast-slot" class="forecast-slot"></div></div>
-            </div>
-          </header>
-          <div class="max-w-3xl mx-auto px-6 mt-12 space-y-10 pb-10" id="timeline-box">
-             ${trip.days.map((d, i) => `
-               <div class="day-section relative min-h-[80px] pl-[64px]">
-                 <div class="absolute left-0 top-0 w-12 h-12 rounded-full bg-white shadow-sm flex flex-col items-center justify-center z-10 text-[var(--apple-blue)] theme-dark:bg-[#1c1c1e] theme-dark:text-white"><span class="text-[9px] font-black mt-1">DAY</span><span class="text-xl font-bold leading-none">${i+1}</span></div>
-                 <div class="absolute left-[23px] top-[56px] bottom-[-16px] w-[1.5px] bg-gradient-to-b from-[var(--apple-blue)] to-transparent opacity-30"></div>
-                 <div class="flex flex-col items-start mb-6"><span class="text-[12px] font-bold opacity-40 mb-1 uppercase">${d.dateString}</span><h3 class="text-2xl font-bold">${d.anchorCity || trip.destination}</h3></div>
-                 <div id="act-${d.id}" class="space-y-4">
-                    ${this.renderVirtualNodes(trip, d, 'morning')}
-                    ${d.activities.map(a => `<div class="relative mb-4"><div class="absolute left-[-45px] top-[22px] w-2 h-2 rounded-full bg-[var(--apple-blue)]"></div><div class="liquid-glass p-4 font-bold text-[17px]">${a.title}</div></div>`).join('')}
-                    ${this.renderVirtualNodes(trip, d, 'evening')}
-                 </div>
-                 <button class="mt-4 text-[var(--apple-blue)] font-bold text-[14px] tap-scale flex items-center gap-2" data-action="open-add-push" data-day="${d.id}"><i class="fa-solid fa-plus-circle"></i> 添加活動</button>
-               </div>`).join('')}
-          </div>`;
-
-        const w = await WeatherEngine.fetch24H(trip); if (this._reqId !== rid) return;
-        if (w) {
-          document.body.className = w.isRain ? 'theme-dark' : 'theme-light';
-          document.getElementById('background-layer').className = `bg-gradient-to-b ${w.gradient}`;
-          document.getElementById('bg-slot').className = 'absolute inset-0 opacity-0';
-          document.getElementById('city-title').innerText = w.city;
-          document.getElementById('temp-val').innerText = w.temp + '°'; document.getElementById('weather-status').innerText = w.status;
-          document.getElementById('hl-val').innerText = `H:${w.high}° L:${w.low}°`; document.getElementById('hl-val').style.opacity = '0.7';
-          this.renderHourly(w.hourly); ParticleEngine.init(w.isRain, rid);
-        } else {
-          document.getElementById('weather-status').innerText = '天氣離線 ☁️';
-        }
-      },
-
-      renderVirtualNodes(trip, day, phase) {
-        // 虛擬注入 (JIT Rendering)：核心數據 0 污染
-        const vault = JSON.parse(localStorage.getItem('trip_vault_' + trip.id) || '[]');
-        const stays = vault.filter(v => v.type === 'stay'); let html = '';
-        stays.forEach(s => {
-          if (phase === 'evening' && s.date === day.dateString) {
-             html += `<div class="relative mb-4"><div class="absolute left-[-45px] top-[22px] w-2 h-2 rounded-full bg-orange-400"></div><div class="liquid-glass p-4 border-l-4 border-orange-400"><div class="text-[12px] opacity-60 mb-1">入住房源</div><div class="font-bold text-[17px]">${s.name}</div></div></div>`;
-          } else if (phase === 'morning' && day.dateString > s.date && day.dateString <= (s.endDate || s.date)) {
-             html += `<div class="relative mb-4"><div class="absolute left-[-45px] top-[22px] w-2 h-2 rounded-full bg-orange-400 opacity-50"></div><div class="liquid-glass p-4 opacity-70"><div class="text-[12px] opacity-60 mb-1">從此處出發</div><div class="font-bold text-[15px]">${s.name}</div></div></div>`;
-          }
-        });
-        return html;
-      },
-
-      renderHourly(f) {
-        const slot = document.getElementById('forecast-slot'); if (!slot) return;
-        const curH = new Date().getHours();
-        slot.innerHTML = f.map(h => {
-          const isNow = h.hour === curH;
-          return `<div id="${isNow ? 'now-node' : ''}" class="forecast-item ${isNow ? 'font-bold opacity-100' : 'opacity-80'}">
-            <span class="text-[11px] mb-2 opacity-60">${isNow ? 'Now' : h.hour+':00'}</span><span class="text-[24px] mb-2">${h.icon}</span><span class="text-[17px]">${h.temp}°</span></div>`;
-        }).join('');
-
-        const updatePad = () => {
-          if (window.innerWidth === this._lastW) return; this._lastW = window.innerWidth;
-          clearTimeout(this._resizeTimer); slot.classList.remove('snap-active');
-          const titleL = document.getElementById('city-title').getBoundingClientRect().left;
-          slot.style.paddingLeft = `${titleL}px`; slot.style.paddingRight = `${titleL}px`;
-          this._resizeTimer = setTimeout(() => {
-             const now = document.getElementById('now-node');
-             if (now) {
-               const cR = slot.getBoundingClientRect(), nR = now.getBoundingClientRect();
-               slot.scrollLeft += (nR.left - cR.left) - (cR.width/2) + (nR.width/2);
-             }
-             setTimeout(() => slot.classList.add('snap-active'), 50);
-          }, 150);
-        };
-        window.addEventListener('resize', updatePad); this._lastW = 0; updatePad();
-      },
-
-      renderInventory(trip) {
-        const c = document.getElementById('content-layer'); ParticleEngine.dispose(); document.body.className='theme-light';
-        const key = 'trip_inv_' + trip.id; const data = JSON.parse(localStorage.getItem(key) || '[]');
-        // 13 核心類別
-        const cats = ["行前事項", "文件證件", "數碼設備", "服裝", "洗護", "藥品", "化妝品", "工具配件", "食品飲品", "運動裝備", "數組", "雜項", "紀念品"];
-        c.innerHTML = `
-          <div class="max-w-3xl mx-auto px-6 py-12">
-            <div class="progress-bar-sticky py-4 mb-6"><div class="h-1.5 bg-black/5 rounded-full overflow-hidden"><div id="inv-progress" class="h-full bg-[var(--apple-blue)] transition-all duration-500" style="width: 0%"></div></div></div>
-            <h1 class="text-3xl font-bold mb-8 tracking-tight">行李清單</h1>
-            <div class="space-y-4 pb-10">${cats.map(cat => `
-              <details class="inventory-card liquid-glass p-5" ${data.filter(i=>i.cat===cat).length?'open':''}>
-                <summary class="font-bold text-lg">${cat} <i class="fa-solid fa-chevron-down text-[12px] opacity-30"></i></summary>
-                <div class="mt-5 space-y-4">${data.filter(i=>i.cat===cat).map(i=>`
-                  <div class="flex items-center justify-between" data-id="${i.id}">
-                    <label class="flex items-center gap-4 cursor-pointer w-full">
-                      <div class="relative flex items-center justify-center w-6 h-6 rounded-full border-2 border-gray-300 transition-colors ${i.done?'bg-[var(--apple-blue)] border-[var(--apple-blue)]':''}">
-                         <input type="checkbox" class="absolute opacity-0 w-full h-full cursor-pointer" ${i.done?'checked':''} onchange="InventoryEngine.toggle('${trip.id}','${i.id}',this.checked)">
-                         <i class="fa-solid fa-check text-white text-[10px] ${i.done?'opacity-100':'opacity-0'}"></i>
-                      </div>
-                      <span class="text-[16px] transition-all ${i.done?'line-through opacity-40':''}">${i.name}</span>
-                    </label>
-                  </div>`).join('')}
-                  <input class="inplace-input text-[15px] mt-2 focus-aware" placeholder="+ 新增物品 (按 Enter 保存)" onkeydown="if(event.key==='Enter') InventoryEngine.add('${trip.id}','${cat}',this)">
-                </div>
-              </details>`).join('')}
-            </div>
-          </div>`;
-        InventoryEngine.updateProgress(trip.id);
-      },
-
-      renderExpense(trip) {
-        const c = document.getElementById('content-layer'); ParticleEngine.dispose(); document.body.className='theme-light';
-        const data = JSON.parse(localStorage.getItem('trip_fin_' + trip.id) || '[]');
-        const total = data.reduce((s, i) => s + parseFloat(i.myrAmount || 0), 0);
-        c.innerHTML = `
-          <div class="max-w-3xl mx-auto px-6 py-12">
-            <div class="liquid-glass p-8 text-center mb-10">
-              <div class="text-[13px] font-bold opacity-50 uppercase tracking-widest mb-1">總支出 (MYR)</div>
-              <div class="text-[48px] font-black font-rounded">RM ${total.toFixed(2)}</div>
-            </div>
-            <h2 class="text-xl font-bold mb-6">消費明細</h2>
-            <div class="space-y-4 pb-10" id="expense-list">
-              ${data.length === 0 ? `<div class="text-center opacity-40 py-10">暫無記錄</div>` : data.map(i => `
-                <div class="liquid-glass p-5 flex justify-between items-center">
-                  <div><div class="font-bold text-[17px] mb-1">${i.title}</div><div class="text-[12px] opacity-50 font-rounded">${i.currency} ${i.amount}</div></div>
-                  <div class="font-black text-xl font-rounded">RM ${parseFloat(i.myrAmount).toFixed(2)}</div>
-                </div>
-              `).join('')}
-              <button class="w-full h-14 border-2 border-dashed border-black/10 rounded-[20px] font-bold opacity-50 tap-scale text-[15px]" data-action="open-expense-push">+ 記錄一筆消費</button>
-            </div>
-          </div>`;
-      },
-
-      renderVault(trip) {
-        const c = document.getElementById('content-layer'); ParticleEngine.dispose(); document.body.className='theme-light';
-        const data = JSON.parse(localStorage.getItem('trip_vault_' + trip.id) || '[]');
-        const transits = data.filter(i => i.type === 'transit');
-        const stays = data.filter(i => i.type === 'stay');
-        c.innerHTML = `
-          <div class="max-w-3xl mx-auto px-6 py-12">
-            <h1 class="text-3xl font-bold mb-8 tracking-tight">旅行保險箱 🛡️</h1>
-            <div class="space-y-8 pb-10">
-              <section>
-                <h3 class="text-[13px] font-bold uppercase tracking-wider opacity-50 mb-4">跨城交通</h3>
-                ${transits.length ? transits.map(i => `
-                  <div class="liquid-glass p-5 mb-4 flex items-center gap-4">
-                    <div class="w-12 h-12 bg-blue-50 rounded-[16px] flex items-center justify-center text-blue-500 text-xl"><i class="fa-solid fa-plane"></i></div>
-                    <div><div class="font-bold text-[17px] mb-0.5">${i.name}</div><div class="text-[13px] opacity-50">${i.date} · ${i.detail||''}</div></div>
-                  </div>
-                `).join('') : '<div class="opacity-30 text-[14px]">暫無記錄</div>'}
-              </section>
-              <section>
-                <h3 class="text-[13px] font-bold uppercase tracking-wider opacity-50 mb-4">住宿預訂</h3>
-                ${stays.length ? stays.map(i => `
-                  <div class="liquid-glass p-5 mb-4 flex items-center gap-4">
-                    <div class="w-12 h-12 bg-orange-50 rounded-[16px] flex items-center justify-center text-orange-500 text-xl"><i class="fa-solid fa-hotel"></i></div>
-                    <div><div class="font-bold text-[17px] mb-0.5">${i.name}</div><div class="text-[13px] opacity-50">${i.date} 入住</div></div>
-                  </div>
-                `).join('') : '<div class="opacity-30 text-[14px]">暫無記錄</div>'}
-              </section>
-            </div>
-          </div>`;
-      }
-    };
-
-    const UI = {
-      openCreateModal() {
-        const l = document.getElementById('modal-layer'); l.innerHTML = '';
-        const bg = document.createElement('div'); bg.className = 'absolute inset-0 bg-black/20 backdrop-blur-sm'; bg.onclick = () => this.closeModal();
-        const modal = document.createElement('div'); modal.className = 'modal-card absolute bottom-0 left-1/2 -translate-x-1/2';
-        modal.innerHTML = `
-          <h2 class="text-2xl font-bold mb-8 text-center">新的冒險 ☁️</h2>
-          <div class="space-y-4">
-            <input id="new-trip-title" class="inplace-input focus-aware" placeholder="行程名稱">
-            <input id="new-trip-dest" class="inplace-input focus-aware" placeholder="目的地 (例: 東京)">
-            <div class="flex gap-4"><input id="new-trip-start" type="date" class="inplace-input"><input id="new-trip-end" type="date" class="inplace-input"></div>
-          </div>
-          <button id="btn-confirm-create" data-action="confirm-create" class="w-full h-14 bg-[#1D1D1F] text-white rounded-2xl font-bold mt-8 tap-scale">建立行程</button>
-          <button class="w-full mt-4 text-sm opacity-40 font-bold p-2 tap-scale" data-action="close-modal">取消</button>`;
-        l.appendChild(bg); l.appendChild(modal); l.classList.add('active');
-        AppUtils.toggleViewLock(true); // 物理交互保險
-      },
-      closeModal() {
-        document.getElementById('modal-layer').classList.remove('active');
-        AppUtils.toggleViewLock(false);
-      }
-    };
-
-    const InventoryEngine = {
-      add(tId, cat, input) {
-        const d = JSON.parse(localStorage.getItem('trip_inv_'+tId) || '[]');
-        d.push({ id: AppUtils.genId(), cat, name: input.value, done: false });
-        localStorage.setItem('trip_inv_'+tId, JSON.stringify(d)); Renderer.renderInventory(DataManager.state.trips.find(t=>t.id===tId));
-      },
-      toggle(tId, iId, done) {
-        const d = JSON.parse(localStorage.getItem('trip_inv_'+tId) || '[]');
-        const i = d.find(x=>x.id===iId); if(i) i.done = done;
-        localStorage.setItem('trip_inv_'+tId, JSON.stringify(d)); this.updateProgress(tId);
-        
-        // UI 動畫反饋
-        const el = document.querySelector(`[data-id="${iId}"]`);
-        if (el && done) {
-            AppUtils.vibrate();
-            const circle = el.querySelector('.rounded-full');
-            if(circle) { circle.classList.remove('check-impact'); void circle.offsetWidth; circle.classList.add('check-impact'); }
-        }
-      },
-      updateProgress(tId) {
-        const d = JSON.parse(localStorage.getItem('trip_inv_'+tId) || '[]');
-        const checked = d.filter(x=>x.done).length;
-        const prog = d.length ? (checked / d.length) * 100 : 0;
-        const el = document.getElementById('inv-progress'); if(el) el.style.width = prog + '%';
-      }
-    };
-
-    const FinanceEngine = {
-      openForm() {
-        const trip = DataManager.state.trips.find(t=>t.id===DataManager.state.activeId);
-        
-        // 智慧幣種引路
-        let recCur = 'MYR'; const dest = trip.destination;
-        if(dest.includes('東京') || dest.includes('大阪') || dest.includes('日本')) recCur = 'JPY';
-        else if(dest.includes('首爾') || dest.includes('釜山') || dest.includes('韓國')) recCur = 'KRW';
-        else if(dest.includes('台北') || dest.includes('台灣')) recCur = 'TWD';
-
-        const snapRaw = JSON.parse(localStorage.getItem('TB_FX_SNAPSHOT'));
-        const dateStr = AppUtils.formatDate(new Date(snapRaw.timestamp).toISOString());
-
-        const layer = document.getElementById('push-view-layer');
-        layer.innerHTML = `
-          <div class="min-h-full flex flex-col pt-14 px-6 relative z-20">
-            <div class="flex justify-between items-center mb-8"><button class="text-[var(--apple-blue)] font-bold text-lg" data-action="close-push">取消</button><h2 class="font-bold text-lg">記錄消費</h2><div class="w-10"></div></div>
-            <div class="space-y-6">
-              <input id="fin-title" class="inplace-input text-lg focus-aware" placeholder="消費項目 (例: 晚餐拉麵)">
-              <div class="flex gap-4">
-                <select id="fin-cur" class="inplace-input w-1/3 text-center font-bold" onchange="FinanceEngine.calc()">
-                  <option value="MYR" ${recCur==='MYR'?'selected':''}>MYR</option><option value="JPY" ${recCur==='JPY'?'selected':''}>JPY</option><option value="KRW" ${recCur==='KRW'?'selected':''}>KRW</option><option value="TWD" ${recCur==='TWD'?'selected':''}>TWD</option><option value="USD" ${recCur==='USD'?'selected':''}>USD</option>
-                </select>
-                <input id="fin-amt" type="number" class="inplace-input w-2/3 font-rounded font-bold text-lg focus-aware" placeholder="金額" oninput="FinanceEngine.calc()">
-              </div>
-              <div class="text-center"><span id="fin-res" class="text-[32px] font-black font-rounded">≈ MYR 0.00</span><div class="text-[11px] text-[#9A9283] mt-1 font-rounded">匯率快照日期: ${dateStr}</div></div>
-            </div>
-            <button class="w-full h-14 bg-[var(--apple-blue)] text-white rounded-[20px] font-bold mt-10 mb-10 tap-scale" data-action="save-expense">儲存</button>
-          </div>`;
-        layer.classList.add('active'); AppUtils.toggleViewLock(true);
-      },
-      calc() {
-        const amt = parseFloat(document.getElementById('fin-amt').value || 0);
-        const cur = document.getElementById('fin-cur').value;
-        const snap = JSON.parse(localStorage.getItem('TB_FX_SNAPSHOT')).rates;
-        const myr = amt * (snap[cur] || 1);
-        document.getElementById('fin-res').innerText = `≈ MYR ${myr.toFixed(2)}`;
-      },
-      save() {
-        const title = document.getElementById('fin-title').value.trim();
-        const amt = parseFloat(document.getElementById('fin-amt').value || 0);
-        if(!title || amt <= 0) return;
-        const cur = document.getElementById('fin-cur').value;
-        const snap = JSON.parse(localStorage.getItem('TB_FX_SNAPSHOT')).rates;
-        const myr = amt * (snap[cur] || 1);
-        
-        const trip = DataManager.state.trips.find(t=>t.id===DataManager.state.activeId);
-        const data = JSON.parse(localStorage.getItem('trip_fin_' + trip.id) || '[]');
-        data.push({ id: AppUtils.genId(), title, currency: cur, amount: amt, myrAmount: myr });
-        localStorage.setItem('trip_fin_' + trip.id, JSON.stringify(data));
-        
-        document.getElementById('push-view-layer').classList.remove('active'); AppUtils.toggleViewLock(false);
-        Renderer.renderExpense(trip);
-      }
-    };
-
-    const FormEngine = {
-      openAddActivity(dayId) {
-        const layer = document.getElementById('push-view-layer');
-        const trip = DataManager.state.trips.find(t=>t.id===DataManager.state.activeId);
-        const day = trip.days.find(d=>d.id===dayId);
-        layer.innerHTML = `
-          <div class="min-h-full flex flex-col pt-14 px-6 relative z-20">
-            <div class="flex justify-between items-center mb-8"><button class="text-[var(--apple-blue)] font-bold text-lg" data-action="close-push">取消</button><h2 class="font-bold text-lg">添加至 ${day.dateString}</h2><div class="w-10"></div></div>
-            <div class="space-y-4">
-              <select id="act-type" class="inplace-input font-bold" onchange="FormEngine.toggleFields()">
-                <option value="play">🎟️ 遊玩景點</option><option value="transit">✈️ 跨城交通</option><option value="stay">🏨 住宿預訂</option><option value="anchor">📍 變更城市錨點</option>
-              </select>
-              <input id="act-title" class="inplace-input focus-aware" placeholder="名稱 (例: 清水寺 / 航班 MH70)">
-              <div id="act-detail-box" style="display:none;">
-                 <input id="act-detail" class="inplace-input mb-4 focus-aware" placeholder="備註細節 (例: 14:00 出發)">
-                 <label class="text-sm font-bold opacity-60 mb-1 block">結束日期 (如適用)</label>
-                 <input id="act-end-date" type="date" class="inplace-input" value="${new Date().toISOString().split('T')[0]}">
-              </div>
-            </div>
-            <button class="w-full h-14 bg-[var(--apple-blue)] text-white rounded-[20px] font-bold mt-10 mb-10 tap-scale" onclick="FormEngine.save('${trip.id}', '${dayId}')">保存並同步</button>
-          </div>`;
-        layer.classList.add('active'); AppUtils.toggleViewLock(true);
-      },
-      toggleFields() {
-        const t = document.getElementById('act-type').value;
-        document.getElementById('act-detail-box').style.display = (t === 'transit' || t === 'stay' || t === 'anchor') ? 'block' : 'none';
-      },
-      save(tripId, dayId) {
-        const type = document.getElementById('act-type').value;
-        const title = document.getElementById('act-title').value.trim();
-        const detail = document.getElementById('act-detail') ? document.getElementById('act-detail').value.trim() : '';
-        if(!title) return;
-
-        const trip = DataManager.state.trips.find(t=>t.id===tripId);
-        const day = trip.days.find(d=>d.id===dayId);
-
-        if (type === 'play') {
-          day.activities.push({ id: AppUtils.genId(), title });
-        } else if (type === 'anchor') {
-          day.anchorCity = title;
-        } else {
-          const vData = JSON.parse(localStorage.getItem('trip_vault_' + trip.id) || '[]');
-          const endDate = document.getElementById('act-end-date') ? AppUtils.formatDate(document.getElementById('act-end-date').value) : day.dateString;
-          vData.push({ id: AppUtils.genId(), type, name: title, date: day.dateString, endDate, detail });
-          localStorage.setItem('trip_vault_' + trip.id, JSON.stringify(vData));
-        }
-        DataManager.save();
-        document.getElementById('push-view-layer').classList.remove('active'); AppUtils.toggleViewLock(false);
-        Renderer.renderLog(trip);
-      }
-    };
-
-    const App = {
-      init() { DataManager.init(); Renderer.render(); this.bind(); this.bindKeyboard(); },
-      bind() {
-        document.addEventListener('click', e => {
-          const tab = e.target.closest('[data-tab]')?.dataset.tab; if(tab) Renderer.switchTab(tab);
-          const act = e.target.closest('[data-action]')?.dataset.action;
-          if (act === 'open-trip') { DataManager.state.activeId = e.target.closest('[data-id]').dataset.id; DataManager.state.currentTab='log'; Renderer.render(); }
-          else if (act === 'go-home') { DataManager.state.activeId = null; Renderer.render(); }
-          else if (act === 'open-create-modal') UI.openCreateModal();
-          else if (act === 'confirm-create') {
-            const t = document.getElementById('new-trip-title')?.value.trim();
-            const d = document.getElementById('new-trip-dest')?.value.trim();
-            if(!t || !d) return;
-            const s = document.getElementById('new-trip-start').value, en = document.getElementById('new-trip-end').value;
-            const diff = AppUtils.getDiffDays(s, en); let days = [];
-            for(let i=0; i<diff; i++) { days.push({ id: AppUtils.genId(), dateString: 'Day '+(i+1), activities: [] }); }
-            DataManager.state.trips.unshift({ id: AppUtils.genId(), title: t, destination: d, startDate: s, endDate: en, days });
-            DataManager.save(); UI.closeModal(); Renderer.render();
-          }
-          else if (act === 'close-modal') UI.closeModal();
-          else if (act === 'open-add-push') FormEngine.openAddActivity(e.target.closest('[data-day]').dataset.day);
-          else if (act === 'close-push') { document.getElementById('push-view-layer').classList.remove('active'); AppUtils.toggleViewLock(false); }
-          else if (act === 'open-expense-push') FinanceEngine.openForm();
-          else if (act === 'save-expense') FinanceEngine.save();
-          else if (act === 'delete-trip') {
-            const id = e.target.closest('[data-id]').dataset.id;
-            DataManager.state.trips = DataManager.state.trips.filter(x=>x.id!==id);
-            DataManager.save(); AppUtils.cascadeDelete(id); Renderer.render();
-          }
-        });
-      },
-      bindKeyboard() {
-        // VisualViewport 監聽器，確保鍵盤彈出時的穩定避讓
-        if (window.visualViewport) {
-          window.visualViewport.addEventListener('resize', () => {
-            const bar = document.getElementById('main-tab-bar');
-            if (bar && window.visualViewport.height < window.innerHeight * 0.8) {
-                bar.classList.add('keyboard-hide');
-            } else if (bar) {
-                bar.classList.remove('keyboard-hide');
+    <script>
+        // 1. 实时时钟逻辑
+        function updateClock() {
+            const now = new Date();
+            const h = String(now.getHours()).padStart(2, '0');
+            const m = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('clock').innerText = `${h}:${m}`;
+            
+            // 模拟环境感应：根据小时改变色温
+            const hour = now.getHours();
+            const root = document.documentElement;
+            if (hour >= 17 || hour <= 6) {
+                root.style.setProperty('--ambient-bg-1', '#2d334a'); // 暮色/深夜
+                root.style.setProperty('--ambient-bg-2', '#0f172a');
+                root.style.setProperty('--text-color', '#f8fafc');
+                root.style.setProperty('--glass-border', 'rgba(255, 255, 255, 0.1)');
+                document.getElementById('quote').innerText = "夜色温柔，适合沉淀思绪。";
+            } else {
+                root.style.setProperty('--ambient-bg-1', '#e0e7ff'); // 日间
+                root.style.setProperty('--ambient-bg-2', '#ffffff');
+                root.style.setProperty('--text-color', '#1e293b');
+                root.style.setProperty('--glass-border', 'rgba(255, 255, 255, 0.4)');
+                document.getElementById('quote').innerText = "阳光正好，捕捉旅途的每一刻。";
             }
-          });
         }
-      }
-    };
 
-    App.init();
-  </script>
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // 2. 简单的陀螺仪视差预演 (需要用户在 iPhone 授权，此处先用触摸模拟)
+        const card = document.getElementById('mainCard');
+        window.addEventListener('mousemove', (e) => {
+            const x = (window.innerWidth / 2 - e.clientX) / 25;
+            const y = (window.innerHeight / 2 - e.clientY) / 25;
+            card.style.transform = `rotateY(${x}deg) rotateX(${y}deg) translateZ(0)`;
+        });
+
+        // 模拟手势：上滑 Dock 的逻辑占位
+        let startY = 0;
+        document.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; });
+        document.addEventListener('touchend', (e) => {
+            const endY = e.changedTouches[0].clientY;
+            if (startY - endY > 100) {
+                alert("进入行程库 (流体转场触发)");
+            }
+        });
+    </script>
 </body>
 </html>
