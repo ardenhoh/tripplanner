@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Liquid Glass Travel OS - Interaction Pro</title>
+    <title>Travel OS 1.1 - Smart Hub Integration</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
@@ -12,60 +12,53 @@
             --os-height: 100dvh;
             --safe-top: env(safe-area-inset-top, 47px);
             --safe-bottom: env(safe-area-inset-bottom, 34px);
-            --glass-bg: rgba(255, 255, 255, 0.12);
-            --glass-rim: rgba(255, 255, 255, 0.4);
-            --text-primary: #1e293b;
             --spring-fluid: cubic-bezier(0.23, 1, 0.32, 1);
         }
 
         body, html {
             width: 100vw; height: var(--os-height);
-            overflow: hidden; background: #e2e8f0;
+            overflow: hidden; background: #000; /* 背景底色设为黑以凸显深度 */
             font-family: -apple-system, "SF Pro Display", sans-serif;
-            color: var(--text-primary);
         }
 
-        /* 动态背景场 */
-        .ambient-layer {
+        .ambient-bg {
             position: fixed; inset: 0;
             background: linear-gradient(135deg, #e0e7ff 0%, #f1f5f9 100%);
-            z-index: -1;
+            z-index: -2; transition: filter 0.8s var(--spring-fluid);
         }
 
-        #root { height: 100%; position: relative; }
-
-        /* 行程卡片：流体展开逻辑 */
+        /* 修复：更紧凑的卡片比例 */
         .card {
-            background: var(--glass-bg);
+            position: relative;
+            background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
-            border: 0.5px solid var(--glass-rim);
-            border-radius: 28px; padding: 24px;
-            margin-bottom: 16px; transition: all 0.6s var(--spring-fluid);
-            transform-origin: center;
+            border: 0.5px solid rgba(255, 255, 255, 0.4);
+            border-radius: 24px; padding: 18px 24px; /* 压缩内边距 */
+            margin-bottom: 12px; transition: all 0.6s var(--spring-fluid);
+            width: 100%; z-index: 1;
         }
 
-        /* 展开状态的样式控制 */
+        /* 修复：展开后全覆盖宽度与背景模糊 */
         .card.expanded {
-            position: fixed; inset: var(--safe-top) 20px auto 20px;
-            height: calc(var(--os-height) - var(--safe-top) - var(--safe-bottom) - 100px);
-            z-index: 100; background: rgba(255, 255, 255, 0.8);
-            box-shadow: 0 40px 100px rgba(0,0,0,0.1);
+            position: fixed; 
+            inset: var(--safe-top) 12px auto 12px; /* 宽度锁定 */
+            height: calc(var(--os-height) - var(--safe-top) - 100px);
+            z-index: 100; background: rgba(255, 255, 255, 0.85);
+            width: calc(100% - 24px); /* 强制全宽覆盖 */
+            box-shadow: 0 50px 100px rgba(0,0,0,0.2);
         }
 
-        .add-button {
-            position: fixed; right: 24px; bottom: calc(var(--safe-bottom) + 30px);
-            width: 60px; height: 60px; border-radius: 30px;
-            background: var(--text-primary); color: white;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 30px; z-index: 50; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            transition: transform 0.3s var(--spring-fluid);
-        }
+        /* 当有卡片展开时，主背景变模糊 */
+        .bg-blur { filter: blur(20px) brightness(0.8); }
 
-        .add-button:active { transform: scale(0.85); }
+        .summary-tag {
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            padding: 4px 8px; border-radius: 6px; background: rgba(0,0,0,0.05);
+            margin-bottom: 8px; display: inline-block;
+        }
     </style>
 </head>
 <body>
-    <div class="ambient-layer"></div>
     <div id="root"></div>
 
     <script type="text/babel">
@@ -74,48 +67,45 @@
         function App() {
             const [expandedId, setExpandedId] = useState(null);
 
-            const toggleExpand = (id) => {
-                setExpandedId(expandedId === id ? null : id);
-            };
-
             return (
-                <div style={{ height: '100%', padding: 'calc(var(--safe-top) + 20px) 24px' }}>
-                    <h1 style={{ fontWeight: 300, marginBottom: '30px' }}>Hoh Weng Hong 的行程</h1>
+                <div style={{ height: '100%' }}>
+                    {/* 环境背景层 */}
+                    <div className={`ambient-bg ${expandedId ? 'bg-blur' : ''}`} />
                     
-                    {/* 卡片 1 */}
-                    <div 
-                        className={`card ${expandedId === 1 ? 'expanded' : ''}`}
-                        onClick={() => toggleExpand(1)}
-                    >
-                        <div style={{ opacity: expandedId === 1 ? 0.4 : 1, fontSize: '12px' }}>Tonight · 19:30</div>
-                        <div style={{ fontSize: '22px', marginTop: '8px' }}>KIWAMI Yakiniku</div>
-                        {expandedId === 1 && (
-                            <div style={{ marginTop: '30px', animation: 'fadeIn 0.5s forwards' }}>
-                                <p style={{ lineHeight: '1.6' }}>
-                                    <b>地址：</b> 东京特别区[cite: 1]<br/>
-                                    <b>导航：</b> <span style={{ color: '#3b82f6' }}>点击跳转 Google Maps</span>[cite: 1]<br/>
-                                    <b>备注：</b> 享受顶级和牛体验
-                                </p>
-                                <button style={{ marginTop: '40px', padding: '12px 24px', borderRadius: '12px', border: 'none', background: '#000', color: '#fff' }}>
-                                    关闭详情
-                                </button>
-                            </div>
-                        )}
-                    </div>
+                    <main style={{ padding: 'calc(var(--safe-top) + 20px) 12px', transition: 'all 0.6s' }}>
+                        <h1 style={{ fontWeight: 300, marginBottom: '24px', opacity: expandedId ? 0 : 1 }}>
+                            Kuala Lumpur · 19:02
+                        </h1>
+                        
+                        {/* 住宿交通统整展示节点 */}
+                        <div 
+                            className={`card ${expandedId === 1 ? 'expanded' : ''}`}
+                            onClick={() => setExpandedId(expandedId === 1 ? null : 1)}
+                        >
+                            <span className="summary-tag" style={{ color: '#3b82f6' }}>住宿 & 交通</span>
+                            <div style={{ fontSize: '20px', fontWeight: 400 }}>MH001 · 飞往台北[cite: 1]</div>
+                            <div style={{ fontSize: '13px', color: 'rgba(0,0,0,0.4)', marginTop: '4px' }}>KLIA T1 · 09:00 出发</div>
 
-                    {/* 卡片 2 - 演示记账管理 */}
-                    <div 
-                        className="card"
-                        style={{ background: 'rgba(0,0,0,0.05)', marginTop: '40px' }}
-                    >
-                        <div style={{ fontSize: '12px' }}>记账管理 (Luminous Ledger)[cite: 1]</div>
-                        <div style={{ fontSize: '18px', marginTop: '8px' }}>今日结余: -35 MYR[cite: 1]</div>
-                    </div>
+                            {expandedId === 1 && (
+                                <div style={{ marginTop: '32px', animation: 'fadeIn 0.5s' }}>
+                                    <div style={{ padding: '20px', background: 'rgba(0,0,0,0.03)', borderRadius: '16px' }}>
+                                        <p style={{ fontSize: '14px', marginBottom: '10px' }}><b>登机口：</b> C12</p>
+                                        <p style={{ fontSize: '14px', marginBottom: '10px' }}><b>座位：</b> 12A</p>
+                                        <p style={{ fontSize: '14px' }}><b>目的地：</b> 台北万豪酒店[cite: 1]</p>
+                                    </div>
+                                    <button style={{ position: 'absolute', bottom: '24px', left: '24px', width: 'calc(100% - 48px)', padding: '16px', borderRadius: '16px', background: '#000', color: '#fff', border: 'none' }}>
+                                        完成查看
+                                    </button>
+                                </div>
+                            )}
+                        </div>
 
-                    {/* 添加按钮 */}
-                    <div className="add-button" onClick={() => alert("唤起语义化输入：'明早 8 点 KLIA 登机'")}>
-                        +
-                    </div>
+                        {/* 其他行程节点 */}
+                        <div className="card" style={{ opacity: expandedId ? 0.3 : 1 }}>
+                            <span className="summary-tag" style={{ color: '#f59e0b' }}>今日游玩</span>
+                            <div style={{ fontSize: '20px', fontWeight: 400 }}>KIWAMI 烤肉预约[cite: 1]</div>
+                        </div>
+                    </main>
                 </div>
             );
         }
