@@ -3,216 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Liquid Glass Travel OS 1.0</title>
-    <!-- 引入 React 与 Babel 核心库以支持单文件运行 -->
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <title>Liquid Glass Travel OS - Interaction Pro</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
-    
     <style>
         :root {
-            /* 动态视口高度，适配 iPhone 动态岛与底部横条 */
             --os-height: 100dvh;
             --safe-top: env(safe-area-inset-top, 47px);
             --safe-bottom: env(safe-area-inset-bottom, 34px);
-
-            /* Liquid Glass 材质参数 */
-            --ambient-bg-1: #e0e7ff;
-            --ambient-bg-2: #f8fafc;
-            --glass-bg: rgba(255, 255, 255, 0.15);
+            --glass-bg: rgba(255, 255, 255, 0.12);
             --glass-rim: rgba(255, 255, 255, 0.4);
             --text-primary: #1e293b;
-            --text-muted: rgba(30, 41, 59, 0.5);
-            
-            /* 临界阻尼模拟，替代机械弹跳 */
             --spring-fluid: cubic-bezier(0.23, 1, 0.32, 1);
-        }
-
-        * {
-            margin: 0; padding: 0; box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
         }
 
         body, html {
             width: 100vw; height: var(--os-height);
-            overflow: hidden; /* 阻断 Safari 系统级橡皮筋回弹 */
-            font-family: -apple-system, "SF Pro Display", BlinkMacSystemFont, sans-serif;
-            font-optical-sizing: auto;
+            overflow: hidden; background: #e2e8f0;
+            font-family: -apple-system, "SF Pro Display", sans-serif;
             color: var(--text-primary);
-            background: linear-gradient(135deg, var(--ambient-bg-1), var(--ambient-bg-2));
-            transition: background 2s var(--spring-fluid);
         }
 
-        /* 动态光影场 */
-        .ambient-glow {
-            position: fixed; inset: -20%;
-            background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.6) 0%, transparent 60%);
-            filter: blur(80px); z-index: 0; pointer-events: none;
-        }
-
-        #root { width: 100%; height: 100%; position: relative; z-index: 1; }
-
-        /* Liquid Glass 卡片样式 */
-        .glass-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(40px) saturate(120%);
-            -webkit-backdrop-filter: blur(40px) saturate(120%);
-            border: 0.5px solid var(--glass-rim);
-            border-radius: 24px;
-            padding: 24px;
-            margin-bottom: 16px;
-            box-shadow: 0 12px 32px rgba(0,0,0,0.03);
-            transition: transform 0.6s var(--spring-fluid), filter 0.6s var(--spring-fluid);
-            transform: translateZ(0); /* GPU 加速隔离 */
-            cursor: pointer;
-        }
-
-        .glass-card:active {
-            transform: scale(0.97) translateZ(0);
-            filter: brightness(0.95);
-        }
-
-        /* 环境感知页眉 */
-        header {
-            position: absolute; top: 0; width: 100%;
-            padding: calc(var(--safe-top) + 20px) 24px 20px;
-            z-index: 10;
-        }
-
-        /* 叙事容器区 */
-        main {
-            position: absolute; top: 18%; bottom: 12%;
-            width: 100%; padding: 0 24px;
-            overflow-y: auto; scroll-behavior: smooth;
-        }
-
-        /* 隐形时间光轴 */
-        main::before {
-            content: ''; position: absolute;
-            left: 36px; top: 0; bottom: 0; width: 1px;
-            background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.1), transparent);
+        /* 动态背景场 */
+        .ambient-layer {
+            position: fixed; inset: 0;
+            background: linear-gradient(135deg, #e0e7ff 0%, #f1f5f9 100%);
             z-index: -1;
         }
 
-        /* 悬浮触控岛 */
-        nav {
-            position: absolute; bottom: calc(var(--safe-bottom) + 10px);
-            width: 100%; display: flex; justify-content: center; z-index: 20;
+        #root { height: 100%; position: relative; }
+
+        /* 行程卡片：流体展开逻辑 */
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
+            border: 0.5px solid var(--glass-rim);
+            border-radius: 28px; padding: 24px;
+            margin-bottom: 16px; transition: all 0.6s var(--spring-fluid);
+            transform-origin: center;
         }
-        .dock-indicator {
-            width: 60px; height: 6px; border-radius: 100px;
-            background: rgba(30, 41, 59, 0.2);
-            backdrop-filter: blur(10px);
+
+        /* 展开状态的样式控制 */
+        .card.expanded {
+            position: fixed; inset: var(--safe-top) 20px auto 20px;
+            height: calc(var(--os-height) - var(--safe-top) - var(--safe-bottom) - 100px);
+            z-index: 100; background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 40px 100px rgba(0,0,0,0.1);
         }
+
+        .add-button {
+            position: fixed; right: 24px; bottom: calc(var(--safe-bottom) + 30px);
+            width: 60px; height: 60px; border-radius: 30px;
+            background: var(--text-primary); color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 30px; z-index: 50; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s var(--spring-fluid);
+        }
+
+        .add-button:active { transform: scale(0.85); }
     </style>
 </head>
 <body>
-    <div class="ambient-glow"></div>
+    <div class="ambient-layer"></div>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
-
-        // 系统时钟与环境色温感应核心
-        function useAmbientSystem() {
-            const [time, setTime] = useState("");
-            const [vibe, setVibe] = useState("光影流动，旅途开启。");
-
-            useEffect(() => {
-                const updateSystem = () => {
-                    const now = new Date();
-                    const h = String(now.getHours()).padStart(2, '0');
-                    const m = String(now.getMinutes()).padStart(2, '0');
-                    setTime(`${h}:${m}`);
-
-                    const hour = now.getHours();
-                    const root = document.documentElement;
-                    if (hour >= 17 || hour <= 5) {
-                        root.style.setProperty('--ambient-bg-1', '#2d334a');
-                        root.style.setProperty('--ambient-bg-2', '#0f172a');
-                        root.style.setProperty('--text-primary', '#f8fafc');
-                        root.style.setProperty('--text-muted', 'rgba(248, 250, 252, 0.5)');
-                        root.style.setProperty('--glass-rim', 'rgba(255, 255, 255, 0.1)');
-                        root.style.setProperty('--glass-bg', 'rgba(255, 255, 255, 0.05)');
-                        setVibe("暮色将至，晚风温热。");
-                    } else {
-                        root.style.setProperty('--ambient-bg-1', '#e0e7ff');
-                        root.style.setProperty('--ambient-bg-2', '#f8fafc');
-                        root.style.setProperty('--text-primary', '#1e293b');
-                        root.style.setProperty('--text-muted', 'rgba(30, 41, 59, 0.5)');
-                        root.style.setProperty('--glass-rim', 'rgba(255, 255, 255, 0.4)');
-                        root.style.setProperty('--glass-bg', 'rgba(255, 255, 255, 0.15)');
-                        setVibe("阳光正好，捕捉旅途每一刻。");
-                    }
-                };
-                updateSystem();
-                const timer = setInterval(updateSystem, 60000);
-                return () => clearInterval(timer);
-            }, []);
-
-            return { time, vibe };
-        }
+        const { useState } = React;
 
         function App() {
-            const { time, vibe } = useAmbientSystem();
+            const [expandedId, setExpandedId] = useState(null);
+
+            const toggleExpand = (id) => {
+                setExpandedId(expandedId === id ? null : id);
+            };
 
             return (
-                <React.Fragment>
-                    {/* 第一空间：环境感知区 */}
-                    <header>
-                        <h1 style={{ fontSize: '18px', fontWeight: 300, letterSpacing: '0.05em' }}>Kuala Lumpur · {time}</h1>
-                        <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '6px', fontWeight: 300 }}>{vibe}</p>
-                    </header>
-
-                    {/* 第二空间：叙事容器区 (行程节点) */}
-                    <main>
-                        {/* 节点一：餐饮与地图联动示范 */}
-                        <div className="glass-card">
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <div>
-                                    <div style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '1px' }}>Tonight · 19:30</div>
-                                    <div style={{ fontSize: '22px', fontWeight: 400, marginTop: '8px' }}>KIWAMI Yakiniku</div>
-                                    <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '4px' }}>Tokyo 风格烤肉 · 确认号 #PR7788</div>
-                                </div>
-                                {/* 虚实折射地标指示灯 */}
-                                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#F4A460', boxShadow: '0 0 16px #F4A460' }}></div>
+                <div style={{ height: '100%', padding: 'calc(var(--safe-top) + 20px) 24px' }}>
+                    <h1 style={{ fontWeight: 300, marginBottom: '30px' }}>Hoh Weng Hong 的行程</h1>
+                    
+                    {/* 卡片 1 */}
+                    <div 
+                        className={`card ${expandedId === 1 ? 'expanded' : ''}`}
+                        onClick={() => toggleExpand(1)}
+                    >
+                        <div style={{ opacity: expandedId === 1 ? 0.4 : 1, fontSize: '12px' }}>Tonight · 19:30</div>
+                        <div style={{ fontSize: '22px', marginTop: '8px' }}>KIWAMI Yakiniku</div>
+                        {expandedId === 1 && (
+                            <div style={{ marginTop: '30px', animation: 'fadeIn 0.5s forwards' }}>
+                                <p style={{ lineHeight: '1.6' }}>
+                                    <b>地址：</b> 东京特别区[cite: 1]<br/>
+                                    <b>导航：</b> <span style={{ color: '#3b82f6' }}>点击跳转 Google Maps</span>[cite: 1]<br/>
+                                    <b>备注：</b> 享受顶级和牛体验
+                                </p>
+                                <button style={{ marginTop: '40px', padding: '12px 24px', borderRadius: '12px', border: 'none', background: '#000', color: '#fff' }}>
+                                    关闭详情
+                                </button>
                             </div>
-                        </div>
+                        )}
+                    </div>
 
-                        {/* 节点二：交通与跨页联动示范 */}
-                        <div className="glass-card">
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <div>
-                                    <div style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '1px' }}>Tomorrow · 09:00</div>
-                                    <div style={{ fontSize: '22px', fontWeight: 400, marginTop: '8px' }}>前往台北</div>
-                                    <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '4px' }}>KLIA T1 · 航班数据已同步</div>
-                                </div>
-                                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#94a3b8', boxShadow: '0 0 16px #94a3b8' }}></div>
-                            </div>
-                        </div>
-                        
-                        {/* 节点三：记账与流体分账折叠区 */}
-                        <div className="glass-card" style={{ opacity: 0.8 }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <div>
-                                    <div style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '1px' }}>Luminous Ledger</div>
-                                    <div style={{ fontSize: '18px', fontWeight: 400, marginTop: '8px' }}>今日支出结余</div>
-                                </div>
-                                <div style={{ fontSize: '20px', fontWeight: 300 }}>- 35 MYR</div>
-                            </div>
-                        </div>
-                    </main>
+                    {/* 卡片 2 - 演示记账管理 */}
+                    <div 
+                        className="card"
+                        style={{ background: 'rgba(0,0,0,0.05)', marginTop: '40px' }}
+                    >
+                        <div style={{ fontSize: '12px' }}>记账管理 (Luminous Ledger)[cite: 1]</div>
+                        <div style={{ fontSize: '18px', marginTop: '8px' }}>今日结余: -35 MYR[cite: 1]</div>
+                    </div>
 
-                    {/* 第三空间：防误触悬浮锚点 */}
-                    <nav>
-                        <div className="dock-indicator"></div>
-                    </nav>
-                </React.Fragment>
+                    {/* 添加按钮 */}
+                    <div className="add-button" onClick={() => alert("唤起语义化输入：'明早 8 点 KLIA 登机'")}>
+                        +
+                    </div>
+                </div>
             );
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
 </body>
 </html>
