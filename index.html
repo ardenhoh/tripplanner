@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Travel OS 1.2 - Verification</title>
+    <title>Travel OS 1.3 - Stability Core</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
@@ -12,102 +12,130 @@
             --os-height: 100dvh;
             --safe-top: env(safe-area-inset-top, 47px);
             --safe-bottom: env(safe-area-inset-bottom, 34px);
-            --spring-fluid: cubic-bezier(0.23, 1, 0.32, 1);
-            /* 吉隆坡 19:10 的环境色温 */
-            --bg-start: #2d334a;
-            --bg-end: #0f172a;
+            /* 重新定义的物理弹簧曲线：快、稳、丝滑 */
+            --spring-snappy: cubic-bezier(0.19, 1, 0.22, 1);
         }
 
         body, html {
             width: 100vw; height: var(--os-height);
-            overflow: hidden; background-color: #000;
+            margin: 0; padding: 0;
+            overflow: hidden; background-color: #05070a; /* 极深色基底，防止闪白 */
             font-family: -apple-system, "SF Pro Display", sans-serif;
-            color: #fff;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* 修复：全屏环境背景，确保永不黑屏 */
+        /* 渲染优化：硬件加速背景层 */
         .ambient-engine {
             position: fixed; inset: 0;
-            background: linear-gradient(160deg, #3d4465 0%, #111827 100%);
-            z-index: -1; transition: filter 0.8s var(--spring-fluid);
+            background: radial-gradient(at 0% 0%, #1e293b 0%, #020617 100%);
+            z-index: -1;
+            transform: translate3d(0,0,0);
+            will-change: transform;
         }
 
-        /* 亚克力铭牌：高度压缩 50% */
+        /* 亚克力铭牌：高度压缩，宽度自适应 */
         .nameplate {
             position: relative; width: 100%;
-            padding: 14px 20px; /* 极简内边距 */
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(30px) saturate(1.5);
-            -webkit-backdrop-filter: blur(30px) saturate(1.5);
-            border: 0.5px solid rgba(255, 255, 255, 0.15);
-            border-radius: 20px; margin-bottom: 10px;
-            transition: all 0.5s var(--spring-fluid);
-            z-index: 10;
+            padding: 12px 18px;
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            border: 0.5px solid rgba(255, 255, 255, 0.1);
+            border-radius: 18px; margin-bottom: 12px;
+            transition: all 0.4s var(--spring-snappy);
+            transform: translate3d(0,0,0);
         }
 
-        /* 展开逻辑：符合 iPhone 宽度且全屏遮罩 */
+        /* 展开逻辑：完美居中且无切边 */
         .nameplate.expanded {
-            position: fixed; 
-            inset: calc(var(--safe-top) + 20px) 16px auto 16px;
-            width: calc(100% - 32px); height: 400px;
-            background: rgba(255, 255, 255, 0.9);
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(1);
+            width: 92vw; /* 适配所有 iPhone 宽度 */
+            max-height: 60vh;
+            min-height: 300px;
+            background: rgba(255, 255, 255, 0.95);
             color: #000; z-index: 1000;
+            padding: 32px; border-radius: 32px;
+            box-shadow: 0 40px 120px rgba(0,0,0,0.5);
+            display: flex; flex-direction: column;
+            justify-content: center;
         }
 
-        /* 点击外部关闭的影子蒙层 */
+        /* 背景模糊蒙层 */
         .overlay {
             position: fixed; inset: 0;
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(15px);
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             z-index: 999; opacity: 0; pointer-events: none;
-            transition: opacity 0.5s var(--spring-fluid);
+            transition: opacity 0.4s var(--spring-snappy);
         }
         .overlay.active { opacity: 1; pointer-events: auto; }
 
-        .tag { font-size: 10px; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; }
-        .title { font-size: 18px; font-weight: 400; margin-top: 2px; }
+        .tag { font-size: 10px; opacity: 0.5; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px; }
+        .title { font-size: 17px; font-weight: 500; }
+
+        /* 防止展开时其他内容跳动 */
+        .content-hidden { opacity: 0.1; filter: blur(5px); pointer-events: none; }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState } = React;
+        const { useState, useEffect } = React;
 
         function App() {
             const [activeId, setActiveId] = useState(null);
 
-            const close = () => setActiveId(null);
+            // 键盘按键与手势兜底逻辑
+            useEffect(() => {
+                const handleEsc = (e) => { if (e.key === 'Escape') setActiveId(null); };
+                window.addEventListener('keydown', handleEsc);
+                return () => window.removeEventListener('keydown', handleEsc);
+            }, []);
 
             return (
-                <div style={{ height: '100%', position: 'relative' }}>
-                    <div className={`ambient-engine ${activeId ? 'active' : ''}`} />
+                <div style={{ height: '100%', position: 'relative', overflow: 'hidden' }}>
+                    <div className="ambient-engine" />
                     
-                    {/* 点击外部关闭的热区 */}
-                    <div className={`overlay ${activeId ? 'active' : ''}`} onClick={close} />
+                    <div className={`overlay ${activeId ? 'active' : ''}`} onClick={() => setActiveId(null)} />
 
-                    <main style={{ padding: 'calc(var(--safe-top) + 20px) 16px' }}>
-                        <header style={{ marginBottom: '30px' }}>
-                            <h1 style={{ fontWeight: 200, fontSize: '28px' }}>Kuala Lumpur</h1>
-                            <p style={{ opacity: 0.4, fontSize: '14px' }}>19:12 · 旅程沉淀中</p>
+                    <main style={{ 
+                        padding: 'calc(var(--safe-top) + 20px) 20px',
+                        transition: 'all 0.5s var(--spring-snappy)',
+                        filter: activeId ? 'blur(10px)' : 'none'
+                    }}>
+                        <header style={{ marginBottom: '32px', color: '#fff' }}>
+                            <h1 style={{ fontWeight: 200, fontSize: '32px', letterSpacing: '-0.5px' }}>Kuala Lumpur</h1>
+                            <p style={{ opacity: 0.4, fontSize: '13px' }}>19:20 · 旅程沉淀中</p>
                         </header>
 
                         {/* 铭牌 1 */}
-                        <div className={`nameplate ${activeId === 1 ? 'expanded' : ''}`} onClick={() => setActiveId(1)}>
-                            <div className="tag">Dining · 19:30</div>
-                            <div className="title">KIWAMI Yakiniku</div>
+                        <div 
+                            className={`nameplate ${activeId === 1 ? 'expanded' : ''}`} 
+                            onClick={(e) => { e.stopPropagation(); setActiveId(1); }}
+                        >
+                            <div className="tag" style={{ color: activeId === 1 ? '#000' : '#fff' }}>Dining · 19:30</div>
+                            <div className="title" style={{ color: activeId === 1 ? '#000' : '#fff' }}>KIWAMI Yakiniku</div>
                             {activeId === 1 && (
-                                <div style={{ marginTop: '40px', animation: 'fadeIn 0.4s' }}>
-                                    <p>详情内容已展开</p>
-                                    <p style={{ marginTop: '20px', fontSize: '14px', opacity: 0.6 }}>
-                                        这里是您的旅行陪伴空间。<br/>点击卡片以外的区域即可关闭。
-                                    </p>
+                                <div style={{ marginTop: '24px', textAlign: 'center' }}>
+                                    <div style={{ fontSize: '14px', lineHeight: '1.6', opacity: 0.7 }}>
+                                        “正在吉隆坡感受光影的温度”<br/>
+                                        数据已锚定，系统运行平稳。
+                                    </div>
+                                    <div style={{ marginTop: '32px', fontSize: '11px', opacity: 0.3 }}>
+                                        点击背景任意区域收回
+                                    </div>
                                 </div>
                             )}
                         </div>
 
                         {/* 铭牌 2 */}
-                        <div className="nameplate" onClick={() => setActiveId(2)} style={{ opacity: activeId ? 0 : 1 }}>
+                        <div 
+                            className="nameplate" 
+                            onClick={() => setActiveId(2)} 
+                            style={{ opacity: activeId ? 0 : 1, color: '#fff' }}
+                        >
                             <div className="tag">Flight · 09:00</div>
                             <div className="title">MH001 · 台北</div>
                         </div>
@@ -116,7 +144,8 @@
             );
         }
 
-        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
 </html>
