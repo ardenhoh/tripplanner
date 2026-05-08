@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>Travel Log | Titanium S-III</title>
+  <title>Travel Log | OS 1.0.6</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js" defer></script>
   <style>
     /* ==========================================================================
-       OS 1.0.5-S Titanium S-III (Industrial Flagship)
-       Apple iOS 26 Liquid Glass Environment
+       OS 1.0.6 (Industrial Flagship)
+       Apple iOS 26 Liquid Glass Architecture
        ========================================================================== */
     :root {
       --apple-ease: cubic-bezier(0.32, 0.72, 0, 1);
@@ -96,7 +96,7 @@
       display: flex; justify-content: space-around; align-items: center; height: 84px;
       transition: transform 0.4s var(--apple-ease);
     }
-    .tab-bar.keyboard-active { transform: translateY(100%); } /* 鍵盤避讓 */
+    .tab-bar.keyboard-hide { transform: translateY(100%); } /* 鍵盤避讓 */
 
     /* Push View 全螢幕推入表單 */
     .push-view {
@@ -134,24 +134,25 @@
 
   <nav class="tab-bar" id="main-tab-bar" style="display: none;">
     <div class="flex flex-col items-center tap-scale text-[var(--apple-blue)] w-1/4" data-tab="log">
-      <i class="fa-solid fa-map-location-dot text-xl mb-1"></i><span class="text-[10px] font-bold">行程</span>
+      <i class="fa-solid fa-map-location-dot text-xl mb-1"></i><span class="text-[10px] font-bold mt-1">行程</span>
     </div>
     <div class="flex flex-col items-center tap-scale opacity-40 w-1/4 transition-opacity" data-tab="vault">
-      <i class="fa-solid fa-briefcase text-xl mb-1"></i><span class="text-[10px] font-bold">保險箱</span>
+      <i class="fa-solid fa-briefcase text-xl mb-1"></i><span class="text-[10px] font-bold mt-1">保險箱</span>
     </div>
     <div class="flex flex-col items-center tap-scale opacity-40 w-1/4 transition-opacity" data-tab="expense">
-      <i class="fa-solid fa-wallet text-xl mb-1"></i><span class="text-[10px] font-bold">記帳</span>
+      <i class="fa-solid fa-wallet text-xl mb-1"></i><span class="text-[10px] font-bold mt-1">記帳</span>
     </div>
     <div class="flex flex-col items-center tap-scale opacity-40 w-1/4 transition-opacity" data-tab="inventory">
-      <i class="fa-solid fa-list-check text-xl mb-1"></i><span class="text-[10px] font-bold">行李</span>
+      <i class="fa-solid fa-list-check text-xl mb-1"></i><span class="text-[10px] font-bold mt-1">行李</span>
     </div>
   </nav>
 
   <div id="push-view-layer" class="push-view no-scrollbar"></div>
+  <div id="modal-layer"></div>
 
   <script>
     // ==========================================================================
-    // Titanium S-III Core Engine
+    // OS 1.0.6 Core Engine
     // ==========================================================================
 
     const AppUtils = {
@@ -171,7 +172,7 @@
     };
 
     const DataManager = {
-      key: 'OS_S3_TITANIUM',
+      key: 'OS_106_MASTER',
       state: { trips: [], activeId: null, currentTab: 'log' },
       init() {
         const raw = localStorage.getItem(this.key);
@@ -192,8 +193,14 @@
           const fd = await fRes.json(); return fd.length ? { latitude: fd[0].lat, longitude: fd[0].lon, name: city } : null;
         } catch(e) { return null; }
       },
-      async fetch24H(city) {
-        const c = await this.getCoords(city); if (!c) return null;
+      async fetch24H(trip) {
+        // 時空感應：判斷當下是否在行程區間，並鎖定動態城市錨點
+        const today = AppUtils.getLocalToday();
+        let targetCity = trip.destination;
+        const currentDay = trip.days.find(d => d.dateString === AppUtils.formatDate(today));
+        if (currentDay && currentDay.anchorCity) targetCity = currentDay.anchorCity;
+
+        const c = await this.getCoords(targetCity); if (!c) return null;
         const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${c.latitude}&longitude=${c.longitude}&current_weather=true&hourly=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min&timezone=auto`);
         const d = await r.json(); const cur = d.current_weather;
         const isRainy = [51,53,55,61,63,65,80,81,82,95].includes(cur.weathercode);
@@ -275,12 +282,12 @@
         else if (tab === 'vault') this.renderVault(trip);
       },
 
-      // --- 行程與天氣 ---
+      // --- 行程與天氣 (S-III 真實氣象與虛擬注入) ---
       async renderLog(trip) {
         const c = document.getElementById('content-layer');
         const rid = AppUtils.genId(); this._reqId = rid;
         
-        // 字體度量級防跳動：H/L 預設佔位
+        // 字體度量級防跳動：H/L 預設 opacity-0 佔位
         c.innerHTML = `
           <header class="weather-header">
             <div id="bg-slot" class="absolute inset-0 bg-gray-300 opacity-80 transition-all duration-1000"></div>
@@ -299,20 +306,21 @@
           </header>
           <div class="max-w-3xl mx-auto px-6 mt-12 space-y-10 pb-10" id="timeline-box">
              ${trip.days.map((d, i) => `
-               <div class="day-section relative pl-[64px] min-h-[80px]">
-                 <div class="absolute left-0 top-0 w-12 h-12 rounded-full bg-white shadow-sm flex flex-col items-center justify-center z-10 text-[var(--apple-blue)] theme-dark:bg-[#1c1c1e]"><span class="text-[9px] font-black mt-1">DAY</span><span class="text-xl font-bold leading-none">${i+1}</span></div>
+               <div class="relative pl-[64px] min-h-[80px]">
+                 <div class="absolute left-0 top-0 w-12 h-12 rounded-full bg-white shadow-sm flex flex-col items-center justify-center z-10 text-[var(--apple-blue)] theme-dark:bg-[#1c1c1e] theme-dark:text-white"><span class="text-[9px] font-black mt-1">DAY</span><span class="text-xl font-bold leading-none">${i+1}</span></div>
                  <div class="absolute left-[23px] top-[56px] bottom-[-16px] w-[1.5px] bg-gradient-to-b from-[var(--apple-blue)] to-transparent opacity-30"></div>
-                 <div class="flex flex-col items-start mb-6"><span class="text-[12px] font-bold text-[var(--text-sec)] mb-1 uppercase">${d.dateString}</span><h3 class="text-2xl font-bold">${trip.destination}</h3></div>
+                 <div class="flex flex-col items-start mb-6"><span class="text-[12px] font-bold text-[var(--text-sec)] mb-1 uppercase">${d.dateString}</span><h3 class="text-2xl font-bold">${d.anchorCity || trip.destination}</h3></div>
                  <div id="act-${d.id}" class="space-y-4">
-                    ${this.renderVirtualNodes(trip, d)}
+                    ${this.renderVirtualNodes(trip, d, 'morning')}
                     ${this.tempActivities(d.activities)}
+                    ${this.renderVirtualNodes(trip, d, 'evening')}
                  </div>
                  <button class="mt-4 text-[var(--apple-blue)] font-bold text-[14px] tap-scale flex items-center gap-2" data-action="open-add-push" data-day="${d.id}"><i class="fa-solid fa-plus-circle"></i> 添加活動</button>
                </div>
              `).join('')}
           </div>`;
 
-        const w = await WeatherEngine.fetch24H(trip.destination);
+        const w = await WeatherEngine.fetch24H(trip);
         if (this._reqId !== rid) return;
 
         const ts = document.getElementById('temp-val'), ss = document.getElementById('weather-status'), hl = document.getElementById('hl-val');
@@ -320,6 +328,7 @@
           document.body.className = w.theme;
           document.getElementById('background-layer').className = `bg-gradient-to-b ${w.gradient}`;
           document.getElementById('bg-slot').className = 'absolute inset-0 opacity-0'; // 讓全域背景透出
+          document.getElementById('city-title').innerText = w.city;
           ts.innerText = w.temp + '°'; ss.innerText = w.status; 
           hl.innerText = `H:${w.high}° L:${w.low}°`; hl.style.opacity = '0.7'; hl.removeAttribute('aria-hidden'); hl.style.pointerEvents = 'auto';
           this.renderHourly(w.hourly); ParticleEngine.init(w.isRain, rid);
@@ -333,11 +342,19 @@
         return acts.map(a => `<div class="relative mb-4"><div class="absolute left-[-45px] top-[22px] w-2 h-2 rounded-full bg-[var(--apple-blue)]"></div><div class="liquid-glass p-4 font-bold text-[17px]">${a.title}</div></div>`).join('');
       },
 
-      renderVirtualNodes(trip, day) {
-        // 虛擬注入：數據 0 污染
+      renderVirtualNodes(trip, day, phase) {
+        // 虛擬注入 (JIT Rendering)：數據 0 污染
         const vault = JSON.parse(localStorage.getItem('trip_vault_' + trip.id) || '[]');
-        const stays = vault.filter(v => v.type === 'stay' && v.date === day.dateString);
-        return stays.map(s => `<div class="relative mb-4"><div class="absolute left-[-45px] top-[22px] w-2 h-2 rounded-full bg-orange-400"></div><div class="liquid-glass p-4 border-l-4 border-orange-400"><div class="text-[12px] opacity-60 mb-1">入住房源</div><div class="font-bold text-[17px]">${s.name}</div></div></div>`).join('');
+        const stays = vault.filter(v => v.type === 'stay');
+        let html = '';
+        stays.forEach(s => {
+          if (phase === 'evening' && s.date === day.dateString) {
+             html += `<div class="relative mb-4"><div class="absolute left-[-45px] top-[22px] w-2 h-2 rounded-full bg-orange-400"></div><div class="liquid-glass p-4 border-l-4 border-orange-400"><div class="text-[12px] opacity-60 mb-1">入住</div><div class="font-bold text-[17px]">${s.name}</div></div></div>`;
+          } else if (phase === 'morning' && day.dateString > s.date && day.dateString <= s.endDate) { // 假設包含 endDate
+             html += `<div class="relative mb-4"><div class="absolute left-[-45px] top-[22px] w-2 h-2 rounded-full bg-orange-400 opacity-50"></div><div class="liquid-glass p-4 opacity-70"><div class="text-[12px] opacity-60 mb-1">從此處出發</div><div class="font-bold text-[15px]">${s.name}</div></div></div>`;
+          }
+        });
+        return html;
       },
 
       renderHourly(f) {
@@ -345,8 +362,8 @@
         const curH = new Date().getHours();
         slot.innerHTML = f.map(h => {
           const isNow = h.hour === curH;
-          return `<div id="${isNow ? 'now-node' : ''}" class="forecast-item ${isNow ? 'font-bold' : 'opacity-80'}">
-            <span class="text-[11px] mb-2 opacity-80">${isNow ? 'Now' : h.hour+':00'}</span>
+          return `<div id="${isNow ? 'now-node' : ''}" class="forecast-item ${isNow ? 'font-bold opacity-100' : 'opacity-80'}">
+            <span class="text-[11px] mb-2 ${isNow ? '' : 'opacity-60'}">${isNow ? 'Now' : h.hour+':00'}</span>
             <span class="text-[24px] mb-2">${h.icon}</span>
             <span class="text-[17px]">${h.temp}°</span>
           </div>`;
@@ -400,7 +417,7 @@
                         <i class="fa-solid fa-xmark opacity-20 p-2 tap-scale cursor-pointer" onclick="InventoryEngine.del('${trip.id}', '${i.id}')"></i>
                       </div>
                     `).join('')}
-                    <input class="inplace-input text-[15px] mt-2" placeholder="+ 新增物品 (按 Enter 保存)" onkeydown="if(event.key==='Enter') InventoryEngine.add('${trip.id}', '${cat}', this)">
+                    <input class="inplace-input text-[15px] mt-2 focus-aware" placeholder="+ 新增物品 (按 Enter 保存)" onkeydown="if(event.key==='Enter') InventoryEngine.add('${trip.id}', '${cat}', this)">
                   </div>
                 </details>`;
               }).join('')}
@@ -450,7 +467,7 @@
                 ${transits.length ? transits.map(i => `
                   <div class="liquid-glass p-5 mb-4 flex items-center gap-4">
                     <div class="w-12 h-12 bg-blue-50 rounded-[16px] flex items-center justify-center text-blue-500 text-xl"><i class="fa-solid fa-plane"></i></div>
-                    <div><div class="font-bold text-[17px] mb-0.5">${i.name}</div><div class="text-[13px] opacity-50">${i.date}</div></div>
+                    <div><div class="font-bold text-[17px] mb-0.5">${i.name}</div><div class="text-[13px] opacity-50">${i.date} · ${i.detail}</div></div>
                   </div>
                 `).join('') : '<div class="opacity-30 text-[14px]">暫無交通記錄</div>'}
               </section>
@@ -498,7 +515,8 @@
       _rateTimer: null,
       openForm() {
         const trip = DataManager.state.trips.find(t=>t.id===DataManager.state.activeId);
-        // 智慧幣種引路：根據目的地簡單判斷
+        
+        // 智慧幣種引路
         let recCur = 'MYR'; const dest = trip.destination;
         if(dest.includes('東京') || dest.includes('大阪') || dest.includes('日本')) recCur = 'JPY';
         else if(dest.includes('首爾') || dest.includes('釜山') || dest.includes('韓國')) recCur = 'KRW';
@@ -506,28 +524,28 @@
 
         const layer = document.getElementById('push-view-layer');
         layer.innerHTML = `
-          <div class="h-[100dvh] flex flex-col pt-14 px-6 bg-white relative z-20">
+          <div class="min-h-full flex flex-col pt-14 px-6 bg-[#f5f5f7] relative z-20">
             <div class="flex justify-between items-center mb-8"><button class="text-[var(--apple-blue)] font-bold text-lg" data-action="close-push">取消</button><h2 class="font-bold text-lg">記錄消費</h2><div class="w-10"></div></div>
             <div class="space-y-6">
-              <input id="fin-title" class="inplace-input text-lg" placeholder="消費項目 (例: 晚餐拉麵)">
+              <input id="fin-title" class="inplace-input text-lg focus-aware" placeholder="消費項目 (例: 晚餐拉麵)">
               <div class="flex gap-4">
                 <select id="fin-cur" class="inplace-input w-1/3 text-center font-bold" onchange="FinanceEngine.calc()">
                   <option value="MYR" ${recCur==='MYR'?'selected':''}>MYR</option><option value="JPY" ${recCur==='JPY'?'selected':''}>JPY</option><option value="KRW" ${recCur==='KRW'?'selected':''}>KRW</option><option value="TWD" ${recCur==='TWD'?'selected':''}>TWD</option><option value="USD" ${recCur==='USD'?'selected':''}>USD</option>
                 </select>
-                <input id="fin-amt" type="number" class="inplace-input w-2/3 font-rounded font-bold text-lg" placeholder="金額" oninput="FinanceEngine.debounceCalc()">
+                <input id="fin-amt" type="number" class="inplace-input w-2/3 font-rounded font-bold text-lg focus-aware" placeholder="金額" oninput="FinanceEngine.debounceCalc()">
               </div>
               <div class="text-center"><span id="fin-res" class="text-[32px] font-black font-rounded">RM 0.00</span><div class="text-[11px] text-[#9A9283] mt-1 font-rounded">離線匯率快照</div></div>
             </div>
-            <button class="w-full h-14 bg-[var(--apple-blue)] text-white rounded-[20px] font-bold mt-auto mb-10 tap-scale" data-action="save-expense">儲存</button>
+            <button class="w-full h-14 bg-[var(--apple-blue)] text-white rounded-[20px] font-bold mt-10 mb-10 tap-scale" data-action="save-expense">儲存</button>
           </div>`;
         layer.classList.add('active');
+        document.getElementById('content-layer').style.pointerEvents = 'none'; // 手勢攔截鎖
       },
       debounceCalc() { clearTimeout(this._rateTimer); this._rateTimer = setTimeout(() => this.calc(), 500); },
       calc() {
         const amt = parseFloat(document.getElementById('fin-amt').value || 0);
         const cur = document.getElementById('fin-cur').value;
-        // Mock 匯率快照
-        const rates = { MYR: 1, JPY: 0.03, KRW: 0.0034, TWD: 0.15, USD: 4.7 };
+        const rates = JSON.parse(localStorage.getItem('TB_FX_SNAPSHOT') || '{"MYR":1, "JPY":0.03, "KRW":0.0034, "TWD":0.15, "USD":4.7}');
         const myr = amt * (rates[cur] || 1);
         document.getElementById('fin-res').innerText = 'RM ' + myr.toFixed(2);
       },
@@ -536,7 +554,7 @@
         const amt = parseFloat(document.getElementById('fin-amt').value || 0);
         if(!t || amt <= 0) return;
         const cur = document.getElementById('fin-cur').value;
-        const rates = { MYR: 1, JPY: 0.03, KRW: 0.0034, TWD: 0.15, USD: 4.7 };
+        const rates = JSON.parse(localStorage.getItem('TB_FX_SNAPSHOT') || '{"MYR":1, "JPY":0.03, "KRW":0.0034, "TWD":0.15, "USD":4.7}');
         const myr = amt * (rates[cur] || 1);
         
         const trip = DataManager.state.trips.find(t=>t.id===DataManager.state.activeId);
@@ -545,6 +563,7 @@
         localStorage.setItem('trip_fin_' + trip.id, JSON.stringify(data));
         
         document.getElementById('push-view-layer').classList.remove('active');
+        document.getElementById('content-layer').style.pointerEvents = 'auto';
         Renderer.renderExpense(trip);
       }
     };
@@ -556,27 +575,33 @@
         const trip = DataManager.state.trips.find(t=>t.id===DataManager.state.activeId);
         const day = trip.days.find(d=>d.id===dayId);
         layer.innerHTML = `
-          <div class="h-[100dvh] flex flex-col pt-14 px-6 bg-white relative z-20">
+          <div class="min-h-full flex flex-col pt-14 px-6 bg-[#f5f5f7] relative z-20">
             <div class="flex justify-between items-center mb-8"><button class="text-[var(--apple-blue)] font-bold text-lg" data-action="close-push">取消</button><h2 class="font-bold text-lg">添加至 ${day.dateString}</h2><div class="w-10"></div></div>
             <div class="space-y-4">
               <select id="act-type" class="inplace-input font-bold" onchange="FormEngine.toggleFields()">
-                <option value="play">🎟️ 遊玩景點</option><option value="transit">✈️ 跨城交通</option><option value="stay">🏨 住宿預訂</option>
+                <option value="play">🎟️ 遊玩景點</option><option value="transit">✈️ 跨城交通</option><option value="stay">🏨 住宿預訂</option><option value="anchor">📍 變更城市錨點</option>
               </select>
-              <input id="act-title" class="inplace-input" placeholder="名稱 (例: 清水寺 / 航班 MH70 / 希爾頓)">
-              <div id="act-detail-box" style="display:none;"><input id="act-detail" class="inplace-input" placeholder="備註細節 (例: 14:00 出發 / 訂單號)"></div>
+              <input id="act-title" class="inplace-input focus-aware" placeholder="名稱 (例: 清水寺 / 航班 MH70 / 希爾頓)">
+              <div id="act-detail-box" style="display:none;">
+                 <input id="act-detail" class="inplace-input mb-4 focus-aware" placeholder="備註細節 (例: 14:00 出發 / 訂單號)">
+                 <label class="text-sm font-bold opacity-60 mb-1 block">結束日期 (如適用)</label>
+                 <input id="act-end-date" type="date" class="inplace-input" value="${AppUtils.formatDateToISO(day.dateString)}">
+              </div>
             </div>
-            <button class="w-full h-14 bg-[var(--apple-blue)] text-white rounded-[20px] font-bold mt-auto mb-10 tap-scale" onclick="FormEngine.save('${trip.id}', '${dayId}')">保存並同步</button>
+            <button class="w-full h-14 bg-[var(--apple-blue)] text-white rounded-[20px] font-bold mt-10 mb-10 tap-scale" onclick="FormEngine.save('${trip.id}', '${dayId}')">保存並同步</button>
           </div>`;
         layer.classList.add('active');
+        document.getElementById('content-layer').style.pointerEvents = 'none'; // 手勢攔截鎖
       },
       toggleFields() {
         const t = document.getElementById('act-type').value;
-        document.getElementById('act-detail-box').style.display = (t === 'transit' || t === 'stay') ? 'block' : 'none';
+        document.getElementById('act-detail-box').style.display = (t === 'transit' || t === 'stay' || t === 'anchor') ? 'block' : 'none';
       },
       save(tripId, dayId) {
         const type = document.getElementById('act-type').value;
         const title = document.getElementById('act-title').value.trim();
         const detail = document.getElementById('act-detail') ? document.getElementById('act-detail').value.trim() : '';
+        const endDateIso = document.getElementById('act-end-date') ? document.getElementById('act-end-date').value : null;
         if(!title) return;
 
         const trip = DataManager.state.trips.find(t=>t.id===tripId);
@@ -585,22 +610,32 @@
         if (type === 'play') {
           day.activities.push({ id: AppUtils.genId(), title });
           DataManager.save();
+        } else if (type === 'anchor') {
+          day.anchorCity = title; // 寫入錨點
+          DataManager.save();
         } else {
           // 同步至 Vault (虛擬注入來源)
           const vData = JSON.parse(localStorage.getItem('trip_vault_' + trip.id) || '[]');
-          vData.push({ id: AppUtils.genId(), type, name: title, date: day.dateString, detail });
+          const endDateStr = endDateIso ? AppUtils.formatDate(endDateIso) : day.dateString;
+          vData.push({ id: AppUtils.genId(), type, name: title, date: day.dateString, endDate: endDateStr, detail });
           localStorage.setItem('trip_vault_' + trip.id, JSON.stringify(vData));
         }
         document.getElementById('push-view-layer').classList.remove('active');
+        document.getElementById('content-layer').style.pointerEvents = 'auto';
         Renderer.renderLog(trip);
       }
+    };
+
+    AppUtils.formatDateToISO = (dateStr) => {
+        // Fallback for demo parsing
+        return new Date().toISOString().split('T')[0];
     };
 
     const UI = {
       openCreateModal() {
         const l = document.getElementById('modal-layer'); l.style.pointerEvents = 'auto';
         const d = AppUtils.getLocalToday();
-        l.innerHTML = `<div class="absolute inset-0 bg-black/20 backdrop-blur-md" data-action="close-modal"></div><div id="modal-card" class="absolute bottom-0 left-0 w-full liquid-glass rounded-t-[40px] p-8 pb-12 transition-transform duration-500 translate-y-full pointer-events-auto"><h2 class="text-2xl font-bold mb-8 text-center">新的冒險 ☁️</h2><div class="space-y-4"><input id="new-trip-title" class="inplace-input" placeholder="行程名稱" oninput="UI.validate()"><input id="new-trip-dest" class="inplace-input" placeholder="首站城市 (例: 東京)" oninput="UI.validate()"><div class="flex gap-4"><input id="new-trip-start" type="date" class="inplace-input" value="${d}" onchange="UI.validate()"><input id="new-trip-end" type="date" class="inplace-input" value="${d}" onchange="UI.validate()"></div></div><button id="btn-confirm-create" data-action="confirm-create" class="w-full h-14 bg-[#1D1D1F] text-white rounded-2xl font-bold mt-8 opacity-30 transition-opacity" disabled>建立行程</button></div>`;
+        l.innerHTML = `<div class="absolute inset-0 bg-black/20 backdrop-blur-md" data-action="close-modal"></div><div id="modal-card" class="absolute bottom-0 left-0 w-full liquid-glass rounded-t-[40px] p-8 pb-12 transition-transform duration-500 translate-y-full pointer-events-auto"><h2 class="text-2xl font-bold mb-8 text-center">新的冒險 ☁️</h2><div class="space-y-4"><input id="new-trip-title" class="inplace-input focus-aware" placeholder="行程名稱" oninput="UI.validate()"><input id="new-trip-dest" class="inplace-input focus-aware" placeholder="首站城市 (例: 東京)" oninput="UI.validate()"><div class="flex gap-4"><input id="new-trip-start" type="date" class="inplace-input" value="${d}" onchange="UI.validate()"><input id="new-trip-end" type="date" class="inplace-input" value="${d}" onchange="UI.validate()"></div></div><button id="btn-confirm-create" data-action="confirm-create" class="w-full h-14 bg-[#1D1D1F] text-white rounded-2xl font-bold mt-8 opacity-30 transition-opacity" disabled>建立行程</button></div>`;
         setTimeout(() => document.getElementById('modal-card').classList.remove('translate-y-full'), 10);
       },
       validate() {
@@ -611,14 +646,17 @@
       confirmCreateTrip() {
         const t = document.getElementById('new-trip-title').value, d = document.getElementById('new-trip-dest').value, s = document.getElementById('new-trip-start').value, e = document.getElementById('new-trip-end').value;
         const diff = AppUtils.getDiffDays(s, e); const [y, m, day] = s.split('-'); let curr = new Date(y, m-1, day);
-        let days = []; for(let i=0; i<diff; i++) { days.push({ id: AppUtils.genId(), dateString: AppUtils.formatDate(curr), activities: [] }); curr.setDate(curr.getDate() + 1); }
+        let days = []; for(let i=0; i<diff; i++) { days.push({ id: AppUtils.genId(), dateString: AppUtils.formatDate(curr), anchorCity: (i===0 ? d : null), activities: [] }); curr.setDate(curr.getDate() + 1); }
         DataManager.state.trips.unshift({ id: AppUtils.genId(), title: t, destination: d, startDate: s, endDate: e, days });
         DataManager.save(); document.getElementById('modal-layer').innerHTML = ''; document.getElementById('modal-layer').style.pointerEvents = 'none'; Renderer.render();
       }
     };
 
     const App = {
-      init() { DataManager.init(); Renderer.render(); this.bind(); this.bindKeyboardAvoidance(); },
+      init() { 
+        DataManager.init(); Renderer.render(); this.bind(); this.bindKeyboardAvoidance(); 
+        if(!localStorage.getItem('TB_FX_SNAPSHOT')) localStorage.setItem('TB_FX_SNAPSHOT', JSON.stringify({ MYR: 1, JPY: 0.03, KRW: 0.0034, TWD: 0.15, USD: 4.7 }));
+      },
       bind() {
         document.addEventListener('click', e => {
           const tAct = e.target.closest('[data-tab]'); if(tAct) Renderer.switchTab(tAct.dataset.tab);
@@ -629,20 +667,46 @@
           else if (act === 'confirm-create') UI.confirmCreateTrip();
           else if (act === 'close-modal') { document.getElementById('modal-layer').innerHTML=''; document.getElementById('modal-layer').style.pointerEvents='none'; }
           else if (act === 'open-add-push') FormEngine.openAddActivity(e.target.closest('[data-day]').dataset.day);
-          else if (act === 'close-push') document.getElementById('push-view-layer').classList.remove('active');
+          else if (act === 'close-push') { document.getElementById('push-view-layer').classList.remove('active'); document.getElementById('content-layer').style.pointerEvents = 'auto'; }
           else if (act === 'open-expense-push') FinanceEngine.openForm();
           else if (act === 'save-expense') FinanceEngine.save();
           else if (act === 'delete-trip') {
+            e.stopPropagation();
             const id = e.target.closest('[data-id]').dataset.id;
             DataManager.state.trips = DataManager.state.trips.filter(t=>t.id!==id); DataManager.save();
             AppUtils.cascadeDelete(id); Renderer.render();
           }
         });
+
+        // Swipe Delete Logic
+        document.addEventListener('touchstart', e => {
+          const card = e.target.closest('.swipe-card'); if(!card) return;
+          card.dataset.sX = e.touches[0].clientX; card.style.transition = 'none';
+        }, {passive: true});
+        document.addEventListener('touchmove', e => {
+          const card = e.target.closest('.swipe-card'); if(!card || !card.dataset.sX) return;
+          const cX = Math.max(e.touches[0].clientX - parseFloat(card.dataset.sX), -100);
+          if (cX < 0) card.style.transform = `translateX(${cX}px)`;
+        }, {passive: true});
+        document.addEventListener('touchend', e => {
+          const card = e.target.closest('.swipe-card'); if(!card || !card.dataset.sX) return;
+          card.style.transition = 'transform 0.4s var(--apple-ease)';
+          const cX = e.changedTouches[0].clientX - parseFloat(card.dataset.sX);
+          if (cX < -65) {
+             card.style.transform = 'translateX(-120vw)';
+             setTimeout(() => {
+                const id = card.dataset.id;
+                DataManager.state.trips = DataManager.state.trips.filter(t=>t.id!==id); DataManager.save();
+                AppUtils.cascadeDelete(id); Renderer.render();
+             }, 300);
+          } else { card.style.transform = 'translateX(0)'; }
+          card.removeAttribute('data-sX');
+        });
       },
       bindKeyboardAvoidance() {
-        // iOS Safari 物理鎖：防止鍵盤跳動
-        window.addEventListener('focusin', (e) => { if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT') document.getElementById('main-tab-bar').classList.add('keyboard-active'); });
-        window.addEventListener('focusout', () => document.getElementById('main-tab-bar').classList.remove('keyboard-active'));
+        // iOS Safari 物理鎖：防止鍵盤跳動，隱藏 Tab Bar
+        document.addEventListener('focusin', (e) => { if(e.target.classList.contains('focus-aware')) document.getElementById('main-tab-bar').classList.add('keyboard-hide'); });
+        document.addEventListener('focusout', () => document.getElementById('main-tab-bar').classList.remove('keyboard-hide'));
       }
     };
 
