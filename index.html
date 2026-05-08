@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Travel OS 1.1 - Smart Hub Integration</title>
+    <title>Travel OS 1.2 - Verification</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
@@ -13,49 +13,59 @@
             --safe-top: env(safe-area-inset-top, 47px);
             --safe-bottom: env(safe-area-inset-bottom, 34px);
             --spring-fluid: cubic-bezier(0.23, 1, 0.32, 1);
+            /* 吉隆坡 19:10 的环境色温 */
+            --bg-start: #2d334a;
+            --bg-end: #0f172a;
         }
 
         body, html {
             width: 100vw; height: var(--os-height);
-            overflow: hidden; background: #000; /* 背景底色设为黑以凸显深度 */
+            overflow: hidden; background-color: #000;
             font-family: -apple-system, "SF Pro Display", sans-serif;
+            color: #fff;
         }
 
-        .ambient-bg {
+        /* 修复：全屏环境背景，确保永不黑屏 */
+        .ambient-engine {
             position: fixed; inset: 0;
-            background: linear-gradient(135deg, #e0e7ff 0%, #f1f5f9 100%);
-            z-index: -2; transition: filter 0.8s var(--spring-fluid);
+            background: linear-gradient(160deg, #3d4465 0%, #111827 100%);
+            z-index: -1; transition: filter 0.8s var(--spring-fluid);
         }
 
-        /* 修复：更紧凑的卡片比例 */
-        .card {
-            position: relative;
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
-            border: 0.5px solid rgba(255, 255, 255, 0.4);
-            border-radius: 24px; padding: 18px 24px; /* 压缩内边距 */
-            margin-bottom: 12px; transition: all 0.6s var(--spring-fluid);
-            width: 100%; z-index: 1;
+        /* 亚克力铭牌：高度压缩 50% */
+        .nameplate {
+            position: relative; width: 100%;
+            padding: 14px 20px; /* 极简内边距 */
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(30px) saturate(1.5);
+            -webkit-backdrop-filter: blur(30px) saturate(1.5);
+            border: 0.5px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px; margin-bottom: 10px;
+            transition: all 0.5s var(--spring-fluid);
+            z-index: 10;
         }
 
-        /* 修复：展开后全覆盖宽度与背景模糊 */
-        .card.expanded {
+        /* 展开逻辑：符合 iPhone 宽度且全屏遮罩 */
+        .nameplate.expanded {
             position: fixed; 
-            inset: var(--safe-top) 12px auto 12px; /* 宽度锁定 */
-            height: calc(var(--os-height) - var(--safe-top) - 100px);
-            z-index: 100; background: rgba(255, 255, 255, 0.85);
-            width: calc(100% - 24px); /* 强制全宽覆盖 */
-            box-shadow: 0 50px 100px rgba(0,0,0,0.2);
+            inset: calc(var(--safe-top) + 20px) 16px auto 16px;
+            width: calc(100% - 32px); height: 400px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #000; z-index: 1000;
         }
 
-        /* 当有卡片展开时，主背景变模糊 */
-        .bg-blur { filter: blur(20px) brightness(0.8); }
-
-        .summary-tag {
-            font-size: 10px; font-weight: 600; text-transform: uppercase;
-            padding: 4px 8px; border-radius: 6px; background: rgba(0,0,0,0.05);
-            margin-bottom: 8px; display: inline-block;
+        /* 点击外部关闭的影子蒙层 */
+        .overlay {
+            position: fixed; inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(15px);
+            z-index: 999; opacity: 0; pointer-events: none;
+            transition: opacity 0.5s var(--spring-fluid);
         }
+        .overlay.active { opacity: 1; pointer-events: auto; }
+
+        .tag { font-size: 10px; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; }
+        .title { font-size: 18px; font-weight: 400; margin-top: 2px; }
     </style>
 </head>
 <body>
@@ -65,45 +75,41 @@
         const { useState } = React;
 
         function App() {
-            const [expandedId, setExpandedId] = useState(null);
+            const [activeId, setActiveId] = useState(null);
+
+            const close = () => setActiveId(null);
 
             return (
-                <div style={{ height: '100%' }}>
-                    {/* 环境背景层 */}
-                    <div className={`ambient-bg ${expandedId ? 'bg-blur' : ''}`} />
+                <div style={{ height: '100%', position: 'relative' }}>
+                    <div className={`ambient-engine ${activeId ? 'active' : ''}`} />
                     
-                    <main style={{ padding: 'calc(var(--safe-top) + 20px) 12px', transition: 'all 0.6s' }}>
-                        <h1 style={{ fontWeight: 300, marginBottom: '24px', opacity: expandedId ? 0 : 1 }}>
-                            Kuala Lumpur · 19:02
-                        </h1>
-                        
-                        {/* 住宿交通统整展示节点 */}
-                        <div 
-                            className={`card ${expandedId === 1 ? 'expanded' : ''}`}
-                            onClick={() => setExpandedId(expandedId === 1 ? null : 1)}
-                        >
-                            <span className="summary-tag" style={{ color: '#3b82f6' }}>住宿 & 交通</span>
-                            <div style={{ fontSize: '20px', fontWeight: 400 }}>MH001 · 飞往台北[cite: 1]</div>
-                            <div style={{ fontSize: '13px', color: 'rgba(0,0,0,0.4)', marginTop: '4px' }}>KLIA T1 · 09:00 出发</div>
+                    {/* 点击外部关闭的热区 */}
+                    <div className={`overlay ${activeId ? 'active' : ''}`} onClick={close} />
 
-                            {expandedId === 1 && (
-                                <div style={{ marginTop: '32px', animation: 'fadeIn 0.5s' }}>
-                                    <div style={{ padding: '20px', background: 'rgba(0,0,0,0.03)', borderRadius: '16px' }}>
-                                        <p style={{ fontSize: '14px', marginBottom: '10px' }}><b>登机口：</b> C12</p>
-                                        <p style={{ fontSize: '14px', marginBottom: '10px' }}><b>座位：</b> 12A</p>
-                                        <p style={{ fontSize: '14px' }}><b>目的地：</b> 台北万豪酒店[cite: 1]</p>
-                                    </div>
-                                    <button style={{ position: 'absolute', bottom: '24px', left: '24px', width: 'calc(100% - 48px)', padding: '16px', borderRadius: '16px', background: '#000', color: '#fff', border: 'none' }}>
-                                        完成查看
-                                    </button>
+                    <main style={{ padding: 'calc(var(--safe-top) + 20px) 16px' }}>
+                        <header style={{ marginBottom: '30px' }}>
+                            <h1 style={{ fontWeight: 200, fontSize: '28px' }}>Kuala Lumpur</h1>
+                            <p style={{ opacity: 0.4, fontSize: '14px' }}>19:12 · 旅程沉淀中</p>
+                        </header>
+
+                        {/* 铭牌 1 */}
+                        <div className={`nameplate ${activeId === 1 ? 'expanded' : ''}`} onClick={() => setActiveId(1)}>
+                            <div className="tag">Dining · 19:30</div>
+                            <div className="title">KIWAMI Yakiniku</div>
+                            {activeId === 1 && (
+                                <div style={{ marginTop: '40px', animation: 'fadeIn 0.4s' }}>
+                                    <p>详情内容已展开</p>
+                                    <p style={{ marginTop: '20px', fontSize: '14px', opacity: 0.6 }}>
+                                        这里是您的旅行陪伴空间。<br/>点击卡片以外的区域即可关闭。
+                                    </p>
                                 </div>
                             )}
                         </div>
 
-                        {/* 其他行程节点 */}
-                        <div className="card" style={{ opacity: expandedId ? 0.3 : 1 }}>
-                            <span className="summary-tag" style={{ color: '#f59e0b' }}>今日游玩</span>
-                            <div style={{ fontSize: '20px', fontWeight: 400 }}>KIWAMI 烤肉预约[cite: 1]</div>
+                        {/* 铭牌 2 */}
+                        <div className="nameplate" onClick={() => setActiveId(2)} style={{ opacity: activeId ? 0 : 1 }}>
+                            <div className="tag">Flight · 09:00</div>
+                            <div className="title">MH001 · 台北</div>
                         </div>
                     </main>
                 </div>
