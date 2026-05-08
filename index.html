@@ -3,162 +3,216 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Travel OS - Liquid Glass POC</title>
+    <title>Liquid Glass Travel OS 1.0</title>
+    <!-- 引入 React 与 Babel 核心库以支持单文件运行 -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    
     <style>
         :root {
-            /* 初始环境参数 - 模拟晨雾色调 */
+            /* 动态视口高度，适配 iPhone 动态岛与底部横条 */
+            --os-height: 100dvh;
+            --safe-top: env(safe-area-inset-top, 47px);
+            --safe-bottom: env(safe-area-inset-bottom, 34px);
+
+            /* Liquid Glass 材质参数 */
             --ambient-bg-1: #e0e7ff;
             --ambient-bg-2: #f8fafc;
-            --glass-border: rgba(255, 255, 255, 0.4);
-            --text-color: #1e293b;
-            --motion-ease: cubic-bezier(0.23, 1, 0.32, 1);
+            --glass-bg: rgba(255, 255, 255, 0.15);
+            --glass-rim: rgba(255, 255, 255, 0.4);
+            --text-primary: #1e293b;
+            --text-muted: rgba(30, 41, 59, 0.5);
+            
+            /* 临界阻尼模拟，替代机械弹跳 */
+            --spring-fluid: cubic-bezier(0.23, 1, 0.32, 1);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * {
+            margin: 0; padding: 0; box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-color);
+        body, html {
+            width: 100vw; height: var(--os-height);
+            overflow: hidden; /* 阻断 Safari 系统级橡皮筋回弹 */
+            font-family: -apple-system, "SF Pro Display", BlinkMacSystemFont, sans-serif;
+            font-optical-sizing: auto;
+            color: var(--text-primary);
             background: linear-gradient(135deg, var(--ambient-bg-1), var(--ambient-bg-2));
-            transition: background 2s var(--motion-ease);
+            transition: background 2s var(--spring-fluid);
         }
 
-        /* 环境光影动画 */
+        /* 动态光影场 */
         .ambient-glow {
-            position: absolute;
-            width: 150%;
-            height: 150%;
-            background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.8) 0%, transparent 60%);
-            filter: blur(80px);
-            animation: drift 20s infinite alternate linear;
-            z-index: 0;
+            position: fixed; inset: -20%;
+            background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.6) 0%, transparent 60%);
+            filter: blur(80px); z-index: 0; pointer-events: none;
         }
 
-        @keyframes drift {
-            from { transform: translate(-10%, -10%); }
-            to { transform: translate(10%, 10%); }
-        }
+        #root { width: 100%; height: 100%; position: relative; z-index: 1; }
 
-        /* Liquid Glass 卡片 */
+        /* Liquid Glass 卡片样式 */
         .glass-card {
-            position: relative;
-            z-index: 10;
-            width: 85%;
-            max-width: 340px;
-            padding: 32px;
-            border-radius: 42px; /* 大圆角 */
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--glass-bg);
             backdrop-filter: blur(40px) saturate(120%);
             -webkit-backdrop-filter: blur(40px) saturate(120%);
-            border: 0.5px solid var(--glass-border);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.02);
-            text-align: left;
-            transform: translateZ(0); /* 开启 GPU 加速 */
-            transition: transform 0.6s var(--motion-ease);
+            border: 0.5px solid var(--glass-rim);
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 12px 32px rgba(0,0,0,0.03);
+            transition: transform 0.6s var(--spring-fluid), filter 0.6s var(--spring-fluid);
+            transform: translateZ(0); /* GPU 加速隔离 */
+            cursor: pointer;
         }
 
         .glass-card:active {
-            transform: scale(0.98) translateZ(0);
+            transform: scale(0.97) translateZ(0);
+            filter: brightness(0.95);
         }
 
-        .label {
-            font-size: 12px;
-            font-weight: 500;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            opacity: 0.4;
-            margin-bottom: 8px;
+        /* 环境感知页眉 */
+        header {
+            position: absolute; top: 0; width: 100%;
+            padding: calc(var(--safe-top) + 20px) 24px 20px;
+            z-index: 10;
         }
 
-        .time {
-            font-size: 48px;
-            font-weight: 200;
-            margin-bottom: 20px;
-            letter-spacing: -1px;
+        /* 叙事容器区 */
+        main {
+            position: absolute; top: 18%; bottom: 12%;
+            width: 100%; padding: 0 24px;
+            overflow-y: auto; scroll-behavior: smooth;
         }
 
-        .mood {
-            font-size: 16px;
-            line-height: 1.6;
-            font-weight: 300;
-            opacity: 0.8;
+        /* 隐形时间光轴 */
+        main::before {
+            content: ''; position: absolute;
+            left: 36px; top: 0; bottom: 0; width: 1px;
+            background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.1), transparent);
+            z-index: -1;
         }
 
         /* 悬浮触控岛 */
-        .dock {
-            position: absolute;
-            bottom: 40px;
-            width: 60px;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.5);
-            border-radius: 10px;
+        nav {
+            position: absolute; bottom: calc(var(--safe-bottom) + 10px);
+            width: 100%; display: flex; justify-content: center; z-index: 20;
+        }
+        .dock-indicator {
+            width: 60px; height: 6px; border-radius: 100px;
+            background: rgba(30, 41, 59, 0.2);
             backdrop-filter: blur(10px);
         }
     </style>
 </head>
 <body>
-
     <div class="ambient-glow"></div>
+    <div id="root"></div>
 
-    <div class="glass-card" id="mainCard">
-        <div class="label" id="locationLabel">Kuala Lumpur</div>
-        <div class="time" id="clock">17:19</div>
-        <div class="mood" id="quote">正在感知光影，准备启程...</div>
-    </div>
+    <script type="text/babel">
+        const { useState, useEffect } = React;
 
-    <div class="dock"></div>
+        // 系统时钟与环境色温感应核心
+        function useAmbientSystem() {
+            const [time, setTime] = useState("");
+            const [vibe, setVibe] = useState("光影流动，旅途开启。");
 
-    <script>
-        // 1. 实时时钟逻辑
-        function updateClock() {
-            const now = new Date();
-            const h = String(now.getHours()).padStart(2, '0');
-            const m = String(now.getMinutes()).padStart(2, '0');
-            document.getElementById('clock').innerText = `${h}:${m}`;
-            
-            // 模拟环境感应：根据小时改变色温
-            const hour = now.getHours();
-            const root = document.documentElement;
-            if (hour >= 17 || hour <= 6) {
-                root.style.setProperty('--ambient-bg-1', '#2d334a'); // 暮色/深夜
-                root.style.setProperty('--ambient-bg-2', '#0f172a');
-                root.style.setProperty('--text-color', '#f8fafc');
-                root.style.setProperty('--glass-border', 'rgba(255, 255, 255, 0.1)');
-                document.getElementById('quote').innerText = "夜色温柔，适合沉淀思绪。";
-            } else {
-                root.style.setProperty('--ambient-bg-1', '#e0e7ff'); // 日间
-                root.style.setProperty('--ambient-bg-2', '#ffffff');
-                root.style.setProperty('--text-color', '#1e293b');
-                root.style.setProperty('--glass-border', 'rgba(255, 255, 255, 0.4)');
-                document.getElementById('quote').innerText = "阳光正好，捕捉旅途的每一刻。";
-            }
+            useEffect(() => {
+                const updateSystem = () => {
+                    const now = new Date();
+                    const h = String(now.getHours()).padStart(2, '0');
+                    const m = String(now.getMinutes()).padStart(2, '0');
+                    setTime(`${h}:${m}`);
+
+                    const hour = now.getHours();
+                    const root = document.documentElement;
+                    if (hour >= 17 || hour <= 5) {
+                        root.style.setProperty('--ambient-bg-1', '#2d334a');
+                        root.style.setProperty('--ambient-bg-2', '#0f172a');
+                        root.style.setProperty('--text-primary', '#f8fafc');
+                        root.style.setProperty('--text-muted', 'rgba(248, 250, 252, 0.5)');
+                        root.style.setProperty('--glass-rim', 'rgba(255, 255, 255, 0.1)');
+                        root.style.setProperty('--glass-bg', 'rgba(255, 255, 255, 0.05)');
+                        setVibe("暮色将至，晚风温热。");
+                    } else {
+                        root.style.setProperty('--ambient-bg-1', '#e0e7ff');
+                        root.style.setProperty('--ambient-bg-2', '#f8fafc');
+                        root.style.setProperty('--text-primary', '#1e293b');
+                        root.style.setProperty('--text-muted', 'rgba(30, 41, 59, 0.5)');
+                        root.style.setProperty('--glass-rim', 'rgba(255, 255, 255, 0.4)');
+                        root.style.setProperty('--glass-bg', 'rgba(255, 255, 255, 0.15)');
+                        setVibe("阳光正好，捕捉旅途每一刻。");
+                    }
+                };
+                updateSystem();
+                const timer = setInterval(updateSystem, 60000);
+                return () => clearInterval(timer);
+            }, []);
+
+            return { time, vibe };
         }
 
-        setInterval(updateClock, 1000);
-        updateClock();
+        function App() {
+            const { time, vibe } = useAmbientSystem();
 
-        // 2. 简单的陀螺仪视差预演 (需要用户在 iPhone 授权，此处先用触摸模拟)
-        const card = document.getElementById('mainCard');
-        window.addEventListener('mousemove', (e) => {
-            const x = (window.innerWidth / 2 - e.clientX) / 25;
-            const y = (window.innerHeight / 2 - e.clientY) / 25;
-            card.style.transform = `rotateY(${x}deg) rotateX(${y}deg) translateZ(0)`;
-        });
+            return (
+                <React.Fragment>
+                    {/* 第一空间：环境感知区 */}
+                    <header>
+                        <h1 style={{ fontSize: '18px', fontWeight: 300, letterSpacing: '0.05em' }}>Kuala Lumpur · {time}</h1>
+                        <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '6px', fontWeight: 300 }}>{vibe}</p>
+                    </header>
 
-        // 模拟手势：上滑 Dock 的逻辑占位
-        let startY = 0;
-        document.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; });
-        document.addEventListener('touchend', (e) => {
-            const endY = e.changedTouches[0].clientY;
-            if (startY - endY > 100) {
-                alert("进入行程库 (流体转场触发)");
-            }
-        });
+                    {/* 第二空间：叙事容器区 (行程节点) */}
+                    <main>
+                        {/* 节点一：餐饮与地图联动示范 */}
+                        <div className="glass-card">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div>
+                                    <div style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '1px' }}>Tonight · 19:30</div>
+                                    <div style={{ fontSize: '22px', fontWeight: 400, marginTop: '8px' }}>KIWAMI Yakiniku</div>
+                                    <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '4px' }}>Tokyo 风格烤肉 · 确认号 #PR7788</div>
+                                </div>
+                                {/* 虚实折射地标指示灯 */}
+                                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#F4A460', boxShadow: '0 0 16px #F4A460' }}></div>
+                            </div>
+                        </div>
+
+                        {/* 节点二：交通与跨页联动示范 */}
+                        <div className="glass-card">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div>
+                                    <div style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '1px' }}>Tomorrow · 09:00</div>
+                                    <div style={{ fontSize: '22px', fontWeight: 400, marginTop: '8px' }}>前往台北</div>
+                                    <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '4px' }}>KLIA T1 · 航班数据已同步</div>
+                                </div>
+                                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#94a3b8', boxShadow: '0 0 16px #94a3b8' }}></div>
+                            </div>
+                        </div>
+                        
+                        {/* 节点三：记账与流体分账折叠区 */}
+                        <div className="glass-card" style={{ opacity: 0.8 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div>
+                                    <div style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '1px' }}>Luminous Ledger</div>
+                                    <div style={{ fontSize: '18px', fontWeight: 400, marginTop: '8px' }}>今日支出结余</div>
+                                </div>
+                                <div style={{ fontSize: '20px', fontWeight: 300 }}>- 35 MYR</div>
+                            </div>
+                        </div>
+                    </main>
+
+                    {/* 第三空间：防误触悬浮锚点 */}
+                    <nav>
+                        <div className="dock-indicator"></div>
+                    </nav>
+                </React.Fragment>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
 </html>
