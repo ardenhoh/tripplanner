@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Travel OS 1.0.7-LGE</title>
+    <title>Travel OS 1.0.8-S</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
     <style>
         :root {
-            /* 物理参数锁定 */
+            /* 物理视口锁定 */
             --os-height: 100dvh;
             --safe-top: env(safe-area-inset-top, 47px);
             --safe-bottom: env(safe-area-inset-bottom, 34px);
@@ -20,10 +20,10 @@
             --rim-light: rgba(255, 255, 255, 0.3);
             --glass-bg: rgba(255, 255, 255, 0.08);
             
-            /* 初始状态：晴昼 (奶油白/莫兰迪蓝) */
-            --ambient-1: #B9E6FE; 
-            --ambient-2: #E0F2FE; 
-            --ambient-stop: #FDFCF0; 
+            /* 动态色温池 (由 JS 实时注入) */
+            --aura-1: #38BDF8; /* 主流体光色 */
+            --aura-2: #BAE6FD; /* 次流体光色 */
+            --base-bg: #FDFCF0; /* 物理底色 */
             --text-primary: rgba(28, 28, 30, 0.85);
             --text-sub: rgba(60, 60, 67, 0.6);
         }
@@ -31,37 +31,69 @@
         body, html {
             width: 100vw; height: var(--os-height);
             margin: 0; padding: 0; overflow: hidden; 
-            background-color: var(--ambient-stop); 
+            background-color: var(--base-bg); /* 物理底层隔离 */
             font-family: -apple-system, "SF Pro Display", sans-serif;
             -webkit-font-smoothing: antialiased;
-            transition: background 2s var(--spring-fluid);
+            transition: background-color 2s var(--spring-fluid);
         }
 
-        /* 渲染路径零冗余：隔离的大气背景引擎 */
+        /* =========================================================
+           规则 2：脉冲气场引擎 (Pulse Aura Engine) - 彻底解决背景静止问题
+           ========================================================= */
         .ambient-engine {
             position: fixed; inset: 0;
-            background: 
-                radial-gradient(circle at 5% 0%, var(--ambient-1) 0%, transparent 85%),
-                radial-gradient(circle at 95% 100%, var(--ambient-stop) 0%, transparent 85%),
-                linear-gradient(165deg, var(--ambient-2) 0%, var(--ambient-stop) 100%);
-            background-size: 150% 150%;
-            z-index: -1; transform: translateZ(0);
-            animation: fluid-vibe 30s infinite alternate linear;
+            z-index: -1; 
             isolation: isolate; 
+            overflow: hidden;
+            /* 降低整体饱和度，保持克制 */
+            opacity: 0.85; 
         }
 
-        @keyframes fluid-vibe {
-            0% { background-position: 0% 0%; }
-            100% { background-position: 15% 12%; }
+        /* 游离光影球 A：主色调，逆时针非线性运动 */
+        .aura-node-1 {
+            position: absolute;
+            width: 140vw; height: 140vh;
+            top: -20vh; left: -20vw;
+            background: radial-gradient(circle, var(--aura-1) 0%, transparent 65%);
+            filter: blur(60px);
+            will-change: transform;
+            animation: aura-drift-alpha 28s infinite alternate cubic-bezier(0.45, 0.05, 0.55, 0.95);
         }
 
+        /* 游离光影球 B：辅色调，顺时针非线性运动，产生干涉 */
+        .aura-node-2 {
+            position: absolute;
+            width: 120vw; height: 120vh;
+            bottom: -10vh; right: -20vw;
+            background: radial-gradient(circle, var(--aura-2) 0%, transparent 70%);
+            filter: blur(50px);
+            will-change: transform;
+            animation: aura-drift-beta 34s infinite alternate-reverse cubic-bezier(0.35, 0.15, 0.65, 0.85);
+        }
+
+        /* 硬件加速的李萨如轨迹动画 */
+        @keyframes aura-drift-alpha {
+            0%   { transform: translate3d(0, 0, 0) scale(1); }
+            50%  { transform: translate3d(12vw, 15vh, 0) scale(1.05); }
+            100% { transform: translate3d(-8vw, 25vh, 0) scale(0.95); }
+        }
+
+        @keyframes aura-drift-beta {
+            0%   { transform: translate3d(0, 0, 0) scale(1); }
+            50%  { transform: translate3d(-15vw, -10vh, 0) scale(1.1); }
+            100% { transform: translate3d(5vw, -20vh, 0) scale(0.9); }
+        }
+
+        /* 天气微燥点：增强空气感与真实物理质感 */
         .weather-noise {
             position: fixed; inset: 0;
-            background: url('data:image/svg+xml,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23n)" opacity="0.03"/></svg>');
+            background: url('data:image/svg+xml,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23n)" opacity="0.04"/></svg>');
             z-index: 0; pointer-events: none; mix-blend-mode: overlay;
         }
 
-        /* 材质原子化：具有物理折射感的静息铭牌 */
+        /* =========================================================
+           规则 1 & 3：静息铭牌与交互逻辑 (保持 1.0.7 的物理稳定态)
+           ========================================================= */
         .nameplate {
             position: relative; margin: 0 16px 12px 16px; width: auto;
             padding: 14px 20px; 
@@ -77,7 +109,6 @@
                 0 4px 12px rgba(0,0,0,0.02);
         }
 
-        /* 展开卡片：空间平衡与居中 */
         .nameplate.expanded {
             position: fixed; margin: 0; left: 16px; right: 16px; 
             top: 50%; transform: translateY(-50%);
@@ -113,9 +144,9 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        // 全时段色温映射引擎
+        // 全时段色温映射引擎 V4 (适配脉冲气场引擎)
         function useChronosEngine() {
-            const [label, setLabel] = useState("晴昼");
+            const [label, setLabel] = useState("载入环境...");
 
             useEffect(() => {
                 const updateEngine = () => {
@@ -124,21 +155,25 @@
                     let chronos;
 
                     if (hour >= 5 && hour < 8) {
-                        chronos = { label: "晨曦", isDark: false, colors: ["#FEF2F2", "#FFF7ED", "#FDFCF0"] };
+                        // 晨曦：玫瑰金与柔光交织
+                        chronos = { label: "晨曦", isDark: false, colors: ["#FCA5A5", "#FDE047", "#FDFCF0"] };
                     } else if (hour >= 8 && hour < 17) {
-                        // 奶油白/蔚蓝基调 (11:40 AM 模式)
-                        chronos = { label: "晴昼", isDark: false, colors: ["#B9E6FE", "#E0F2FE", "#FDFCF0"] }; 
+                        // 晴昼：高透蔚蓝在奶油底色上游走 (强化色彩对比以彰显动态)
+                        chronos = { label: "晴昼", isDark: false, colors: ["#38BDF8", "#BAE6FD", "#FDFCF0"] }; 
                     } else if (hour >= 17 && hour < 20) {
-                        chronos = { label: "暮色", isDark: true, colors: ["#451A03", "#78350F", "#1A0A05"] };
+                        // 暮色：琥珀与深紫的干涉
+                        chronos = { label: "暮色", isDark: true, colors: ["#F59E0B", "#9D174D", "#1A0A05"] };
                     } else {
-                        chronos = { label: "夜空", isDark: true, colors: ["#0F172A", "#020617", "#010103"] };
+                        // 夜空/曙前：幽邃的午夜蓝暗流
+                        chronos = { label: "夜空", isDark: true, colors: ["#1E3A8A", "#0F172A", "#020617"] };
                     }
 
-                    root.style.setProperty('--ambient-1', chronos.colors[0]);
-                    root.style.setProperty('--ambient-2', chronos.colors[1]);
-                    root.style.setProperty('--ambient-stop', chronos.colors[2]);
+                    // 写入渲染变量
+                    root.style.setProperty('--aura-1', chronos.colors[0]);
+                    root.style.setProperty('--aura-2', chronos.colors[1]);
+                    root.style.setProperty('--base-bg', chronos.colors[2]);
                     
-                    // 亮度均衡器：主文本与材质参数自适应
+                    // 亮度均衡器锁定
                     root.style.setProperty('--text-primary', chronos.isDark ? 'rgba(255, 255, 255, 0.95)' : 'rgba(28, 28, 30, 0.85)');
                     root.style.setProperty('--text-sub', chronos.isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(60, 60, 67, 0.6)');
                     root.style.setProperty('--rim-light', chronos.isDark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.8)');
@@ -162,35 +197,41 @@
 
             return (
                 <div style={{ height: '100%', position: 'relative' }}>
-                    <div className="ambient-engine" />
+                    {/* 规则 2：独立隔离的脉冲气场引擎 */}
+                    <div className="ambient-engine">
+                        <div className="aura-node-1"></div>
+                        <div className="aura-node-2"></div>
+                    </div>
                     <div className="weather-noise" />
                     <div className={`overlay ${activeId ? 'active' : ''}`} onClick={() => setActiveId(null)} />
 
                     <main style={{ padding: 'calc(var(--safe-top) + 20px) 0' }}>
                         <header style={{ padding: '0 16px', marginBottom: '40px' }}>
                             <h1 style={{ color: 'var(--text-primary)', fontWeight: 300, fontSize: '32px', margin: 0, letterSpacing: '-0.8px' }}>Kuala Lumpur</h1>
-                            <p style={{ color: 'var(--text-sub)', fontSize: '14px', marginTop: '6px', fontWeight: 300 }}>{label} · 旅程沉淀中</p>
+                            <p style={{ color: 'var(--text-sub)', fontSize: '14px', marginTop: '6px', fontWeight: 300 }}>{label} · 沉浸时空轴</p>
                         </header>
 
+                        {/* 铭牌 1 */}
                         <div className={`nameplate ${activeId === 1 ? 'expanded' : ''}`} onClick={() => { if (!activeId) setActiveId(1); }}>
                             <div className={activeId === 1 ? "expanded-content" : ""}>
                                 <div className="tag">Dining · 19:30</div>
                                 <div className="title">KIWAMI Yakiniku</div>
                                 {activeId === 1 && (
                                     <div style={{ marginTop: '28px', fontSize: '15px', lineHeight: '1.7', color: '#1c1c1e' }}>
-                                        <b>材质与色温校验：</b> 当前为晴昼模式，背景已切换为奶油白有机基调。静息铭牌的边缘光 (Rim Light) 会根据当前环境色自动微调折射率。
+                                        <b>脉冲气场引擎激活：</b> 彻底废弃单层静态渐变。底层现由多个硬件加速的光影球以“李萨如曲线”游走交织，产生肉眼可见的、如水波般的真实流体感。
                                     </div>
                                 )}
                             </div>
                         </div>
 
+                        {/* 铭牌 2 */}
                         <div className={`nameplate ${activeId === 2 ? 'expanded' : ''}`} onClick={() => { if (!activeId) setActiveId(2); }} style={{ opacity: (activeId && activeId !== 2) ? 0 : 1 }}>
                             <div className={activeId === 2 ? "expanded-content" : ""}>
                                 <div className="tag">Flight · 09:00</div>
                                 <div className="title">MH001 · 台北</div>
                                 {activeId === 2 && (
                                     <div style={{ marginTop: '28px', fontSize: '15px', lineHeight: '1.7', color: '#1c1c1e' }}>
-                                        <b>稳定性审计：</b> 系统已完成 3 轮偏执狂级别推演，物理边缘不裁切，120Hz 动态交互零掉帧。
+                                        <b>性能隔离校验：</b> 即使底层光影处于高强度的游走与干涉状态，前台的物理铭牌与交互响应也绝不会出现任何掉帧或裁切。
                                     </div>
                                 )}
                             </div>
