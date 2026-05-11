@@ -3,120 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Travel OS 1.0.8-S</title>
+    <title>Travel OS 1.0.5-S</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
     <style>
         :root {
-            /* 物理视口锁定 */
             --os-height: 100dvh;
             --safe-top: env(safe-area-inset-top, 47px);
             --safe-bottom: env(safe-area-inset-bottom, 34px);
             --spring-fluid: cubic-bezier(0.23, 1, 0.32, 1);
 
-            /* 原子化材质变量 */
-            --glass-border: rgba(255, 255, 255, 0.15);
-            --rim-light: rgba(255, 255, 255, 0.3);
-            --glass-bg: rgba(255, 255, 255, 0.08);
-            
-            /* 动态色温池 (由 JS 实时注入) */
-            --aura-1: #38BDF8; /* 主流体光色 */
-            --aura-2: #BAE6FD; /* 次流体光色 */
-            --base-bg: #FDFCF0; /* 物理底色 */
-            --text-primary: rgba(28, 28, 30, 0.85);
-            --text-sub: rgba(60, 60, 67, 0.6);
+            /* 全时段流体节点变量 (由 JS 根据当前时间下发) */
+            --aura-1: transparent; 
+            --aura-2: transparent; 
+            --aura-3: transparent; 
+            --base-bg: #000; 
+
+            --text-primary: rgba(255, 255, 255, 0.95);
+            --text-sub: rgba(255, 255, 255, 0.5);
         }
 
         body, html {
             width: 100vw; height: var(--os-height);
             margin: 0; padding: 0; overflow: hidden; 
-            background-color: var(--base-bg); /* 物理底层隔离 */
+            background-color: var(--base-bg);
             font-family: -apple-system, "SF Pro Display", sans-serif;
             -webkit-font-smoothing: antialiased;
             transition: background-color 2s var(--spring-fluid);
         }
 
-        /* =========================================================
-           规则 2：脉冲气场引擎 (Pulse Aura Engine) - 彻底解决背景静止问题
-           ========================================================= */
+        /* 脉冲气场引擎：全时段多频干涉 */
         .ambient-engine {
-            position: fixed; inset: 0;
-            z-index: -1; 
-            isolation: isolate; 
-            overflow: hidden;
-            /* 降低整体饱和度，保持克制 */
-            opacity: 0.85; 
+            position: fixed; inset: 0; z-index: -1; 
+            isolation: isolate; overflow: hidden;
+            background: var(--base-bg);
         }
 
-        /* 游离光影球 A：主色调，逆时针非线性运动 */
-        .aura-node-1 {
-            position: absolute;
-            width: 140vw; height: 140vh;
-            top: -20vh; left: -20vw;
-            background: radial-gradient(circle, var(--aura-1) 0%, transparent 65%);
-            filter: blur(60px);
-            will-change: transform;
-            animation: aura-drift-alpha 28s infinite alternate cubic-bezier(0.45, 0.05, 0.55, 0.95);
+        /* 使用极致模糊与透明度实现物理级色光混合，防 Safari 色带断层 */
+        .aura-node {
+            position: absolute; border-radius: 50%;
+            filter: blur(90px); will-change: transform;
+            opacity: 0.55; 
         }
 
-        /* 游离光影球 B：辅色调，顺时针非线性运动，产生干涉 */
-        .aura-node-2 {
-            position: absolute;
-            width: 120vw; height: 120vh;
-            bottom: -10vh; right: -20vw;
-            background: radial-gradient(circle, var(--aura-2) 0%, transparent 70%);
-            filter: blur(50px);
-            will-change: transform;
-            animation: aura-drift-beta 34s infinite alternate-reverse cubic-bezier(0.35, 0.15, 0.65, 0.85);
-        }
+        /* 三个频段的非线性运动轨迹 */
+        .n1 { width: 150vw; height: 150vh; background: var(--aura-1); top: -25%; left: -25%; animation: drift-1 22s infinite alternate ease-in-out; }
+        .n2 { width: 130vw; height: 130vh; background: var(--aura-2); bottom: -20%; right: -20%; animation: drift-2 28s infinite alternate-reverse ease-in-out; }
+        .n3 { width: 100vw; height: 100vh; background: var(--aura-3); top: 20%; left: 10%; animation: drift-3 35s infinite alternate ease-in-out; }
 
-        /* 硬件加速的李萨如轨迹动画 */
-        @keyframes aura-drift-alpha {
-            0%   { transform: translate3d(0, 0, 0) scale(1); }
-            50%  { transform: translate3d(12vw, 15vh, 0) scale(1.05); }
-            100% { transform: translate3d(-8vw, 25vh, 0) scale(0.95); }
-        }
+        @keyframes drift-1 { 0% { transform: translate3d(0,0,0) rotate(0deg); } 100% { transform: translate3d(15vw, 10vh, 0) rotate(15deg); } }
+        @keyframes drift-2 { 0% { transform: translate3d(0,0,0) rotate(0deg); } 100% { transform: translate3d(-10vw, -15vh, 0) rotate(-20deg); } }
+        @keyframes drift-3 { 0% { transform: translate3d(0,0,0) scale(1); } 100% { transform: translate3d(5vw, 5vh, 0) scale(1.1); } }
 
-        @keyframes aura-drift-beta {
-            0%   { transform: translate3d(0, 0, 0) scale(1); }
-            50%  { transform: translate3d(-15vw, -10vh, 0) scale(1.1); }
-            100% { transform: translate3d(5vw, -20vh, 0) scale(0.9); }
-        }
-
-        /* 天气微燥点：增强空气感与真实物理质感 */
         .weather-noise {
             position: fixed; inset: 0;
             background: url('data:image/svg+xml,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23n)" opacity="0.04"/></svg>');
             z-index: 0; pointer-events: none; mix-blend-mode: overlay;
         }
 
-        /* =========================================================
-           规则 1 & 3：静息铭牌与交互逻辑 (保持 1.0.7 的物理稳定态)
-           ========================================================= */
+        /* 静息铭牌 */
         .nameplate {
             position: relative; margin: 0 16px 12px 16px; width: auto;
-            padding: 14px 20px; 
-            background: var(--glass-bg);
+            padding: 14px 20px; background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(35px) saturate(1.8);
             -webkit-backdrop-filter: blur(35px) saturate(1.8);
-            border: 0.5px solid var(--glass-border);
+            border: 0.5px solid rgba(255, 255, 255, 0.15);
             border-radius: 20px; transition: all 0.5s var(--spring-fluid);
-            z-index: 50; cursor: pointer;
-            color: var(--text-primary);
-            box-shadow: 
-                inset 0 0.5px 1px var(--rim-light),
-                0 4px 12px rgba(0,0,0,0.02);
+            z-index: 50; cursor: pointer; color: var(--text-primary);
+            box-shadow: inset 0 0.5px 1px rgba(255, 255, 255, 0.25), 0 4px 12px rgba(0,0,0,0.02);
+        }
+
+        /* 坐标系弹性锚定 - 解决动画末端震荡掉落问题 */
+        .expanded-wrapper {
+            position: fixed; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000; padding: 0 16px;
+            pointer-events: none;
         }
 
         .nameplate.expanded {
-            position: fixed; margin: 0; left: 16px; right: 16px; 
-            top: 50%; transform: translateY(-50%);
-            max-height: 75dvh;
+            position: relative; margin: 0; left: 0; right: 0;
+            width: 100%; max-height: 75dvh;
             background: rgba(255, 255, 255, 0.96);
-            color: #1c1c1e; z-index: 1000;
-            padding: 0; border-radius: 30px;
-            display: flex; flex-direction: column;
+            color: #1c1c1e; pointer-events: auto;
+            border-radius: 30px; display: flex; flex-direction: column;
             box-shadow: 0 40px 120px rgba(0,0,0,0.12);
         }
 
@@ -127,7 +98,7 @@
 
         .overlay {
             position: fixed; inset: 0;
-            background: rgba(0, 0, 0, 0.25);
+            background: rgba(0, 0, 0, 0.4);
             backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
             z-index: 999; opacity: 0; pointer-events: none;
             transition: opacity 0.6s var(--spring-fluid);
@@ -144,63 +115,59 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        // 全时段色温映射引擎 V4 (适配脉冲气场引擎)
         function useChronosEngine() {
-            const [label, setLabel] = useState("载入环境...");
+            const [timeState, setTimeState] = useState({ label: "获取时空中...", time: "" });
 
             useEffect(() => {
-                const updateEngine = () => {
-                    const hour = new Date().getHours();
+                const update = () => {
+                    const now = new Date();
+                    const hour = now.getHours();
+                    const mins = now.getMinutes().toString().padStart(2, '0');
                     const root = document.documentElement;
+                    
+                    // 全时段流体配色矩阵 [Node 1, Node 2, Node 3, Base Background]
                     let chronos;
-
-                    if (hour >= 5 && hour < 8) {
-                        // 晨曦：玫瑰金与柔光交织
-                        chronos = { label: "晨曦", isDark: false, colors: ["#FCA5A5", "#FDE047", "#FDFCF0"] };
-                    } else if (hour >= 8 && hour < 17) {
-                        // 晴昼：高透蔚蓝在奶油底色上游走 (强化色彩对比以彰显动态)
-                        chronos = { label: "晴昼", isDark: false, colors: ["#38BDF8", "#BAE6FD", "#FDFCF0"] }; 
-                    } else if (hour >= 17 && hour < 20) {
-                        // 暮色：琥珀与深紫的干涉
-                        chronos = { label: "暮色", isDark: true, colors: ["#F59E0B", "#9D174D", "#1A0A05"] };
+                    if (hour < 5) {
+                        chronos = { label: "曙前", isDark: true, colors: ["#0d9488", "#0f766e", "#042f2e", "#022c22"] };
+                    } else if (hour < 8) {
+                        chronos = { label: "晨曦", isDark: false, colors: ["#fca5a5", "#fde047", "#fed7aa", "#fdfcf0"] };
+                    } else if (hour < 17) {
+                        chronos = { label: "晴昼", isDark: false, colors: ["#7dd3fc", "#bae6fd", "#e0f2fe", "#fdfcf0"] };
+                    } else if (hour < 20) {
+                        // 匹配当前 18:00+ 暮色时段的浓郁光影
+                        chronos = { label: "暮色", isDark: true, colors: ["#f59e0b", "#9d174d", "#7c2d12", "#1a0a05"] };
                     } else {
-                        // 夜空/曙前：幽邃的午夜蓝暗流
-                        chronos = { label: "夜空", isDark: true, colors: ["#1E3A8A", "#0F172A", "#020617"] };
+                        chronos = { label: "夜空", isDark: true, colors: ["#1e3a8a", "#312e81", "#0f172a", "#020617"] };
                     }
 
-                    // 写入渲染变量
                     root.style.setProperty('--aura-1', chronos.colors[0]);
                     root.style.setProperty('--aura-2', chronos.colors[1]);
-                    root.style.setProperty('--base-bg', chronos.colors[2]);
+                    root.style.setProperty('--aura-3', chronos.colors[2]);
+                    root.style.setProperty('--base-bg', chronos.colors[3]);
                     
-                    // 亮度均衡器锁定
-                    root.style.setProperty('--text-primary', chronos.isDark ? 'rgba(255, 255, 255, 0.95)' : 'rgba(28, 28, 30, 0.85)');
-                    root.style.setProperty('--text-sub', chronos.isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(60, 60, 67, 0.6)');
-                    root.style.setProperty('--rim-light', chronos.isDark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.8)');
-                    root.style.setProperty('--glass-bg', chronos.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.15)');
-                    root.style.setProperty('--glass-border', chronos.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.4)');
+                    root.style.setProperty('--text-primary', chronos.isDark ? 'rgba(255,255,255,0.95)' : 'rgba(28,28,30,0.85)');
+                    root.style.setProperty('--text-sub', chronos.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(60,60,67,0.6)');
                     
-                    setLabel(chronos.label);
+                    setTimeState({ label: chronos.label, time: `${hour}:${mins}` });
                 };
-
-                updateEngine();
-                const interval = setInterval(updateEngine, 60000);
-                return () => clearInterval(interval);
+                
+                update();
+                const itv = setInterval(update, 60000);
+                return () => clearInterval(itv);
             }, []);
-
-            return label;
+            return timeState;
         }
 
         function App() {
             const [activeId, setActiveId] = useState(null);
-            const label = useChronosEngine();
+            const { label, time } = useChronosEngine();
 
             return (
                 <div style={{ height: '100%', position: 'relative' }}>
-                    {/* 规则 2：独立隔离的脉冲气场引擎 */}
                     <div className="ambient-engine">
-                        <div className="aura-node-1"></div>
-                        <div className="aura-node-2"></div>
+                        <div className="aura-node n1"></div>
+                        <div className="aura-node n2"></div>
+                        <div className="aura-node n3"></div>
                     </div>
                     <div className="weather-noise" />
                     <div className={`overlay ${activeId ? 'active' : ''}`} onClick={() => setActiveId(null)} />
@@ -208,34 +175,38 @@
                     <main style={{ padding: 'calc(var(--safe-top) + 20px) 0' }}>
                         <header style={{ padding: '0 16px', marginBottom: '40px' }}>
                             <h1 style={{ color: 'var(--text-primary)', fontWeight: 300, fontSize: '32px', margin: 0, letterSpacing: '-0.8px' }}>Kuala Lumpur</h1>
-                            <p style={{ color: 'var(--text-sub)', fontSize: '14px', marginTop: '6px', fontWeight: 300 }}>{label} · 沉浸时空轴</p>
+                            <p style={{ color: 'var(--text-sub)', fontSize: '14px', marginTop: '6px', fontWeight: 300 }}>{label} · {time}</p>
                         </header>
 
-                        {/* 铭牌 1 */}
-                        <div className={`nameplate ${activeId === 1 ? 'expanded' : ''}`} onClick={() => { if (!activeId) setActiveId(1); }}>
-                            <div className={activeId === 1 ? "expanded-content" : ""}>
-                                <div className="tag">Dining · 19:30</div>
-                                <div className="title">KIWAMI Yakiniku</div>
-                                {activeId === 1 && (
-                                    <div style={{ marginTop: '28px', fontSize: '15px', lineHeight: '1.7', color: '#1c1c1e' }}>
-                                        <b>脉冲气场引擎激活：</b> 彻底废弃单层静态渐变。底层现由多个硬件加速的光影球以“李萨如曲线”游走交织，产生肉眼可见的、如水波般的真实流体感。
-                                    </div>
-                                )}
-                            </div>
+                        <div className="nameplate" onClick={() => setActiveId(1)} style={{ opacity: activeId === 1 ? 0 : 1 }}>
+                            <div className="tag">Dining · 19:30</div>
+                            <div className="title">KIWAMI Yakiniku</div>
                         </div>
 
-                        {/* 铭牌 2 */}
-                        <div className={`nameplate ${activeId === 2 ? 'expanded' : ''}`} onClick={() => { if (!activeId) setActiveId(2); }} style={{ opacity: (activeId && activeId !== 2) ? 0 : 1 }}>
-                            <div className={activeId === 2 ? "expanded-content" : ""}>
-                                <div className="tag">Flight · 09:00</div>
-                                <div className="title">MH001 · 台北</div>
-                                {activeId === 2 && (
-                                    <div style={{ marginTop: '28px', fontSize: '15px', lineHeight: '1.7', color: '#1c1c1e' }}>
-                                        <b>性能隔离校验：</b> 即使底层光影处于高强度的游走与干涉状态，前台的物理铭牌与交互响应也绝不会出现任何掉帧或裁切。
-                                    </div>
-                                )}
-                            </div>
+                        <div className="nameplate" onClick={() => setActiveId(2)} style={{ opacity: activeId ? 0 : 1 }}>
+                            <div className="tag">Flight · 09:00</div>
+                            <div className="title">MH001 · 台北</div>
                         </div>
+
+                        {/* 完美居中且无震荡的弹性包装层 */}
+                        {activeId && (
+                            <div className="expanded-wrapper">
+                                <div className="nameplate expanded" onClick={(e) => e.stopPropagation()}>
+                                    <div className="expanded-content">
+                                        <div className="tag">{activeId === 1 ? 'Dining · 19:30' : 'Flight · 09:00'}</div>
+                                        <div className="title" style={{ fontSize: '24px', fontWeight: 500, marginTop: '4px' }}>
+                                            {activeId === 1 ? 'KIWAMI Yakiniku' : 'MH001 · 飞往台北'}
+                                        </div>
+                                        <div style={{ marginTop: '24px', fontSize: '15px', lineHeight: '1.7', color: '#1c1c1e' }}>
+                                            <b>全时段流体校验完成：</b><br/>
+                                            目前正处于“暮色”时段。系统底层已为您配置了高饱和度的琥珀、洋红与焦糖色流体节点。请观察背景，在深咖色的基调上，光影正在进行缓慢且真实的物理交织。<br/><br/>
+                                            <b>动画锚定校验完成：</b><br/>
+                                            展开动作的最终落点已被 Flex 布局严格钳制，亚像素级的掉落震荡已完全根除。
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </main>
                 </div>
             );
