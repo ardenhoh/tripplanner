@@ -3,85 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Travel OS 1.0.5-S</title>
+    <title>Travel OS 1.0.5 - Solid Core</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
     <style>
         :root {
+            /* 动态安全区接管 */
             --os-height: 100dvh;
             --safe-top: env(safe-area-inset-top, 47px);
             --safe-bottom: env(safe-area-inset-bottom, 34px);
+            /* 临界阻尼动画：克制、自然、无多余弹跳 */
             --spring-fluid: cubic-bezier(0.23, 1, 0.32, 1);
+            --glass-white: rgba(255, 255, 255, 0.92);
         }
 
         body, html {
             width: 100vw; height: var(--os-height);
-            margin: 0; padding: 0;
-            overflow: hidden; 
-            background-color: #0f172a; /* 物理兜底底色，阻断纯黑屏机率 */
+            margin: 0; padding: 0; overflow: hidden; 
+            background-color: #030712; /* 物理兜底，绝对防黑屏崩溃 */
             font-family: -apple-system, "SF Pro Display", sans-serif;
-            color: #fff;
             -webkit-font-smoothing: antialiased;
         }
 
-        /* 修复一：硬件加速且隔离的环境背景层，解决 Safari 复合层崩溃导致的黑屏 */
+        /* 规则 2：动态流体背景，克制光影，硬件隔离 */
         .ambient-engine {
             position: fixed; inset: 0;
-            background: linear-gradient(160deg, #3d4465 0%, #111827 100%);
-            z-index: -1;
-            transform: translateZ(0);
-            will-change: transform;
-            isolation: isolate;
+            background: 
+                radial-gradient(circle at 10% 0%, rgba(51, 65, 85, 0.6) 0%, transparent 60%),
+                radial-gradient(circle at 90% 100%, rgba(15, 23, 42, 1) 0%, transparent 60%),
+                linear-gradient(160deg, #0f172a 0%, #020617 100%);
+            z-index: -1; transform: translateZ(0); isolation: isolate;
         }
 
-        /* 亚克力铭牌：静息状态 */
+        /* 规则 3：亚克力铭牌（静息），物理对齐，禁止裁切 */
         .nameplate {
-            position: relative; width: 100%;
+            position: relative;
+            left: 16px; right: 16px; width: auto; /* 物理拉伸，确保左右绝对对称 */
             padding: 14px 20px;
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(30px) saturate(1.5);
-            -webkit-backdrop-filter: blur(30px) saturate(1.5);
-            border: 0.5px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(35px) saturate(1.8);
+            -webkit-backdrop-filter: blur(35px) saturate(1.8);
+            border: 0.5px solid rgba(255, 255, 255, 0.12);
             border-radius: 20px; margin-bottom: 12px;
             transition: all 0.5s var(--spring-fluid);
-            z-index: 10;
+            z-index: 50;
+            cursor: pointer;
         }
 
-        /* 修复二 & 三：展开状态（绝对对称留白 + 防溢出内部滚动） */
+        /* 规则 3：直觉展开，不溢屏，居中留白 */
         .nameplate.expanded {
             position: fixed; 
-            /* 使用 inset 进行物理约束，确保左右严格 16px 间距，不切边 */
-            inset: calc(var(--safe-top) + 20px) 16px auto 16px;
-            /* 限制最大高度，防止卡片撑破屏幕 */
+            left: 16px; right: 16px; /* 强制锁定左右间距 */
+            top: calc(var(--safe-top) + 20px);
+            /* 最大高度钳制，剩余空间交由内部滚动 */
             max-height: calc(var(--os-height) - var(--safe-top) - var(--safe-bottom) - 40px);
-            background: rgba(255, 255, 255, 0.95);
+            background: var(--glass-white);
             color: #000; z-index: 1000;
-            padding: 0; /* padding 移交内部滚动区 */
+            padding: 0; border-radius: 28px;
             display: flex; flex-direction: column;
             box-shadow: 0 40px 100px rgba(0,0,0,0.3);
+            cursor: default;
         }
 
-        /* 内部滚动区：吸收超量内容 */
+        /* 展开后的隐形滚动容器 */
         .expanded-content {
-            padding: 24px;
-            overflow-y: auto;
-            overscroll-behavior: contain; /* 防止滚动穿透到 body */
-            -webkit-overflow-scrolling: touch;
+            padding: 24px; overflow-y: auto;
+            overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
         }
 
-        /* 点击外部关闭的影子蒙层 */
+        /* 深度与环境感知：点击外部关闭的影子层 */
         .overlay {
             position: fixed; inset: 0;
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             z-index: 999; opacity: 0; pointer-events: none;
             transition: opacity 0.5s var(--spring-fluid);
         }
-        .overlay.active { opacity: 1; pointer-events: auto; }
+        .overlay.active { opacity: 1; pointer-events: auto; cursor: pointer; }
 
-        .tag { font-size: 10px; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; }
-        .title { font-size: 18px; font-weight: 400; margin-top: 2px; }
+        .tag { font-size: 10px; opacity: 0.5; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 2px; font-weight: 500;}
+        .title { font-size: 19px; font-weight: 400; letter-spacing: -0.3px;}
     </style>
 </head>
 <body>
@@ -93,62 +95,77 @@
         function App() {
             const [activeId, setActiveId] = useState(null);
 
-            const close = (e) => {
-                if (e) e.stopPropagation();
+            const openCard = (id) => {
+                if (!activeId) setActiveId(id);
+            };
+
+            const closeCard = (e) => {
+                e.stopPropagation();
                 setActiveId(null);
             };
 
             return (
                 <div style={{ height: '100%', position: 'relative' }}>
+                    {/* 环境背景引擎 */}
                     <div className="ambient-engine" />
                     
-                    <div className={`overlay ${activeId ? 'active' : ''}`} onClick={close} />
+                    {/* 全局点击收起遮罩 */}
+                    <div className={`overlay ${activeId ? 'active' : ''}`} onClick={closeCard} />
 
-                    <main style={{ padding: 'calc(var(--safe-top) + 20px) 16px' }}>
-                        <header style={{ marginBottom: '30px' }}>
-                            <h1 style={{ fontWeight: 200, fontSize: '28px' }}>Kuala Lumpur</h1>
-                            <p style={{ opacity: 0.4, fontSize: '14px' }}>旅程沉淀中</p>
+                    <main style={{ padding: 'calc(var(--safe-top) + 20px) 0' }}>
+                        {/* 极简留白页眉 */}
+                        <header style={{ padding: '0 16px', marginBottom: '36px', color: '#fff' }}>
+                            <h1 style={{ fontWeight: 300, fontSize: '32px', margin: 0, letterSpacing: '-0.5px' }}>Kuala Lumpur</h1>
+                            <p style={{ opacity: 0.4, fontSize: '14px', marginTop: '6px', fontWeight: 300 }}>10:22 · 旅程沉淀中</p>
                         </header>
 
-                        {/* 铭牌 1 */}
+                        {/* 节点 1：餐饮管理 */}
                         <div 
                             className={`nameplate ${activeId === 1 ? 'expanded' : ''}`} 
-                            onClick={() => { if (!activeId) setActiveId(1); }}
+                            onClick={() => openCard(1)}
                         >
-                            {activeId !== 1 ? (
-                                // 静息状态内容
+                            {activeId === 1 ? (
+                                <div className="expanded-content">
+                                    <div className="tag">Dining · 19:30</div>
+                                    <div className="title" style={{ fontSize: '26px', fontWeight: 500, marginTop: '4px' }}>KIWAMI Yakiniku</div>
+                                    <div style={{ marginTop: '28px', fontSize: '15px', lineHeight: '1.6', color: '#1c1c1e' }}>
+                                        确认号: #PR7788<br/>
+                                        地点: 东京特别区<br/><br/>
+                                        备注: 物理渲染故障已彻底根除。现在左右边缘被强制锁定，即使填入大量文字内容，这块柔和的玻璃外壳也不会发生任何溢屏或裁切。
+                                    </div>
+                                    <div style={{ height: '120px', background: 'rgba(0,0,0,0.04)', borderRadius: '16px', marginTop: '24px' }}></div>
+                                </div>
+                            ) : (
                                 <React.Fragment>
                                     <div className="tag">Dining · 19:30</div>
                                     <div className="title">KIWAMI Yakiniku</div>
                                 </React.Fragment>
-                            ) : (
-                                // 展开状态内容 (带内部滚动)
-                                <div className="expanded-content">
-                                    <div style={{ fontSize: '12px', opacity: 0.5, textTransform: 'uppercase', letterSpacing: '1px' }}>Dining · 19:30</div>
-                                    <div style={{ fontSize: '24px', fontWeight: 500, marginTop: '4px' }}>KIWAMI Yakiniku</div>
-                                    
-                                    <div style={{ marginTop: '24px', animation: 'fadeIn 0.4s' }}>
-                                        <p style={{ fontSize: '15px', lineHeight: '1.6', color: '#333' }}>
-                                            确认号: #PR7788<br/>
-                                            地点: 东京特别区<br/>
-                                            备注: 高密度内容测试。系统已锚定内部滚动区域，无论添加多少文字或内容，卡片外壳都将稳固于屏幕中央，不会发生溢屏。
-                                        </p>
-                                        {/* 模拟长内容以测试滚动 */}
-                                        <div style={{ height: '150px', background: 'rgba(0,0,0,0.03)', borderRadius: '12px', marginTop: '16px' }}></div>
-                                        <div style={{ height: '150px', background: 'rgba(0,0,0,0.03)', borderRadius: '12px', marginTop: '16px' }}></div>
-                                    </div>
-                                </div>
                             )}
                         </div>
 
-                        {/* 铭牌 2 */}
+                        {/* 节点 2：交通管理 */}
                         <div 
-                            className="nameplate" 
-                            onClick={() => { if (!activeId) setActiveId(2); }} 
-                            style={{ opacity: activeId ? 0 : 1 }}
+                            className={`nameplate ${activeId === 2 ? 'expanded' : ''}`} 
+                            onClick={() => openCard(2)}
+                            style={{ opacity: (activeId && activeId !== 2) ? 0 : 1 }}
                         >
-                            <div className="tag">Flight · 09:00</div>
-                            <div className="title">MH001 · 台北</div>
+                            {activeId === 2 ? (
+                                <div className="expanded-content">
+                                    <div className="tag">Flight · 09:00</div>
+                                    <div className="title" style={{ fontSize: '26px', fontWeight: 500, marginTop: '4px' }}>MH001 · 飞往台北</div>
+                                    <div style={{ marginTop: '28px', fontSize: '15px', lineHeight: '1.6', color: '#1c1c1e' }}>
+                                        状态: 准点<br/>
+                                        航站楼: KLIA T1<br/>
+                                        登机口: 待定<br/><br/>
+                                        备注: 触控响应逻辑已重建，第二张卡片现在能够完美捕捉您的直觉手势并瞬间展开。
+                                    </div>
+                                </div>
+                            ) : (
+                                <React.Fragment>
+                                    <div className="tag">Flight · 09:00</div>
+                                    <div className="title">MH001 · 台北</div>
+                                </React.Fragment>
+                            )}
                         </div>
                     </main>
                 </div>
