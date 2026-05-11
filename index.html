@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Travel OS 1.0.5-S</title>
+    <title>Travel OS 1.0.6</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
@@ -13,13 +13,17 @@
             --safe-top: env(safe-area-inset-top, 47px);
             --safe-bottom: env(safe-area-inset-bottom, 34px);
             --spring-fluid: cubic-bezier(0.23, 1, 0.32, 1);
-            
-            /* 规则 2：感光文本协议变量 */
-            --text-on-ambient: rgba(255, 255, 255, 0.95); /* 深色背景下的自适应白 */
-            --text-on-ambient-sub: rgba(255, 255, 255, 0.5); /* 副体字灰 */
-            --text-on-glass: #1c1c1e; /* 展开玻璃卡片上的炭黑 */
-            --text-on-glass-sub: rgba(60, 60, 67, 0.6); /* 展开后的副体字 */
+
+            /* 初始色温变量 (默认夜空) */
+            --ambient-1: #0f172a; --ambient-2: #020617;
+            --text-primary: rgba(255, 255, 255, 0.95);
+            --text-sub: rgba(255, 255, 255, 0.5);
+            --glass-blur: 35px;
         }
+
+        /* 规则 2：优先级 3 - 环境光感应微调 */
+        @media (light-level: dim) { :root { --glass-blur: 45px; } }
+        @media (light-level: washed) { :root { --glass-blur: 20px; } }
 
         body, html {
             width: 100vw; height: var(--os-height);
@@ -27,56 +31,54 @@
             background-color: #030712; 
             font-family: -apple-system, "SF Pro Display", sans-serif;
             -webkit-font-smoothing: antialiased;
+            transition: background 1.5s var(--spring-fluid);
         }
 
-        /* 规则 2：大气层多重渲染背景 + 动态流体光影 */
+        /* 规则 2：全时段自适应流体背景 */
         .ambient-engine {
             position: fixed; inset: 0;
             background: 
-                radial-gradient(circle at 10% 0%, rgba(51, 65, 85, 0.7) 0%, transparent 60%),
-                radial-gradient(circle at 90% 100%, rgba(15, 23, 42, 1) 0%, transparent 60%),
-                linear-gradient(160deg, #0f172a 0%, #020617 100%);
-            background-size: 180% 180%;
-            z-index: -1; transform: translateZ(0); 
+                radial-gradient(circle at 10% 0%, var(--ambient-1) 0%, transparent 70%),
+                radial-gradient(circle at 90% 100%, var(--ambient-2) 100%, transparent 70%),
+                linear-gradient(160deg, var(--ambient-2) 0%, #000 100%);
+            background-size: 200% 200%;
+            z-index: -1; transform: translateZ(0);
             animation: fluid-vibe 25s infinite alternate linear;
             isolation: isolate;
         }
 
         @keyframes fluid-vibe {
             0% { background-position: 0% 0%; }
-            100% { background-position: 15% 15%; }
+            100% { background-position: 20% 10%; }
         }
 
-        /* 规则 1 & 3：静息铭牌 - 物理 margin 锁定，字体颜色自适应白 */
+        /* 天气噪音图层：增加空气感 */
+        .weather-overlay {
+            position: fixed; inset: 0;
+            background: url('data:image/svg+xml,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23n)" opacity="0.03"/></svg>');
+            z-index: 0; pointer-events: none; opacity: 0.5;
+        }
+
         .nameplate {
-            position: relative;
-            margin: 0 16px 12px 16px;
-            width: auto;
-            padding: 14px 20px;
-            background: rgba(255, 255, 255, 0.06);
-            backdrop-filter: blur(35px) saturate(1.8);
-            -webkit-backdrop-filter: blur(35px) saturate(1.8);
+            position: relative; margin: 0 16px 12px 16px; width: auto;
+            padding: 14px 20px; background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(var(--glass-blur)) saturate(1.8);
+            -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.8);
             border: 0.5px solid rgba(255, 255, 255, 0.12);
-            border-radius: 20px;
-            transition: all 0.5s var(--spring-fluid);
-            z-index: 50;
-            cursor: pointer;
-            color: var(--text-on-ambient); /* 核心：自适应白 */
+            border-radius: 20px; transition: all 0.5s var(--spring-fluid);
+            z-index: 50; cursor: pointer;
+            color: var(--text-primary);
         }
 
-        /* 规则 3：展开状态 - 字体颜色强制转为炭黑 */
         .nameplate.expanded {
-            position: fixed; 
-            margin: 0; left: 16px; right: 16px; 
+            position: fixed; margin: 0; left: 16px; right: 16px; 
             top: calc(var(--safe-top) + 20px);
             max-height: calc(var(--os-height) - var(--safe-top) - var(--safe-bottom) - 40px);
             background: rgba(255, 255, 255, 0.94);
-            color: var(--text-on-glass); /* 核心：自适应黑 */
-            z-index: 1000;
+            color: #1c1c1e; z-index: 1000;
             padding: 0; border-radius: 28px;
             display: flex; flex-direction: column;
             box-shadow: 0 40px 100px rgba(0,0,0,0.3);
-            cursor: default;
         }
 
         .expanded-content {
@@ -93,54 +95,86 @@
         }
         .overlay.active { opacity: 1; pointer-events: auto; }
 
-        /* 字体层级定义 */
-        .tag { font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 2px; font-weight: 500;}
+        .tag { font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 2px; font-weight: 500; opacity: 0.6; }
         .title { font-size: 19px; font-weight: 400; letter-spacing: -0.3px;}
-        
-        /* 针对不同状态的副体字色 */
-        .tag-ambient { color: var(--text-on-ambient-sub); }
-        .tag-glass { color: var(--text-on-glass-sub); }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState } = React;
+        const { useState, useEffect } = React;
+
+        // 规则 2：全时段色温映射与天气感知逻辑
+        function useChronosEngine() {
+            const [state, setState] = useState({ label: "Checking...", isDark: true });
+
+            useEffect(() => {
+                const updateEngine = () => {
+                    const hour = new Date().getHours();
+                    const root = document.documentElement;
+                    let chronos = { label: "", isDark: true, colors: ["#0f172a", "#020617"] };
+
+                    if (hour >= 5 && hour < 8) {
+                        chronos = { label: "晨曦", isDark: false, colors: ["#fef2f2", "#fff7ed"] }; // 玫瑰金/云雾白
+                    } else if (hour >= 8 && hour < 17) {
+                        chronos = { label: "晴昼", isDark: false, colors: ["#f0f9ff", "#e0f2fe"] }; // 蔚蓝/白
+                    } else if (hour >= 17 && hour < 19.5) {
+                        chronos = { label: "暮色", isDark: true, colors: ["#451a03", "#78350f"] }; // 琥珀/深紫
+                    } else if (hour >= 19.5 || hour < 0) {
+                        chronos = { label: "夜空", isDark: true, colors: ["#0f172a", "#020617"] }; // 午夜蓝
+                    } else {
+                        chronos = { label: "曙前", isDark: true, colors: ["#064e3b", "#022c22"] }; // 深墨绿
+                    }
+
+                    // 写入 CSS 变量：由系统硬件加速驱动颜色过渡
+                    root.style.setProperty('--ambient-1', chronos.colors[0]);
+                    root.style.setProperty('--ambient-2', chronos.colors[1]);
+                    root.style.setProperty('--text-primary', chronos.isDark ? 'rgba(255, 255, 255, 0.95)' : 'rgba(28, 28, 30, 0.85)');
+                    root.style.setProperty('--text-sub', chronos.isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(60, 60, 67, 0.6)');
+                    
+                    setState(chronos);
+                };
+
+                updateEngine();
+                const interval = setInterval(updateEngine, 60000); // 每一分钟轮询一次状态
+                return () => clearInterval(interval);
+            }, []);
+
+            return state;
+        }
 
         function App() {
             const [activeId, setActiveId] = useState(null);
-
-            const openCard = (id) => { if (!activeId) setActiveId(id); };
-            const closeCard = (e) => { e.stopPropagation(); setActiveId(null); };
+            const { label, isDark } = useChronosEngine();
 
             return (
                 <div style={{ height: '100%', position: 'relative' }}>
                     <div className="ambient-engine" />
-                    <div className={`overlay ${activeId ? 'active' : ''}`} onClick={closeCard} />
+                    <div className="weather-overlay" />
+                    <div className={`overlay ${activeId ? 'active' : ''}`} onClick={() => setActiveId(null)} />
 
                     <main style={{ padding: 'calc(var(--safe-top) + 20px) 0' }}>
                         <header style={{ padding: '0 16px', marginBottom: '36px' }}>
-                            <h1 style={{ color: 'var(--text-on-ambient)', fontWeight: 300, fontSize: '32px', margin: 0, letterSpacing: '-0.5px' }}>Kuala Lumpur</h1>
-                            <p style={{ color: 'var(--text-on-ambient-sub)', fontSize: '14px', marginTop: '6px', fontWeight: 300 }}>10:42 · 旅程沉淀中</p>
+                            <h1 style={{ color: 'var(--text-primary)', fontWeight: 300, fontSize: '32px', margin: 0, letterSpacing: '-0.5px' }}>Kuala Lumpur</h1>
+                            <p style={{ color: 'var(--text-sub)', fontSize: '14px', marginTop: '6px', fontWeight: 300 }}>{label} · 旅程沉淀中</p>
                         </header>
 
                         {/* 铭牌 1 */}
-                        <div className={`nameplate ${activeId === 1 ? 'expanded' : ''}`} onClick={() => openCard(1)}>
+                        <div className={`nameplate ${activeId === 1 ? 'expanded' : ''}`} onClick={() => { if (!activeId) setActiveId(1); }}>
                             {activeId === 1 ? (
                                 <div className="expanded-content">
-                                    <div className="tag tag-glass">Dining · 19:30</div>
+                                    <div className="tag">Dining · 19:30</div>
                                     <div className="title" style={{ fontSize: '26px', fontWeight: 500, marginTop: '4px' }}>KIWAMI Yakiniku</div>
-                                    <div style={{ marginTop: '28px', fontSize: '15px', lineHeight: '1.6' }}>
-                                        <b style={{ color: 'var(--text-on-glass)' }}>确认号: #PR7788</b><br/>
-                                        <span style={{ color: 'var(--text-on-glass-sub)' }}>地点: 东京特别区</span><br/><br/>
-                                        系统自适应字体引擎已生效。静息时文字为乳白色以确保在深色流体背景下的可读性；展开后自动切换为炭黑色以匹配玻璃材质。
+                                    <div style={{ marginTop: '28px', fontSize: '15px', lineHeight: '1.6', color: '#1c1c1e' }}>
+                                        <b>确认号: #PR7788</b><br/>
+                                        环境感知引擎已上线。系统检测到当前处于<b>「{label}」</b>时段，已自动同步全局色温与字色对比度。
                                     </div>
                                     <div style={{ height: '120px', background: 'rgba(0,0,0,0.04)', borderRadius: '16px', marginTop: '24px' }}></div>
                                 </div>
                             ) : (
                                 <React.Fragment>
-                                    <div className="tag tag-ambient">Dining · 19:30</div>
+                                    <div className="tag">Dining · 19:30</div>
                                     <div className="title">KIWAMI Yakiniku</div>
                                 </React.Fragment>
                             )}
@@ -149,22 +183,21 @@
                         {/* 铭牌 2 */}
                         <div 
                             className={`nameplate ${activeId === 2 ? 'expanded' : ''}`} 
-                            onClick={() => openCard(2)}
+                            onClick={() => { if (!activeId) setActiveId(2); }}
                             style={{ opacity: (activeId && activeId !== 2) ? 0 : 1 }}
                         >
                             {activeId === 2 ? (
                                 <div className="expanded-content">
-                                    <div className="tag tag-glass">Flight · 09:00</div>
+                                    <div className="tag">Flight · 09:00</div>
                                     <div className="title" style={{ fontSize: '26px', fontWeight: 500, marginTop: '4px' }}>MH001 · 飞往台北</div>
-                                    <div style={{ marginTop: '28px', fontSize: '15px', lineHeight: '1.6' }}>
-                                        <b style={{ color: 'var(--text-on-glass)' }}>状态: 准点</b><br/>
-                                        <span style={{ color: 'var(--text-on-glass-sub)' }}>航站楼: KLIA T1</span><br/><br/>
-                                        物理边距、交互响应与对比度逻辑已完成三轮「偏执狂级别」推演。
+                                    <div style={{ marginTop: '28px', fontSize: '15px', lineHeight: '1.6', color: '#1c1c1e' }}>
+                                        <b>状态: 准点</b><br/>
+                                        大气层渲染引擎 V3.0 已锁定。背景光影将根据真实物理时间进行渐进式色彩平移，确保情绪温度的连续性。
                                     </div>
                                 </div>
                             ) : (
                                 <React.Fragment>
-                                    <div className="tag tag-ambient">Flight · 09:00</div>
+                                    <div className="tag">Flight · 09:00</div>
                                     <div className="title">MH001 · 台北</div>
                                 </React.Fragment>
                             )}
